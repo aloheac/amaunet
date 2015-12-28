@@ -18,6 +18,7 @@ NTAU = 2                    # Temporal volume of the system.
 
 MINIMAL_U_DISPLAY = False    # If true, the matrix U will be output using a shorthand notation.
 MINIMAL_M_DISPLAY = True   # If true, the matrix M will be output using a shorthand notation.
+SPLIT_SUMS_BY_LINE = False # If true, each term of a sum will be output on a separate late.
 
 # ****************************************************************************
 #   EXCEPTION CLASSES
@@ -48,7 +49,7 @@ The data structure for this matrix is optimized assuming that M is a sparse
 matrix. Only non-zero elements are stored in memory.
 """
 class MatrixM:
-    def __init__( self, Nx, Ntau, spatialDimension, isInteracting=True ):
+    def __init__( self, Nx, Ntau, spatialDimension, isInteracting=True, flavorLabel="" ):
         # Dictionary that holds non-zero matrix elements. The key is given as a
         # two element tuple with temporal indices ( i, j ). The value may be any
         # valid expression.
@@ -73,6 +74,9 @@ class MatrixM:
         # Boolean flag indicating whether this matrix is interacting (e.g. whether
         # there is any dependence on A, or if A is set to zero).
         self.isInteracting = isInteracting
+        
+        # String indicating a unique identifier for each particle flavor.
+        self.flavorLabel = flavorLabel
         
         
         # Place identity elements along the matrix diagonal.
@@ -108,19 +112,34 @@ class MatrixM:
             
             return s.format( *elementValues )
         else:
-            if self.isInteracting:
-                if self.derivativeOrder == 0:
-                    return "M"
-                elif self.derivativeOrder == 1:
-                    return "dM / dA"
+            if self.flavorLabel == "":
+                if self.isInteracting:
+                    if self.derivativeOrder == 0:
+                        return "M"
+                    elif self.derivativeOrder == 1:
+                        return "dM / dA"
+                    else:
+                        #return "d^" + str( self.derivativeOrder ) + " M / dA^" + str( self.derivativeOrder )
+                        return "0.0"
                 else:
-                    return "d^" + str( self.derivativeOrder ) + " M / dA^" + str( self.derivativeOrder )
-                    #return "0.0"
+                    if self.derivativeOrder == 0:
+                        return "M0_" + str( self.flavorLabel )
+                    else:
+                        return "dM0 / dA"
             else:
-                if self.derivativeOrder == 0:
-                    return "M0"
+                if self.isInteracting:
+                    if self.derivativeOrder == 0:
+                        return "M_" + str( self.flavorLabel )
+                    elif self.derivativeOrder == 1:
+                        return "dM_" + str( self.flavorLabel ) + " / dA"
+                    else:
+                        #return "d^" + str( self.derivativeOrder ) + " M_" + str( self.flavorLabel ) + " / dA^" + str( self.derivativeOrder )
+                        return "0.0"
                 else:
-                    return "0.0"
+                    if self.derivativeOrder == 0:
+                        return "M0_" + str( self.flavorLabel )
+                    else:
+                        return "dM0_" + str( self.flavorLabel ) + " / dA" 
     
     """
     Gets the matrix elements at temporal indices ( i, j ). Returns zero if the
@@ -150,7 +169,7 @@ class MatrixM:
     @return: The derivative of this matrix.
     """
     def derivative( self ):
-        D = MatrixM( self.Nx, self.Ntau, self.spatialDimension )
+        D = MatrixM( self.Nx, self.Ntau, self.spatialDimension, self.isInteracting, self.flavorLabel )
         for key in self.elements:
             D.setElement( key[0], key[1], self.elements[ key ].derivative() )
         D.simplify()
@@ -165,41 +184,62 @@ class MatrixM:
         for key in self.elements:
             self.elements[ key ].simplify()
             
+    def setAsNoninteracting( self ):
+        self.isInteracting = False
+        
 """
 Representation of the matrix B, or the inverse of the matrix M, in the defined
 perturbation theory language.
 """
 class MatrixB:
-    def __init__( self, Nx, Ntau, spatialDimension, isInteracting=True ):
+    def __init__( self, Nx, Ntau, spatialDimension, isInteracting=True, flavorLabel="" ):
         self.elements = dict()
         self.Nx = Nx
         self.Ntau = Ntau
         self.spatialDimension = spatialDimension
         self.isInteracting = isInteracting
         self.derivativeOrder = 0
+        self.flavorLabel = flavorLabel
         
     def __str__( self ):
-        if self.isInteracting:
-            if self.derivativeOrder == 0:
-                return "B"
-            elif self.derivativeOrder == 1:
-                return "dB / dA"
+        if self.flavorLabel == "":
+            if self.isInteracting:
+                if self.derivativeOrder == 0:
+                    return "B"
+                elif self.derivativeOrder == 1:
+                    return "dB / dA"
+                else:
+                    return "d^" + str( self.derivativeOrder ) + " B / dA^" + str( self.derivativeOrder )
             else:
-                return "d^" + str( self.derivativeOrder ) + " B / dA^" + str( self.derivativeOrder )
+                if self.derivativeOrder == 0:
+                    return "B0"
+                else:
+                    return "0.0"
         else:
-            if self.derivativeOrder == 0:
-                return "B0"
+            if self.isInteracting:
+                if self.derivativeOrder == 0:
+                    return "B_" + str( self.flavorLabel )
+                elif self.derivativeOrder == 1:
+                    return "dB_" + str( self.flavorLabel ) + " / dA"
+                else:
+                    return "d^" + str( self.derivativeOrder ) + " B_" + str( self.flavorLabel ) + " / dA^" + str( self.derivativeOrder )
             else:
-                return "0.0"
+                if self.derivativeOrder == 0:
+                    return "B0_" + str( self.flavorLabel )
+                else:
+                    return "0.0"
         
     def derivative( self ):
-        dM = MatrixM( self.Nx, self.Ntau, self.spatialDimension, self.isInteracting )
+        dM = MatrixM( self.Nx, self.Ntau, self.spatialDimension, self.isInteracting, self.flavorLabel )
         dM.derivativeOrder = self.derivativeOrder + 1
         
-        return Product( [ CoefficientFloat( -1.0 ), MatrixB( self.Nx, self.Ntau, self.spatialDimension ), dM, MatrixB( self.Nx, self.Ntau, self.spatialDimension ) ] )
+        return Product( [ CoefficientFloat( -1.0 ), MatrixB( self.Nx, self.Ntau, self.spatialDimension, self.isInteracting, self.flavorLabel ), dM, MatrixB( self.Nx, self.Ntau, self.spatialDimension, self.isInteracting, self.flavorLabel ) ] )
           
     def simplify( self ):
         pass
+    
+    def setAsNoninteracting( self ):
+        self.isInteracting = False
     
 """
 Representation of the matrix U in the defined perturbation theory language.
@@ -254,23 +294,34 @@ class DetM:
     @param: isInteracting Boolean flag indicating whether this determinant is dependent on A.
     @param: isInverted Boolean flag indicating whether this expression is inverted.
     """
-    def __init__(self, M, flavorLabel="", isInteracting=True, isInverted=False ):
+    def __init__(self, M, isInteracting=True, isInverted=False ):
         self.M = M
-        self.flavorLabel = ""
         self.isInteracting = isInteracting
         self.isInverted = isInverted
 
     def __str__(self):
-        if self.isInteracting:
-            if self.isInverted:
-                return "1 / Det[ M ]"
+        if self.M.flavorLabel == "":
+            if self.isInteracting:
+                if self.isInverted:
+                    return "1 / Det[ M ]"
+                else:
+                    return "Det[ M ]"
             else:
-                return "Det[ M ]"
+                if self.isInverted:
+                    return "1 / Det[ M0 ]"
+                else:
+                    return "Det[ M0 ]"
         else:
-            if self.isInverted:
-                return "1 / Det[ M0 ]"
+            if self.isInteracting:
+                if self.isInverted:
+                    return "1 / Det[ M_" + str( self.M.flavorLabel ) + " ]"
+                else:
+                    return "Det[ M_" + str( self.M.flavorLabel ) + " ]"
             else:
-                return "Det[ M0 ]"
+                if self.isInverted:
+                    return "1 / Det[ M0_" + str( self.M.flavorLabel ) + " ]"
+                else:
+                    return "Det[ M0_" + str( self.M.flavorLabel ) + " ]"
             
     def derivative( self ):
         if self.isInteracting:
@@ -280,7 +331,7 @@ class DetM:
                 # return Product( [ CoefficientFloat( -1.0 ), Trace( Product( [ DetM( self.flavorLabel, True, True ), self.M.derivative() ] ) ), DetM( self.flavorLabel, True, True ) ] )
                 raise PTSymbolicException( "The derivative of an inverted, interacting determinant should not be taken in this context." )
             else:
-                return Product( [ DetM( self.M, self.flavorLabel, True, False ), Trace( Product( [ MatrixB( self.M.Nx, self.M.Ntau, self.M.spatialDimension ), self.M.derivative() ] ) ) ] )
+                return Product( [ DetM( self.M, True, False ), Trace( Product( [ MatrixB( self.M.Nx, self.M.Ntau, self.M.spatialDimension, True, self.M.flavorLabel ), self.M.derivative() ] ) ) ] )
         else:
             if self.isInverted:
                 return "1 / Det[ M0 ]"
@@ -289,6 +340,9 @@ class DetM:
             
     def simplify( self ):
         pass
+    
+    def setAsNoninteracting( self ):
+        self.isInteracting = False
         
     
 """
@@ -352,7 +406,21 @@ class CoefficientFraction:
     """
     def eval( self ):
         return float( self.num ) / float( self.den )
+ 
+"""
+ Representation of the term A. This class is simply used to keep track of the
+ order of a term in the perturbation series expansion.
+ """
+class TermA:
+    """
+    A is just A -- it cannot be simplified, so do nothing.
+    """
+    def simplify(self):
+        pass
     
+    def __str__(self):
+        return "A"
+       
 # ****************************************************************************
 #   OPERATOR AND EXPRESSION CLASSES
 # ****************************************************************************
@@ -366,13 +434,15 @@ class Sum:
     @param: terms List of terms in the sum.
     """
     def __init__( self, terms ):
-        self.terms = []
+        self.terms = terms
         
     def __str__( self ):
         s = ""
         for i in range( 0, len( self.terms ) ):
             s += str( self.terms[ i ] )
             if not i == len( self.terms ) - 1:
+                if SPLIT_SUMS_BY_LINE:
+                    s += "\n\n"
                 s += " + "
                 
         return s
@@ -412,18 +482,45 @@ class Sum:
             if isinstance( s, Sum ):
                 s.reduceTree()
                 for i in range( 0, len( s.terms ) ):
-                    reducedTerms.append( s.terms[ i ] )
-            elif isinstance( s, Product ):
+                    reducedTerms.append( unpackTrivialExpr( s.terms[ i ] ) )
+            elif isinstance( s, Product ) or isinstance( s, Trace ):
                 s.reduceTree()
-                reducedTerms.append( s )
+                reducedTerms.append( unpackTrivialExpr( s ) )
             else:
-                reducedTerms.append( s )
+                reducedTerms.append( unpackTrivialExpr( s ) )
                 
-        self.terms = reducedTerms
-            
+        self.terms = unpackTrivialExpr( reducedTerms )
+    
+    """
+    Mathematically expands the product of sums contained in this expression.
+    @return: The expanded expression (a Sum).
+    """        
+    def getExpandedExpr( self ):
+        expandedSum = Sum([])
+        self.reduceTree()
+        for term in self.terms:
+            if isinstance( term, Product ):
+                expandedSum.addTerm( term.getExpandedExpr() )
+            else:
+                expandedSum.addTerm( term )
+                
+        return expandedSum
+          
+    """
+    Adds a term to the end of this Sum expression.
+    @param: term Term to add to the end of this expression.
+    """    
     def addTerm( self, term ):
         self.terms.append( term )
-        
+     
+    """    
+    Sets this expression as non-interacting (independent of the coupling). In
+    the current context A is set to zero.
+    """   
+    def setAsNoninteracting( self ):
+        for term in self.terms:
+            if isinstance( term, Sum ) or isinstance( term, Product ) or isinstance( term, Trace ) or isinstance( term, DetM ) or isinstance( term, MatrixM ) or isinstance( term, MatrixB ): 
+                term.setAsNoninteracting()
 """
 Representation of a product of an arbitrary number of terms. All objects are
 treated as noncommutative.
@@ -433,7 +530,7 @@ class Product:
     Constructor for Product.
     @param: terms List of terms in the product.
     """
-    def __init__( self, terms ):
+    def __init__( self, terms ): 
         self.terms = terms
     
     """
@@ -463,6 +560,11 @@ class Product:
         D.simplify()
         return D
     
+    """
+    Mathematically simplifies this expression. If any term is zero, the entire
+    expression is evaluated to zero. Any constants that evaluate to 1.0 are
+    removed.
+    """
     def simplify( self ):
         simplifiedTerms = []
         for term in self.terms:
@@ -475,21 +577,26 @@ class Product:
                 simplifiedTerms.append( term )
 
         self.terms = simplifiedTerms
-        
-    def reduceTree( self ):           
+    
+    """
+    Reduces the data structure representation of this instance to the most
+    simple form. Note that some methods require this representation.
+    """    
+    def reduceTree( self ):
+        # TODO: Optimize necessary calls to unpackTrivialExpr().           
         reducedTerms = []
         for term in self.terms:
             if isinstance( term, Product ):
                 term.reduceTree()
                 for i in range( 0, len( term.terms ) ):
-                    reducedTerms.append( term.terms[ i ] )
-            elif isinstance( term, Sum ):
+                    reducedTerms.append( unpackTrivialExpr( term.terms[ i ] ) )
+            elif isinstance( term, Sum ) or isinstance( term, Trace ):
                 term.reduceTree()
-                reducedTerms.append( term )    
+                reducedTerms.append( unpackTrivialExpr( term ) )    
             else:
-                reducedTerms.append( term )    
+                reducedTerms.append( unpackTrivialExpr( term ) )    
                 
-        self.terms = reducedTerms    
+        self.terms = unpackTrivialExpr( reducedTerms )    
         
     """
     Recursively expand a product of sums to a explicit sum of products; i.e. the
@@ -505,22 +612,34 @@ class Product:
             if isinstance( unpackTrivialExpr( self.terms[0] ), Sum ):  # Case 1: First term is a Sum, or both terms are a Sum.
                 expandedSum = Sum([])
                 for i in range( 0, len( self.terms[0].terms ) ):
-                    expandedSum.terms.append( Product( [ self.terms[0].terms[i], self.terms[1] ] ).getExpandedExpr() )
+                    expandedSum.terms.append( Product( [ deepcopy( self.terms[0].terms[i] ), deepcopy( self.terms[1] ) ] ).getExpandedExpr() )
                 return expandedSum
             
             elif isinstance( unpackTrivialExpr( self.terms[1] ), Sum ):  # Case 2: Second term is a Sum.
                 expandedSum = Sum([])
                 for i in range( 0, len( self.terms[1].terms ) ):
-                    expandedSum.terms.append( Product( [ self.terms[0], self.terms[1].terms[i] ] ).getExpandedExpr() )
+                    expandedSum.terms.append( Product( [ deepcopy( self.terms[0] ), deepcopy( self.terms[1].terms[i] ) ] ).getExpandedExpr() )
                 return expandedSum 
             else:  # Case 3: Neither term is a sum, so no expansion is necessary.
                 return self
             
         else:  # Recursively expand the product.
             return Product( [ Product( self.terms[0:2] ).getExpandedExpr(), Product( self.terms[2:] ).getExpandedExpr() ] ).getExpandedExpr()
- 
+    """
+    Adds a term to the Product expression.
+    @param: term The term to add to the end of the expression.
+    """
     def addTerm( self, term ):
         self.terms.append( term )
+        
+    """    
+    Sets this expression as non-interacting (independent of the coupling). In
+    the current context A is set to zero.
+    """
+    def setAsNoninteracting( self ):
+        for term in self.terms:
+            if isinstance( term, Sum ) or isinstance( term, Product ) or isinstance( term, Trace ) or isinstance( term, DetM ) or isinstance( term, MatrixM ) or isinstance( term, MatrixB ): 
+                term.setAsNoninteracting()
         
 """
 Representation of the trace of an expression.
@@ -536,6 +655,12 @@ class Trace:
     def __str__( self ):
         return "Trace[ " + str( self.expr ) + " ]"
     
+    """
+    Calculates and returns the symbolic derivative with respect to the
+    expansion parameter. Since the trace is a linear operator, this
+    method simply takes the derivative of the argument.
+    @return: The derivative of this expression.
+    """
     def derivative( self ):
         return Trace( self.expr.derivative() )
     
@@ -545,9 +670,106 @@ class Trace:
     """
     def simplify( self ):
         self.expr.simplify()
-               
+
+    def reduceTree( self ):
+        if isinstance( self.expr, Product ) or isinstance( self.expr, Sum ):
+            self.expr.reduceTree()
+            
+    def setAsNoninteracting( self ):
+        for term in self.expr.terms:
+            if isinstance( term, Sum ) or isinstance( term, Product ) or isinstance( term, Trace ) or isinstance( term, DetM ) or isinstance( term, MatrixM ) or isinstance( term, MatrixB ): 
+                term.setAsNoninteracting()
+                
+"""
+Representation of an expression where all terms within a trace are assigned a
+set of indices. Note that the expression that is passed to the constructor
+must be a single product; the complete expression being evaluated must
+be fully expanded prior to using this object. At present this assertion
+is not enforced.
+"""               
+class IndexedTrace:
+    """
+    Constructor for IndexedTrace.
+    @param: expr Expression that is the argument to the trace. Must be a single product.
+    @param: startingIndex Starting integer for indexing elements of the trace, which is
+                          by definition cyclic. Default value is 0.
+    """
+    def __init__( self, expr, startingIndex=0 ):
+        self.expr = expr
+        self.indices = []
+        self.startingIndex = 0
+        self.endingIndex = None  # Set scope.
+        
+        # Index all terms within traces. Note that the expression passed to the
+        # constructor is expected to be already distributed, in the sense that
+        # all constant coefficients are pulled out of the trace, and the trace
+        # operator has been linearly distributed over all terms in a sum.
+        self._getExprIndices()
+    
+    """
+    Private method which indexes all elements within a trace. In principle this method may
+    be called when updating the argument of the trace, although this behavior is not
+    preferred.
+    """    
+    def _getExprIndices( self ):
+        # Check for trivial cases and set the appropriate result.
+        if len( self.expr.terms ) == 0:
+            self.indices = []
+            self.endingIndex = None
+        elif len( self.expr.terms ) == 1:
+            self.indices = [ (self.startingIndex, self.startingIndex) ]
+            self.endingIndex = self.startingIndex
+        else:  # For non-trivial products, calculate the connected indices.
+            indices = []
+            for i in range( 0, len( self.expr.terms ) - 1):
+                indices.append( (self.startingIndex + i, self.startingIndex + i + 1) )
+            indices.append( (self.startingIndex + i + 1, self.startingIndex) )
+            
+            self.indices = indices
+            self.endingIndex = i + 1
+         
+    def __str__( self ):
+        s = "IndTrace[ "
+        for i in range( 0, len( self.expr.terms ) ):
+            s += "{ " + str( self.expr.terms[i] ) + "_" + str( self.indices[i] ) + " }"
+        s += " ]"
+        return s
+
+"""
+Representation of a slightly modified definition of the Kronecker delta. A 
+Delta object with two assigned indices behaves the same as \delta_{i,j}; an
+object with more then two indices is "\delta 'bar'", which is written in
+terms of a combination of standard Kronecker deltas. This class is intended
+to be used in conjuction with an IndexedTrace.
+"""            
+class Delta:
+    def __init__( self, indices ):
+        self.indices = indices
+        self.isBar = None
+        
+        if len( indices ) <= 1:
+            raise PTSymbolicException( "Two or more indices must be specified in the constructor of Delta (" + str( len( indices ) ) + " was specified)." )
+        elif len( indices ) == 2:
+            self.isBar = False
+        else:
+            self.isBar = True
+    
+    def __str__( self ):
+        s = "Delta( "
+        for index in self.indices:
+            s += str( index ) + ", "
+        s += " )"
+        return s
+            
+    def getAllPairings( self ):
+        pairings = []
+        for i in range( 0, len( self.indices ) ):
+            for j in range( i + 1, len( self.indices ) ):
+                pairings.append( (self.indices[i], self.indices[j]) )
+        return pairings
+                
 # ****************************************************************************
-#   PRIVATE HELPER FUNCTIONS
+#   PRIVATE BASIC HELPER AND EXPRESSION MANIPULATION FUNCTIONS
 # ****************************************************************************
 
 """
@@ -600,7 +822,7 @@ def multiplyMMatrices( X, Y ):
     
     for i in range( 0, X.Ntau ):
         for j in range( 0, X.Ntau ):
-            newMatrixElement = Sum()
+            newMatrixElement = Sum([])
             for k in range( 0, X.Ntau ):
                 newMatrixElement.addTerm( Product( [X.getElement( i, k ), Y.getElement( k, j )] ) )
             
@@ -608,3 +830,225 @@ def multiplyMMatrices( X, Y ):
             Z.setElement( i, j, unpackTrivialExpr( newMatrixElement ) )
             
     return Z
+
+"""
+Mathematically simplifies the expression of a trace. The trace operator is
+distributed over a sum (e.g. Tr[ a + b + ... ] --> Tr[a] + Tr[b] + ...), 
+and constant coefficients are also factored out of the trace. (e.g.
+Tr[ {-1} a ] --> {-1} Tr[ a ]). Depending on the input, either a Sum
+or Product object is returned, whichever is appropriate. In a typical
+situation this method is not intended to be used outside of distributeCompleteExpr().
+@return: A Sum or Product instance whose expression contains fully
+         distributed traces.
+"""
+def distributeTrace( tr ):
+    if not isinstance( tr, Trace ):
+        raise PTSymbolicException( "An object other then a Trace was passed to distributeTrace()." )
+    
+    # Simple case: a single product inside a trace has been passed in.
+    if isinstance( tr.expr, Product ):
+        # Consider relatively more complicated cases, where the argument to the
+        # trace is an expression like a ( b c + d e ); we must expand the product
+        # and reduce the representation.
+        expandedArgument = tr.expr.getExpandedExpr()
+        expandedArgument.reduceTree()
+        
+        # If the expansion resulted in the product turning into a sum, evaluate
+        # it appropriately through a recursive call.
+        if isinstance( expandedArgument, Sum ):
+            return distributeTrace( Trace( expandedArgument ) )
+        else:  # Otherwise, if the expression is simple and a single product, proceed.
+            simplifiedProduct = Product([])
+            matrixTerms = []
+            for term in expandedArgument.terms:
+                if isinstance( term, CoefficientFloat ) or isinstance( term, CoefficientFraction ):
+                    simplifiedProduct.terms.append( deepcopy( term ) )
+                elif isinstance( term, MatrixB ) or isinstance( term, MatrixM ):
+                    matrixTerms.append( deepcopy( term ) )
+    
+            simplifiedProduct.terms.append( Trace( unpackTrivialExpr( Product( matrixTerms ) ) ) )
+            return simplifiedProduct
+    
+    # Typical case: a sum of terms inside a trace has been passed in to be evaluated.
+    elif isinstance( tr.expr, Sum ):
+        distributedSum = Sum([])
+        for term in tr.expr.terms:
+            distributedSum.addTerm( distributeTrace( Trace( deepcopy( term ) ) ) )
+            
+        return distributedSum
+    
+    # Something trivial has been passed in...just spit it back!
+    else:
+        return tr
+
+"""
+Public method intended to be used as part of the integration and reduction
+process. Performs the task of simplifying expressions containing traces;
+the trace operator is distributed over sums, and constant coefficients are
+pulled out of traces.
+@param: expr 
+""" 
+def distributeAllTraces( expr ):
+    # TODO: Need to rewrite/improve this algorithm.
+    # First, before doing anything, check if the expression can
+    # be distributed as a whole:
+    if isinstance( expr, Product ):
+        expr = expr.getExpandedExpr()
+        expr.reduceTree()
+        
+    distributedExpr = Sum([])
+    if isinstance( expr, Sum ):
+        for term in expr.terms:
+            if isinstance( term, Product ):
+                distributedProduct = Product([])
+                for factor in term.terms:
+                    if isinstance( factor, Trace ):
+                        distributedProduct.addTerm( distributeTrace( factor ) )
+                    else:
+                        distributedProduct.addTerm( factor )
+                distributedProduct = distributedProduct.getExpandedExpr()
+                distributedExpr.addTerm( distributedProduct )
+            elif isinstance( term, Trace ):
+                distributedExpr.addTerm( distributeTrace( term ) )
+                distributedExpr.reduceTree()
+            else:
+                distributedExpr.addTerm( term )
+                
+    elif isinstance( expr, Product ):
+        distributedExpr = Product([])
+        for factor in expr.terms:
+            if isinstance( factor, Trace ):
+                distributedExpr.addTerm( distributeTrace( factor ) )
+            else:
+                distributedExpr.addTerm( factor )
+        distributedExpr = distributedExpr.getExpandedExpr()
+        
+    else:
+        return expr
+    
+    distributedExpr.reduceTree()
+    return distributedExpr 
+
+"""
+Converts all traces in an expression to indexed traces.
+@param: expr An expression that is a Sum.
+@return: A Sum() whose Trace objects are now IndexedTrace objects.
+"""
+def indexExpr( expr ):
+    indexedExpr = Sum([])
+    if isinstance( expr, Sum ):
+        for term in expr.terms:
+            if isinstance( term, Product ):
+                nextIndexedTerm = Product([])
+                nextIndexedTrace = None
+                nextStartingIndex = 0
+                for factor in term.terms:
+                    if isinstance( factor, Trace ):
+                        nextIndexedTrace = IndexedTrace( factor.expr, nextStartingIndex )
+                        nextStartingIndex = nextIndexedTrace.endingIndex + 1
+                        nextIndexedTerm.addTerm( nextIndexedTrace )
+                    else:
+                        nextIndexedTerm.addTerm( factor )
+                indexedExpr.addTerm( nextIndexedTerm )
+            elif isinstance( term, Trace ):
+                indexedExpr.addTerm( IndexedTrace( term.expr ) )
+            else:
+                indexedExpr.addTerm( term )
+    else:
+        raise PTSymbolicException( "indexExpr() expects a Sum as the passed expression." )
+    
+    return indexedExpr
+
+"""
+Truncate the order of A of an expansion.
+@param: sum The expression (a Sum) to truncate.
+@param: highestOrder The highest order in A which should appear in the truncated expression (an int).
+@return: The truncated sum.
+"""
+def truncateAOrder( sum, highestOrder ):
+    truncatedSum = Sum([])
+    for term in sum.terms:
+        AOrder = 0
+        if isinstance( term, Sum  ) or isinstance( term, Product ):
+            for factor in term.terms:
+                if isinstance( factor, TermA ):
+                    AOrder +=1
+        
+        if not AOrder > highestOrder:
+            truncatedSum.terms.append( term )
+            
+    return truncatedSum
+
+"""
+Truncate terms in the expansion where A is of odd order. For contact
+interactions, it has been shown that odd-ordered terms vanish, therefore
+we eliminate such terms prior to computing the path integral to reduce
+computational demands.
+@param: sum Expression to truncate.
+@return: Truncated expression.
+"""
+def truncateOddOrders( sum ):
+    truncatedSum = Sum([])
+    for term in sum.terms:
+        AOrder = 0
+        if isinstance( term, Sum  ) or isinstance( term, Product ):
+            for factor in term.terms:
+                if isinstance( factor, TermA ):
+                    AOrder +=1
+                    
+        if AOrder % 2 == 0:
+            truncatedSum.addTerm( term )
+            
+    return truncatedSum
+
+"""
+Private helper function to determine whether all elements in a list are equal.
+Typical use is within truncateSingleFlavorTerms().
+@param: lst List to check contents of.
+@return: True if all elements in lst are equal, False otherwise.
+"""
+def _elementsAreAllEqual( lst ):
+    if len( lst ) == 0 or len( lst ) == 1:
+        return True
+    
+    for i in range( 0, len( lst ) - 1 ):
+        if not lst[ i ] == lst[ i + 1 ]:
+            return False
+        
+    return True
+
+"""
+
+"""        
+def truncateSingleFlavorTerms( sum ):
+    truncatedSum = Sum([])
+    
+    for term in sum.terms:
+        # Obtain all flavor labels for each matrix that appears in this term.
+        flavorLabels = []
+        for factor in term.terms:
+            if isinstance( factor, Trace ):
+                for subterm in factor.expr.terms:
+                    if isinstance( subterm, MatrixM ) or isinstance( subterm, MatrixB ):
+                        flavorLabels.append( subterm.flavorLabel )
+            
+        # Check list of flavor labels; if all labels are equivalent, omit the
+        # term from the sum. Keep terms that do not have matrices (the
+        # non-interacting contribution).
+        if not _elementsAreAllEqual( flavorLabels ) or len( flavorLabels ) == 0:
+            truncatedSum.addTerm( term )
+            
+    return truncatedSum
+          
+# ****************************************************************************
+#   INTEGRATION ROUTINE HELPER FUNCTIONS
+# ****************************************************************************
+
+def calculateAllContractions( n ):
+    if not n % 2:
+        raise PTSymbolicException( "Parameter 'n' (index vector dimension) must be an even integer." )
+    
+    
+
+
+                
