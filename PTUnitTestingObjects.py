@@ -11,6 +11,7 @@ NOTE: The classes defined in this module are intended only for the unit testing
 """
 
 import PTSymbolicObjects as pt
+from PTSymbolicObjects import MINIMAL_M_DISPLAY
 
 class GenericTestTerm:
     def __init__( self, id, derivativeOrder ):
@@ -45,6 +46,8 @@ class UnitTest:
         else:
             print ">> Unit test FAILED. Returned result:"
             print str( result )
+            print "   Correct result:"
+            print str( self.correctResult )
             UnitTest.testsFailed += 1
             
 def executeAllUnitTests():
@@ -213,6 +216,7 @@ def executeAllUnitTests():
     
     def fB05():
         A = pt.Product( [ pt.Trace( pt.Product( [ pt.CoefficientFloat( -1.0 ), pt.Product( [ pt.MatrixM( 1, 1, 1 ), pt.MatrixM( 1, 1, 1 ) ] ) ] ) ), pt.Trace( pt.Product( [ pt.CoefficientFloat( -3.0 ), pt.Product( [ pt.MatrixM( 1, 1, 1 ), pt.MatrixM( 1, 1, 1 ) ] ) ] ) ) ] )
+        print str(A)
         B = pt.distributeAllTraces( A )
         return str( B )
     
@@ -221,6 +225,7 @@ def executeAllUnitTests():
     
     def fB06():
         A = pt.Sum( [ pt.Trace( pt.Product( [ pt.CoefficientFloat( -1.0 ), pt.Product( [ pt.MatrixM( 1, 1, 1 ), pt.MatrixM( 1, 1, 1 ) ] ) ] ) ), pt.Trace( pt.Product( [ pt.CoefficientFloat( -3.0 ), pt.Product( [ pt.MatrixM( 1, 1, 1 ), pt.MatrixM( 1, 1, 1 ) ] ) ] ) ) ] )
+        print str(A)
         B = pt.distributeAllTraces( A )
         return str( B )
     
@@ -332,6 +337,121 @@ def executeAllUnitTests():
     
     TC07 = UnitTest( "TC07: _elementsAreAllEqual(), Non-trivial V", fC07, "False" )
     TC07.runMe()
+    
+    def fD01():
+        pt.MINIMAL_M_DISPLAY = True
+        A = pt.MatrixM( 2, 2, 1, True, "up" )
+        return str( A )
+    
+    TD01 = UnitTest( "TD01: MatrixM Construction I", fD01, "M_up")
+    TD01.runMe()
+    
+    def fE01():
+        A = pt.IndexedTrace( pt.Product( [ pt.MatrixM(1,1,1), pt.MatrixB(1,1,1) ] ) )
+        B = pt.Product( [ pt.TermA(), A ] )
+        C = pt._factorInvertedMatrices( B )
+        return str( C )
+        
+    TE01 = UnitTest( "TE01: _factorInvertedMatrices I", fE01, " {A}  {B_(1, 0)}  {Gamma<1>_( 0 1 )[ { M_(0, 1) } ]}" )
+    TE01.runMe()
+    
+    def fE02():
+        A = pt.IndexedTrace( pt.Product( [ pt.MatrixM(1,1,1), pt.MatrixB(1,1,1), pt.MatrixM(1,1,1), pt.MatrixB(1,1,1), pt.MatrixM(1,1,1), pt.MatrixB(1,1,1) ] ) )
+        B = pt.Product( [ pt.TermA(), A ] )
+        C = pt._factorInvertedMatrices( B )
+        return str( C )
+        
+    TE02 = UnitTest( "TE02: _factorInvertedMatrices II", fE02, " {A}  {B_(1, 2)}  {B_(3, 4)}  {B_(5, 0)}  {Gamma<3>_( 0 1 2 3 4 5 )[ { M_(0, 1) }{ M_(2, 3) }{ M_(4, 5) } ]}" )
+    TE02.runMe()
+    
+    def fF01():
+        A = pt.Trace( pt.Product( [ pt.MatrixM(1,1,1), pt.MatrixB(1,1,1) ] ) )
+        B = pt.Trace( pt.Product( [ pt.MatrixM(1,1,1), pt.MatrixB(1,1,1) ] ) )
+        C = pt.Trace( pt.Product( [ pt.MatrixM(1,1,1), pt.MatrixB(1,1,1) ] ) )
+        D = pt.Sum( [pt.Product( [ A, B, C ] )] )
+        E = pt.indexExpr( D )
+        return str( E )
+    
+    TF01 = UnitTest( "TF01: indexExpr() I", fF01, " {Trace[ { M_(0, 1) }{ B_(1, 0) } ]}  {Trace[ { M_(2, 3) }{ B_(3, 2) } ]}  {Trace[ { M_(4, 5) }{ B_(5, 4) } ]}" )
+    TF01.runMe()
+    
+    def fG01():
+        A = pt.Sum( [ GenericTestTerm(1,0), GenericTestTerm(2,0) ] )
+        B = pt.Sum( [ GenericTestTerm(3,0), GenericTestTerm(4,0) ] )
+        C = pt.Product( [ A, B ] )
+        D = C.getExpandedExpr()
+        return str( D )
+    
+    TG01 = UnitTest( "TG01: getExpandedExpr() I", fG01, " {GT1_d0}  {GT3_d0} +  {GT1_d0}  {GT4_d0} +  {GT2_d0}  {GT3_d0} +  {GT2_d0}  {GT4_d0}" )
+    TG01.runMe()
+    
+    def fG02():
+        A = pt.Sum( [ GenericTestTerm(1,0), GenericTestTerm(2,0) ] )
+        B = pt.Sum( [ GenericTestTerm(3,0), GenericTestTerm(4,0), GenericTestTerm(5,0) ] )
+        C = pt.Product( [ GenericTestTerm(0,0), A, B ] )
+        D = C.getExpandedExpr()
+        D.reduceTree()
+        return str( D )
+    
+    TG02 = UnitTest( "TG02: getExpandedExpr() II", fG02, " {GT0_d0}  {GT1_d0}  {GT3_d0} +  {GT0_d0}  {GT1_d0}  {GT4_d0} +  {GT0_d0}  {GT1_d0}  {GT5_d0} +  {GT0_d0}  {GT2_d0}  {GT3_d0} +  {GT0_d0}  {GT2_d0}  {GT4_d0} +  {GT0_d0}  {GT2_d0}  {GT5_d0}" )
+    TG02.runMe()
+    
+    def fG03():
+        A = pt.Sum( [ GenericTestTerm(2,0), GenericTestTerm(3,0) ] )
+        B = pt.Product( [GenericTestTerm(1,0), A] )
+        C = pt.Sum( [ GenericTestTerm(4,0), GenericTestTerm(5,0), GenericTestTerm(6,0) ] )
+        D = pt.Product( [ B, C ] )
+        D.reduceTree()
+        E = D.getExpandedExpr()
+        E.reduceTree()
+        return str( E )
+    
+    TG03 = UnitTest( "TG03: getExpandedExpr() III", fG03, " {GT1_d0}  {GT2_d0}  {GT4_d0} +  {GT1_d0}  {GT2_d0}  {GT5_d0} +  {GT1_d0}  {GT2_d0}  {GT6_d0} +  {GT1_d0}  {GT3_d0}  {GT4_d0} +  {GT1_d0}  {GT3_d0}  {GT5_d0} +  {GT1_d0}  {GT3_d0}  {GT6_d0}" )
+    TG03.runMe()
+    
+    def fG04():
+        A = pt.Sum( [ GenericTestTerm(1,0), GenericTestTerm(2,0) ] )
+        B = pt.Sum( [ GenericTestTerm(2,0), GenericTestTerm(3,0) ] )
+        C = pt.Product( [ GenericTestTerm(4,0), A ] )
+        D = pt.Product( [ GenericTestTerm(5,0), B])
+        E = pt.Sum( [ GenericTestTerm(6,0), C ] )
+        F = pt.Sum( [ GenericTestTerm(7,0), D ] )
+        G = pt.Product( [ E, F ] )
+        G.reduceTree()
+        H = G.getExpandedExpr()
+        H.reduceTree()
+        return str( H )
+    
+    TG04 = UnitTest( "TG04: getExpandedExpr() IV", fG04, " {GT6_d0}  {GT7_d0} +  {GT6_d0}  {GT5_d0}  {GT2_d0} +  {GT6_d0}  {GT5_d0}  {GT3_d0} +  {GT4_d0}  {GT1_d0}  {GT7_d0} +  {GT4_d0}  {GT1_d0}  {GT5_d0}  {GT2_d0} +  {GT4_d0}  {GT1_d0}  {GT5_d0}  {GT3_d0} +  {GT4_d0}  {GT2_d0}  {GT7_d0} +  {GT4_d0}  {GT2_d0}  {GT5_d0}  {GT2_d0} +  {GT4_d0}  {GT2_d0}  {GT5_d0}  {GT3_d0}" )
+    TG04.runMe()
+    
+    def fG05():
+        A = pt.Sum( [ GenericTestTerm(1,0), GenericTestTerm(2,0) ] )
+        B = pt.Sum( [ GenericTestTerm(2,0), GenericTestTerm(3,0) ] )
+        C = pt.Product( [ GenericTestTerm(4,0), A ] )
+        D = pt.Product( [ GenericTestTerm(5,0), B])
+        E = pt.Sum( [ GenericTestTerm(6,0), C ] )
+        F = pt.Sum( [ GenericTestTerm(7,0), D ] )
+        G = pt.Product( [ E, F ] )
+        G.reduceTree()
+        
+        H = pt.Sum( [ GenericTestTerm(1,0), GenericTestTerm(2,0) ] )
+        I = pt.Sum( [ GenericTestTerm(2,0), GenericTestTerm(3,0) ] )
+        J = pt.Product( [ GenericTestTerm(4,0), H ] )
+        K = pt.Product( [ GenericTestTerm(5,0), I])
+        L = pt.Sum( [ GenericTestTerm(6,0), J ] )
+        M = pt.Sum( [ GenericTestTerm(7,0), K ] )
+        N = pt.Product( [ L, M ] )
+        N.reduceTree()
+        
+        O = pt.Sum( [ G, N ] )
+        O.reduceTree()
+        P = O.getExpandedExpr()
+        P.reduceTree()
+        return str( P )
+    
+    TG05 = UnitTest( "TG05: getExpandedExpr() V", fG05, " {GT6_d0}  {GT7_d0} +  {GT6_d0}  {GT5_d0}  {GT2_d0} +  {GT6_d0}  {GT5_d0}  {GT3_d0} +  {GT4_d0}  {GT1_d0}  {GT7_d0} +  {GT4_d0}  {GT1_d0}  {GT5_d0}  {GT2_d0} +  {GT4_d0}  {GT1_d0}  {GT5_d0}  {GT3_d0} +  {GT4_d0}  {GT2_d0}  {GT7_d0} +  {GT4_d0}  {GT2_d0}  {GT5_d0}  {GT2_d0} +  {GT4_d0}  {GT2_d0}  {GT5_d0}  {GT3_d0} +  {GT6_d0}  {GT7_d0} +  {GT6_d0}  {GT5_d0}  {GT2_d0} +  {GT6_d0}  {GT5_d0}  {GT3_d0} +  {GT4_d0}  {GT1_d0}  {GT7_d0} +  {GT4_d0}  {GT1_d0}  {GT5_d0}  {GT2_d0} +  {GT4_d0}  {GT1_d0}  {GT5_d0}  {GT3_d0} +  {GT4_d0}  {GT2_d0}  {GT7_d0} +  {GT4_d0}  {GT2_d0}  {GT5_d0}  {GT2_d0} +  {GT4_d0}  {GT2_d0}  {GT5_d0}  {GT3_d0}" )
+    TG05.runMe()
     
     print "\n-------------------------------------------------"
     print "Tests PASSED: " + str( UnitTest.testsPassed ) + " , tests FAILED: " + str( UnitTest.testsFailed ) + "."
