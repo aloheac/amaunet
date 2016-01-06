@@ -453,6 +453,76 @@ def executeAllUnitTests():
     TG05 = UnitTest( "TG05: getExpandedExpr() V", fG05, " {GT6_d0}  {GT7_d0} +  {GT6_d0}  {GT5_d0}  {GT2_d0} +  {GT6_d0}  {GT5_d0}  {GT3_d0} +  {GT4_d0}  {GT1_d0}  {GT7_d0} +  {GT4_d0}  {GT1_d0}  {GT5_d0}  {GT2_d0} +  {GT4_d0}  {GT1_d0}  {GT5_d0}  {GT3_d0} +  {GT4_d0}  {GT2_d0}  {GT7_d0} +  {GT4_d0}  {GT2_d0}  {GT5_d0}  {GT2_d0} +  {GT4_d0}  {GT2_d0}  {GT5_d0}  {GT3_d0} +  {GT6_d0}  {GT7_d0} +  {GT6_d0}  {GT5_d0}  {GT2_d0} +  {GT6_d0}  {GT5_d0}  {GT3_d0} +  {GT4_d0}  {GT1_d0}  {GT7_d0} +  {GT4_d0}  {GT1_d0}  {GT5_d0}  {GT2_d0} +  {GT4_d0}  {GT1_d0}  {GT5_d0}  {GT3_d0} +  {GT4_d0}  {GT2_d0}  {GT7_d0} +  {GT4_d0}  {GT2_d0}  {GT5_d0}  {GT2_d0} +  {GT4_d0}  {GT2_d0}  {GT5_d0}  {GT3_d0}" )
     TG05.runMe()
     
+    def fH01():
+        A = pt.MatrixM(1,1,1).derivative()
+        B = pt.Product( [ A, A ] )
+        C = pt.Gamma( B, [ (0, 1), (2, 3) ] )
+        D = C.getIntegratedTensorElement( [((1,1),(3,2)), ((4,1),(3,2))] )
+        return str( D )
+    
+    TH01 = UnitTest( "TH01: Gamma, getIntegratedTensorElement(), Basic I", fH01, " {1 / 2}  {T_(1, 3)}  {T_(4, 3)}" )
+    TH01.runMe()
+    
+    def fH02():
+        A = pt.MatrixM(1,1,1).derivative()
+        B = pt.Product( [ A, A ] )
+        C = pt.Gamma( B, [ (0, 1), (2, 3) ] )
+        D = C.getIntegratedTensorElement( [((1,1),(3,3)), ((4,1),(3,2))] )
+        return str( D )
+    
+    TH02 = UnitTest( "TH02: Gamma, getIntegratedTensorElement(), Basic II", fH02, "0.0" )
+    TH02.runMe()
+    
+    def fH03():
+        A = pt.MatrixM(1,1,1).derivative()
+        B = pt.Product( [ A, A ] )
+        C = pt.Gamma( B, [ (0, 1), (2, 3) ] )
+        D = C.getIntegratedTensorElement( [((1,1),(2,3)), ((4,3),(3,2))] )
+        return str( D )
+    
+    TH03 = UnitTest( "TH03: Gamma, getIntegratedTensorElement(), Basic III", fH03, "0.0" )
+    TH03.runMe()
+    
+    def fH04():
+        A = pt.MatrixM(1,1,1).derivative()
+        B = pt.Product( [ A, A, A ] )
+        C = pt.Gamma( B, [ (0, 1), (2, 3), (3, 4) ] )
+        D = C.getIntegratedTensorElement( [((1,1),(2,2)), ((1,2),(2,3)), ((5,2),(2,3))] )
+        return str( D )
+    
+    TH04 = UnitTest( "TH05: Gamma, getIntegratedTensorElement(), Basic IV", fH04, "0.0" )
+    TH04.runMe()
+    
+    def fH05():
+        A = pt.MatrixM(1,1,1).derivative()
+        B = pt.Product( [ A, A, A, A ] )
+        C = pt.Gamma( B, [ (0, 1), (2, 3), (3, 4), (5, 6) ] )
+        D = C.getIntegratedTensorElement( [((5,2),(2,3)), ((1,2),(2,3)), ((4,2),(2,3)), ((2,2),(2,3))] )
+        return str( D )
+    
+    TH05 = UnitTest( "TH05: Gamma, getIntegratedTensorElement(), Intermediate I", fH05, " {3 / 8}  {T_(5, 2)}  {T_(1, 2)}  {T_(4, 2)}  {T_(2, 2)}" )
+    TH05.runMe()
+    
+    def fH06():
+        A = pt.MatrixM(1,1,1).derivative()
+        B = pt.Product( [ A, A, A, A ] )
+        C = pt.Gamma( B, [ (0, 1), (2, 3), (3, 4), (5, 6) ] )
+        D = C.getIntegratedTensorElement( [((5,3),(2,4)), ((1,3),(2,4)), ((4,2),(2,3)), ((2,2),(2,3))] )
+        return str( D )
+    
+    TH06 = UnitTest( "TH06: Gamma, getIntegratedTensorElement(), Intermediate II", fH06, " {1 / 2}  {1 / 2}  {T_(5, 2)}  {T_(1, 2)}  {T_(4, 2)}  {T_(2, 2)}" )
+    TH06.runMe()
+    
+    def fH07():
+        A = pt.MatrixM(1,1,1).derivative()
+        B = pt.Product( [ A, A, A, A, A, A ] )
+        C = pt.Gamma( B, [ (0, 1), (2, 3), (3, 4), (5, 6), (7, 8), (9, 10) ] )
+        D = C.getIntegratedTensorElement( [((5,3),(2,4)), ((1,3),(2,4)), ((4,2),(2,3)), ((2,2),(2,3)), ((7,2),(2,3)), ((2,2),(2,3))] )
+        return str( D )
+    
+    TH07 = UnitTest( "TH07: Gamma, getIntegratedTensorElement(), Intermediate III", fH07, " {3 / 8}  {1 / 2}  {T_(5, 2)}  {T_(1, 2)}  {T_(4, 2)}  {T_(2, 2)}  {T_(7, 2)}  {T_(2, 2)}" )
+    TH07.runMe()
+    
     print "\n-------------------------------------------------"
     print "Tests PASSED: " + str( UnitTest.testsPassed ) + " , tests FAILED: " + str( UnitTest.testsFailed ) + "."
 executeAllUnitTests()

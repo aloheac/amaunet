@@ -22,7 +22,7 @@ NTAU = 2                    # Temporal volume of the system.
 MINIMAL_U_DISPLAY = False      # If true, the matrix U will be output using a shorthand notation.
 MINIMAL_M_DISPLAY = True       # If true, the matrix M will be output using a shorthand notation.
 MINIMAL_GAMMA_DISPLAY = False  # If true, Gamma expressions will be output using a shorthand notation.
-SPLIT_SUMS_BY_LINE = False      # If true, each term of a sum will be output on a separate late.
+SPLIT_SUMS_BY_LINE = False     # If true, each term of a sum will be output on a separate late.
 GC_COLLECT_INTERVAL = 1000     # Number of calls to memory-intensive functions before garbage
                                # collection is explicitly called.
 
@@ -58,7 +58,7 @@ The data structure for this matrix is optimized assuming that M is a sparse
 matrix. Only non-zero elements are stored in memory.
 """
 class MatrixM:
-    def __init__( self, Nx, Ntau, spatialDimension, isInteracting=True, flavorLabel="" ):
+    def __init__( self, Nx, Ntau, spatialDimension, isInteracting=True, flavorLabel="", constructMatrix=False ):
         # Dictionary that holds non-zero matrix elements. The key is given as a
         # two element tuple with temporal indices ( i, j ). The value may be any
         # valid expression.
@@ -87,25 +87,30 @@ class MatrixM:
         # String indicating a unique identifier for each particle flavor.
         self.flavorLabel = flavorLabel
         
+        # Boolean indicating if the matrix representation was explicitly
+        # constructed. For some steps of the calculation this is not
+        # necessary, so resource utilization is reduced somewhat.
+        self.matrixIsConstructed = constructMatrix
         
-        # Place identity elements along the matrix diagonal.
-        for i in range( 0, self.Ntau):
-            self.setElement(i, i, CoefficientFloat( 1.0 ) )
-            
-        # Place U matrices along lower triangular off diagonal, indexed
-        # explicitly by a temporal index. The spatial index is left
-        # unsummed, as denoted by the index "S$".
-        for i in range( 0, self.Ntau - 1 ):
-            self.setElement( i + 1, i, Product( [ CoefficientFloat( -1.0 ), MatrixU( "$",  i + 1, Nx, spatialDimension ) ] ) )
-            
-        # Place final U matrix at upper right hand corner element.
-        self.setElement( 0, self.Ntau - 1, MatrixU("$", self.Ntau, Nx, spatialDimension ) )
+        if constructMatrix:
+            # Place identity elements along the matrix diagonal.
+            for i in range( 0, self.Ntau):
+                self.setElement(i, i, CoefficientFloat( 1.0 ) )
+                
+            # Place U matrices along lower triangular off diagonal, indexed
+            # explicitly by a temporal index. The spatial index is left
+            # unsummed, as denoted by the index "S$".
+            for i in range( 0, self.Ntau - 1 ):
+                self.setElement( i + 1, i, Product( [ CoefficientFloat( -1.0 ), MatrixU( "$",  i + 1, Nx, spatialDimension ) ] ) )
+                
+            # Place final U matrix at upper right hand corner element.
+            self.setElement( 0, self.Ntau - 1, MatrixU("$", self.Ntau, Nx, spatialDimension ) )
         
     """
     Pretty prints string representation of this matrix.
     """   
     def __str__( self ):
-        if not MINIMAL_M_DISPLAY:
+        if not MINIMAL_M_DISPLAY and self.matrixIsConstructed:
             columnWidth = 60        
             elementValues = []
             s = ""
@@ -158,6 +163,9 @@ class MatrixM:
     @return: The expression of the matrix element at indices ( i, j ).
     """            
     def getElement( self, i, j ):
+        if not self.matrixIsConstructed:
+            raise PTSymbolicException( "getElement() was called on an instance of MatrixM whose matrix was not constructed." )
+        
         if ( i, j ) in self.elements:
             return self.elements[ ( i, j ) ]
         else:
@@ -170,6 +178,9 @@ class MatrixM:
     @param entry Expression of the matrix element to set.
     """
     def setElement(self, i, j, entry ):
+        if not self.matrixIsConstructed:
+            raise PTSymbolicException( "setElement() was called on an instance of MatrixM whose matrix was not constructed." )
+        
         self.elements[ ( i, j ) ] = entry
     
     """
@@ -178,10 +189,13 @@ class MatrixM:
     @return: The derivative of this matrix.
     """
     def derivative( self ):
-        D = MatrixM( self.Nx, self.Ntau, self.spatialDimension, self.isInteracting, self.flavorLabel )
-        for key in self.elements:
-            D.setElement( key[0], key[1], self.elements[ key ].derivative() )
-        D.simplify()
+        D = MatrixM( self.Nx, self.Ntau, self.spatialDimension, self.isInteracting, self.flavorLabel, self.matrixIsConstructed )
+        
+        if self.matrixIsConstructed:
+            for key in self.elements:
+                D.setElement( key[0], key[1], self.elements[ key ].derivative() )
+            D.simplify()
+            
         D.derivativeOrder = self.derivativeOrder + 1
         
         return D
@@ -190,8 +204,9 @@ class MatrixM:
     Mathematically simplifies the expressions for all matrix elements.
     """
     def simplify( self ):
-        for key in self.elements:
-            self.elements[ key ].simplify()
+        if self.matrixIsConstructed:
+            for key in self.elements:
+                self.elements[ key ].simplify()
             
     def setAsNoninteracting( self ):
         self.isInteracting = False
@@ -877,6 +892,13 @@ class IndexedProduct( Product ):
         self.terms.append( term )
         self.indices.append( index )
 
+class MatrixT:
+    def __init__( self, spatialIndices ):
+        self.spatialIndices = spatialIndices
+        
+    def __str__( self ):
+        return "T_" + str( self.spatialIndices )
+    
 """
 Representation of the mathematical Gamma object that appears in perturbation
 theory under the current context. Indices are managed separately by this object;
@@ -894,7 +916,11 @@ class Gamma:
     def __init__( self, expr, indices ):
         self.expr = expr  # A non-indexed Product.
         self.indices = indices
-        
+        self.uniqueIndices = []
+        self.integratedTensor = None  # Tensor must be constructed later with a
+                                      # call to constructIntegratedTensor().
+        self.gammaOrder = str( len( self.expr.terms) )
+              
     def __str__( self ):
         s = "Gamma<" + str( len( self.expr.terms ) ) + ">_" + self._getUniqueIndexStr()
         
@@ -904,27 +930,74 @@ class Gamma:
                 s += "{ " + str( self.expr.terms[ i ] ) + "_" + str( self.indices[ i ] ) + " }"
             s += " ]"
             
-        return s
+        return s  
     
     """
     Private helper method that generates a string of unique indices
     referenced in this object.
     """    
     def _getUniqueIndexStr( self ):
-        uniqueIndices = []
-        for index in self.indices:
-            if not index[0] in uniqueIndices:
-                uniqueIndices.append( index[0] )
-                
-            if not index[1] in uniqueIndices:
-                uniqueIndices.append( index[1] )
-                
+        self.updateUniqueIndices()
+        
         s = "( "
-        for index in uniqueIndices:
+        for index in self.uniqueIndices:
             s += str( index ) + " "
             
         return s + ")"
     
+    def updateUniqueIndices( self ):
+        for index in self.indices:
+            if not index[0] in self.uniqueIndices:
+                self.uniqueIndices.append( index[0] )
+                
+            if not index[1] in self.uniqueIndices:
+                self.uniqueIndices.append( index[1] )
+                
+    def getIntegratedTensorElement(self, elementIndices ):
+        # Check if element will be trivially non-zero from the known matrix
+        # structure of M. Mathematically equivalent to enforcing Kronocker
+        # deltas \sum_i \delta_{i_\tau, i_{\tau + 1}}. Checking for structure
+        # of temporal indices at this point only. Note that the index pair on
+        # each \frac{\partial M}{\partial A} term is a set of nested tuples,
+        # such that the particular indices are ordered by (spatial, temporal),
+        # e.g. ( (x1, t1), (x2, t2) ), where of course in practice xi and ti
+        # are integers that determine a tensor element.
+        for indexPair in elementIndices:
+            if not indexPair[1][1] - indexPair[0][1] == 1 :  # Remember, we are grabbing
+                return CoefficientFloat( 0.0 )                 # the temporal indices here.
+                    
+        # Perform path integral for contact interactions. Note that a pair of
+        # temporal indices must coincide for the term to be non-vanishing;
+        # since the interaction matrix is diagonal in coordinate space, the
+        # spatial components of both indices are implied as equal. Count the
+        # number of spacetime (x2 t2) indices that coincide:
+        spacetimeIndexCount = dict()
+        for indexPair in elementIndices:
+            if indexPair[1] in spacetimeIndexCount:
+                spacetimeIndexCount[ indexPair[1] ] += 1
+            else:
+                spacetimeIndexCount[ indexPair[1] ] = 1
+
+        # For each unique index, determine if the path integral of the
+        # corresponding power of sine vanishes or is non-trivial, and
+        # generate the appropriate expression.
+        integralResult = Product([])         
+        for spacetimeIndex in spacetimeIndexCount:
+            spacetimeCount = spacetimeIndexCount[ spacetimeIndex ]
+            if spacetimeCount % 2 == 1:  # If temporalCount is odd.
+                return CoefficientFloat( 0.0 )  # Integral vanishes.
+            else:
+                integralResult.addTerm(  SINE_PATH_INTEGRALS[ spacetimeCount ] )
+                
+        # If we haven't returned yet, the integral is non-vanishing, and we
+        # need to add the kinetic energy matrices which were implicitly
+        # factored out in the previous steps. The indicies of these matrices
+        # are given by the corresponding spatial components (e.g. (x1 x2)).
+        for indexPair in elementIndices:
+            integralResult.addTerm( MatrixT( (indexPair[0][0], indexPair[1][0]) ) )
+            
+        return integralResult
+          
     """
     Add a term to the product contained in this object.
     @param: term Term to add to the end of the product.
