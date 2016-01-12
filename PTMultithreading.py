@@ -54,7 +54,7 @@ def _paralleleval_getExpandedExpr( args ):
     expandedSum = pt.Sum([])
     if isinstance( product, pt.Product ):
         for term in sumOfProducts.terms:
-            if not isinstance( term, pt.Product ) or pt.getDualProductAOrder( product, term ) <= N_PROCS:
+            if not isinstance( term, pt.Product ) or pt.getDualProductAOrder( product, term ) <= 4:
                 expandedSum.addTerm( pt.Product( [product, term] ).getExpandedExpr() )
     else:
         for term in sumOfProducts.terms:

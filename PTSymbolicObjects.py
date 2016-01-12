@@ -11,6 +11,8 @@ University of North Carolina at Chapel Hill
 
 from copy import deepcopy
 import gc
+from itertools import combinations
+import scipy
 
 # Static variables that define the behavior of symbolic calculations, system parameters,
 # and output.
@@ -22,7 +24,7 @@ NTAU = 2                    # Temporal volume of the system.
 MINIMAL_U_DISPLAY = False      # If true, the matrix U will be output using a shorthand notation.
 MINIMAL_M_DISPLAY = True       # If true, the matrix M will be output using a shorthand notation.
 MINIMAL_GAMMA_DISPLAY = False  # If true, Gamma expressions will be output using a shorthand notation.
-SPLIT_SUMS_BY_LINE = False     # If true, each term of a sum will be output on a separate late.
+SPLIT_SUMS_BY_LINE = False    # If true, each term of a sum will be output on a separate late.
 GC_COLLECT_INTERVAL = 1000     # Number of calls to memory-intensive functions before garbage
                                # collection is explicitly called.
 
@@ -840,21 +842,29 @@ class Delta:
     Constructor for Delta.
     @param: indices Contracted indices for this Kronecker delta.
     """
-    def __init__( self, indices ):
+    def __init__( self, indices, isSpatial=True, isTemporal=False, isBar = False ):
         self.indices = indices
-        self.isBar = None
+        self.isBar = isBar
+        self.isSpatial = isSpatial
+        self.isTemporal = isTemporal
         
-        if len( indices ) <= 1:
-            raise PTSymbolicException( "Two or more indices must be specified in the constructor of Delta (" + str( len( indices ) ) + " was specified)." )
-        elif len( indices ) == 2:
-            self.isBar = False
-        else:
-            self.isBar = True
+        if not len( indices ) == 2:
+            raise PTSymbolicException( "Two indices must be specified in the constructor of Delta (" + str( len( indices ) ) + " was specified)." )
     
     def __str__( self ):
-        s = "Delta( "
-        for index in self.indices:
-            s += str( index ) + ", "
+        s = "Delta"
+        if self.isBar:
+            s += "Bar"
+        s += "<"
+        if self.isSpatial:
+            s += "X"
+        if self.isTemporal:
+            s+= "T"
+        
+        s +=">( "
+        for i in range( 0, len( self.indices ) - 1):
+            s += str( self.indices[i] ) + ", "
+        s += str( self.indices[-1] )
         s += " )"
         return s
             
@@ -892,12 +902,37 @@ class IndexedProduct( Product ):
         self.terms.append( term )
         self.indices.append( index )
 
-class MatrixT:
-    def __init__( self, spatialIndices ):
-        self.spatialIndices = spatialIndices
+class FourierSum:
+    def __init__( self, indices, gammaOrder ):
+        self.indices = indices
         
     def __str__( self ):
-        return "T_" + str( self.spatialIndices )
+        return "FourierSum<XT>" + str( self.indices )
+    
+    def getEvaluatedSum( self ):
+        def _singleTemporalOffset( i ):
+            omega = ( 2.0 * i + 1.0 ) * scipy.pi / float( NTAU )
+            return scipy.exp( complex( 0, omega ) )
+        
+        def _temporalOffsetFunc( indices ):
+            result = 1.0
+            for i in range( 0, len( indices ) ):
+                result *= _singleTemporalOffset( indices[ i ] )
+
+            return result
+            
+class MatrixT:
+    def __init__( self, spatialIndices, flavorLabel="" ):
+        self.spatialIndices = spatialIndices
+        self.flavorLabel = flavorLabel
+        
+    def __str__( self ):
+        s = "T"
+        
+        if not self.flavorLabel == "":
+            s += "_" + self.flavorLabel
+            
+        return s + "_" + str( self.spatialIndices )
     
 """
 Representation of the mathematical Gamma object that appears in perturbation
@@ -919,7 +954,7 @@ class Gamma:
         self.uniqueIndices = []
         self.integratedTensor = None  # Tensor must be constructed later with a
                                       # call to constructIntegratedTensor().
-        self.gammaOrder = str( len( self.expr.terms) )
+        self.gammaOrder = len( self.expr.terms )
               
     def __str__( self ):
         s = "Gamma<" + str( len( self.expr.terms ) ) + ">_" + self._getUniqueIndexStr()
@@ -953,7 +988,9 @@ class Gamma:
             if not index[1] in self.uniqueIndices:
                 self.uniqueIndices.append( index[1] )
                 
-    def getIntegratedTensorElement(self, elementIndices ):
+            self.gammaOrder = len( self.expr.terms )
+                
+    def getIntegratedTensorElement(self, elementIndices, provideSpatialDeltas=False ):
         # Check if element will be trivially non-zero from the known matrix
         # structure of M. Mathematically equivalent to enforcing Kronocker
         # deltas \sum_i \delta_{i_\tau, i_{\tau + 1}}. Checking for structure
@@ -965,39 +1002,75 @@ class Gamma:
         for indexPair in elementIndices:
             if not indexPair[1][1] - indexPair[0][1] == 1 :  # Remember, we are grabbing
                 return CoefficientFloat( 0.0 )                 # the temporal indices here.
+        
+        if not provideSpatialDeltas:            
+            # Perform path integral for contact interactions. Note that a pair of
+            # temporal indices must coincide for the term to be non-vanishing;
+            # since the interaction matrix is diagonal in coordinate space, the
+            # spatial components of both indices are implied as equal. Count the
+            # number of spacetime (x2 t2) indices that coincide:
+            spacetimeIndexCount = dict()
+            for indexPair in elementIndices:
+                if indexPair[1] in spacetimeIndexCount:
+                    spacetimeIndexCount[ indexPair[1] ] += 1
+                else:
+                    spacetimeIndexCount[ indexPair[1] ] = 1
+    
+            # For each unique index, determine if the path integral of the
+            # corresponding power of sine vanishes or is non-trivial, and
+            # generate the appropriate expression.
+            integralResult = Product([])         
+            for spacetimeIndex in spacetimeIndexCount:
+                spacetimeCount = spacetimeIndexCount[ spacetimeIndex ]
+                if spacetimeCount % 2 == 1:  # If temporalCount is odd.
+                    return CoefficientFloat( 0.0 )  # Integral vanishes.
+                else:
+                    integralResult.addTerm(  SINE_PATH_INTEGRALS[ spacetimeCount ] )
                     
-        # Perform path integral for contact interactions. Note that a pair of
-        # temporal indices must coincide for the term to be non-vanishing;
-        # since the interaction matrix is diagonal in coordinate space, the
-        # spatial components of both indices are implied as equal. Count the
-        # number of spacetime (x2 t2) indices that coincide:
-        spacetimeIndexCount = dict()
-        for indexPair in elementIndices:
-            if indexPair[1] in spacetimeIndexCount:
-                spacetimeIndexCount[ indexPair[1] ] += 1
-            else:
-                spacetimeIndexCount[ indexPair[1] ] = 1
-
-        # For each unique index, determine if the path integral of the
-        # corresponding power of sine vanishes or is non-trivial, and
-        # generate the appropriate expression.
-        integralResult = Product([])         
-        for spacetimeIndex in spacetimeIndexCount:
-            spacetimeCount = spacetimeIndexCount[ spacetimeIndex ]
-            if spacetimeCount % 2 == 1:  # If temporalCount is odd.
-                return CoefficientFloat( 0.0 )  # Integral vanishes.
-            else:
-                integralResult.addTerm(  SINE_PATH_INTEGRALS[ spacetimeCount ] )
+            # If we haven't returned yet, the integral is non-vanishing, and we
+            # need to add the kinetic energy matrices which were implicitly
+            # factored out in the previous steps. The indicies of these matrices
+            # are given by the corresponding spatial components (e.g. (x1 x2)).
+            for indexPair in elementIndices:
+                integralResult.addTerm( MatrixT( (indexPair[0][0], indexPair[1][0]) ) )
                 
-        # If we haven't returned yet, the integral is non-vanishing, and we
-        # need to add the kinetic energy matrices which were implicitly
-        # factored out in the previous steps. The indicies of these matrices
-        # are given by the corresponding spatial components (e.g. (x1 x2)).
-        for indexPair in elementIndices:
-            integralResult.addTerm( MatrixT( (indexPair[0][0], indexPair[1][0]) ) )
-            
-        return integralResult
-          
+            return integralResult
+        
+        else:
+            # See the general comments above -- they apply to this case also. In this
+            # case, however, we allow a non-zero result to be returned in the case of
+            # differing spatial indices, and add corresponding delta functions to the
+            # returned result.
+            temporalIndexCount = dict()
+            matchingIndexPairs = dict()  # Create a dictionary of indices whose temporal
+                                         # components match -- this will be used to construct
+                                         # delta functions later.
+            for indexPair in elementIndices:
+                if indexPair[1][1] in temporalIndexCount:
+                    temporalIndexCount[ indexPair[1][1] ] += 1
+                    matchingIndexPairs[ indexPair[1][1] ].append( indexPair[1] )
+                else:
+                    temporalIndexCount[ indexPair[1][1] ] = 1
+                    matchingIndexPairs[ indexPair[1][1] ] = [ indexPair[1] ]
+                    
+            integralResult = Product([])
+            for temporalIndex in temporalIndexCount:
+                temporalCount = temporalIndexCount[ temporalIndex ]
+                if temporalCount % 2 == 1:
+                    return CoefficientFloat( 0.0 )
+                else:
+                    integralResult.addTerm( SINE_PATH_INTEGRALS[ temporalCount ] )
+                    
+            for indexPair in elementIndices:
+                integralResult.addTerm( MatrixT( (indexPair[0][0], indexPair[1][0]) ) )
+                
+            for temporalIndex in matchingIndexPairs:
+                matchingIndices = matchingIndexPairs[ temporalIndex ]
+                for i in range( 0, len( matchingIndices ) - 1 ):
+                    integralResult.addTerm( Delta( (matchingIndices[i][0], matchingIndices[i + 1][0]) ) )
+                    
+            return integralResult
+  
     """
     Add a term to the product contained in this object.
     @param: term Term to add to the end of the product.
@@ -1007,6 +1080,44 @@ class Gamma:
         self.expr.addTerm( term )
         self.indices.append( index )
     
+    def getFourierTransform( self ):
+        self.gammaOrder = len( self.indices )
+        
+        integralResult = Product([])
+        
+        # Add kinetic energy matrices to the integral result. Since the
+        # operator is diagonal in momentum space we will "take the Fourier
+        # transform" simply by contracting the two spatial indices, such that
+        # a single sum over all momenta remain. Be sure to carry along the
+        # proper flavor label.
+        for i in range( 0, len( self.indices ) ):
+            integralResult.addTerm( MatrixT( (self.indices[i][0],), self.expr.terms[i].flavorLabel ) )
+
+        # Get the path integral over the sines resulting from the form of the
+        # contact interaction. Expand the expression.
+        pathIntegral = generateCoordinateSpacePathIntegral( self.gammaOrder )
+        pathIntegral = pathIntegral.getExpandedExpr()
+        pathIntegral.reduceTree()
+        pathIntegral.reduceTree()
+        contractedSum = Sum([])
+        for term in pathIntegral.terms:
+            contractedTerm = Product([])
+            activeIndices = range( 0, self.gammaOrder * 2 )
+            for factor in term.terms:
+                if isinstance( factor, Delta ):
+                    for i in range( 0, len( activeIndices ) ):
+                        if activeIndices[i] == factor.indices[0]:
+                            activeIndices[i] = factor.indices[1] 
+                    #activeIndices.remove( factor.indices[0] )
+                else:
+                    contractedTerm.addTerm( factor )
+                    
+            contractedTerm.addTerm( FourierSum( activeIndices, self.gammaOrder ) )
+            contractedSum.addTerm( contractedTerm )
+            
+        integralResult.addTerm( contractedSum )
+        return integralResult
+        
 # ****************************************************************************
 #   PRIVATE BASIC HELPER AND EXPRESSION MANIPULATION FUNCTIONS
 # ****************************************************************************
@@ -1425,16 +1536,112 @@ SINE_PATH_INTEGRALS = { 1: CoefficientFloat( 0 ), 2: CoefficientFraction( 1, 2 )
 # expansions at arbitrary orders; although at that point you have much bigger
 # problems to worry about.
 TAYLORS_SERIES_COEFFICIENTS = { 0: CoefficientFloat( 1.0 ), 1: CoefficientFloat( 1.0 ), 2: CoefficientFraction( 1, 2 ), 3: CoefficientFraction( 1, 6 ), 4: CoefficientFraction( 1, 24 ), 5: CoefficientFraction( 1, 120 ), 6: CoefficientFraction( 1, 720 ), 7: CoefficientFraction( 1, 5040 ), 8: CoefficientFraction( 1, 40320 ), 9: CoefficientFraction( 1, 362880 ), 10: CoefficientFraction( 1, 3628800 ) }
-               
+
 # ****************************************************************************
-#   INTEGRATION ROUTINE HELPER FUNCTIONS
+#   INTEGRATION ROUTINE HELPER FUNCTIONS FOR CONTACT INTERACTIONS
 # ****************************************************************************
 
+def getDeltaSignature( contraction ):
+    deltas = []
+    deltaBars = []
+    nextDeltaIndex = 0
+    for i in range( 0, len( contraction ) ):
+        for j in range( nextDeltaIndex, nextDeltaIndex + contraction[i] - 1 ):
+            deltas.append( (j, j + 1) )
+        nextDeltaIndex += 2
+        
+        if not i == len( contraction ) - 1:
+            deltaBars.append( (j + 1, j + 2) )
+        
+    return [ deltas, deltaBars ]
+
+def getIndexPermutations( signature, n ):
+    if len( signature ) == 0:
+        raise PTSymbolicException( "Signature length must be greater then zero." )
+    
+    indexPermutations = []
+    for c in combinations( range( 0, n ), len( signature[1] ) * 2  ):
+        newPermutation = [ -1 for i in range( 0, n ) ]
+        deltaBarPositions = []
+        i = 0
+        for deltaBarIndices in signature[1]:
+            newPermutation[ deltaBarIndices[0] ] = c[i]
+            newPermutation[ deltaBarIndices[1] ] = c[i + 1]
+            deltaBarPositions.append( deltaBarIndices[0] )
+            deltaBarPositions.append( deltaBarIndices[1] )
+            i += 2
+            
+        j = 0
+        for i in range( 0, n ):
+            if not i in deltaBarPositions:
+                while j in newPermutation:
+                    j += 1
+                newPermutation[i] = j
+        
+        if newPermutation[0] < newPermutation[1]:        
+            indexPermutations.append( newPermutation )
+        
+    return indexPermutations
+    
 def calculateAllContractions( n ):
-    if not n % 2:
-        raise PTSymbolicException( "Parameter 'n' (index vector dimension) must be an even integer." )
+    if not n % 2 == 0 or n <= 0:
+        raise PTSymbolicException( "Parameter 'n' (index vector dimension) must be an even, positive, non-zero integer." )
     
+    if n == 2:
+        return [ (2,) ]
+    else:
+        listOfContractions = [ (n,) ]
+        subContractions = calculateAllContractions( n - 2 )
+        
+        for contraction in subContractions:
+            listOfContractions.append( (2,) + contraction )
+            
+        return listOfContractions
+            
+def generateCoordinateSpacePathIntegral( n ):
+    listOfContractions = calculateAllContractions( n )
     
-
-
+    integralResult = Sum([])
+    for contraction in listOfContractions:
+        integralResultTerm = Product([])
+        
+        # Append numerical coefficients that result from the one-dimensional
+        # integral of powers of sine.
+        for numberOfMatchingSigmas in contraction:
+            integralResultTerm.addTerm( SINE_PATH_INTEGRALS[ numberOfMatchingSigmas ] )
+        
+        # Generate the sum of delta functions taking into account all applicable
+        # permutations of indices.        
+        deltaSum = Sum([])
+        signature = getDeltaSignature( contraction )
+        for p in getIndexPermutations( signature, n ):
+            deltaProduct = Product([])
+            
+            # Add delta functions to the next product.
+            for deltaIndices in signature[0]:
+                deltaProduct.addTerm( Delta( ( p[ deltaIndices[0] ], p[ deltaIndices[1] ]), True, True ) )
                 
+            # Add delta bar functions to the next product.
+            for deltaBarIndices in signature[1]:
+                deltaProduct.addTerm( Delta( ( p[ deltaBarIndices[0] ], p[ deltaBarIndices[1]] ), True, True, True ) )
+                
+            deltaSum.addTerm( deltaProduct )
+        
+        integralResultTerm.addTerm( deltaSum )
+        integralResult.addTerm( integralResultTerm )
+    
+    return integralResult
+        
+def fourierTransformExpr( expr ):
+    if not isinstance( expr, Sum ):
+        raise PTSymbolicException( "Expression passed to fourierTransformExpr() must be an instance of a fully-distributed Sum." )
+    
+    for term in expr.terms:
+        for i in range( 0, len( term.terms ) ):
+            if isinstance( term.terms[i], Gamma ):
+                term.terms[i] = term.terms[i].getFourierTransform()
+                
+    return expr
+            
+        
+    

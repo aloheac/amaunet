@@ -182,6 +182,13 @@ def executeAllUnitTests():
     TA12 = UnitTest( "TA12: Sum derivative(), reduceTree(), simplify()", fA12, " {GT1_d3}  {GT2_d0} +  {GT1_d2}  {GT2_d1} +  {GT1_d2}  {GT2_d1} +  {GT1_d1}  {GT2_d2} +  {GT1_d2}  {GT2_d1} +  {GT1_d1}  {GT2_d2} +  {GT1_d1}  {GT2_d2} +  {GT1_d0}  {GT2_d3} +  {GT3_d3}  {GT4_d0} +  {GT3_d2}  {GT4_d1} +  {GT3_d2}  {GT4_d1} +  {GT3_d1}  {GT4_d2} +  {GT3_d2}  {GT4_d1} +  {GT3_d1}  {GT4_d2} +  {GT3_d1}  {GT4_d2} +  {GT3_d0}  {GT4_d3}" )
     TA12.runMe()
     
+    def fA13():
+        A = pt.Product( [ GenericTestTerm(1,0), GenericTestTerm(2,0), GenericTestTerm(3,0) ] )
+        return str( A )
+    
+    TA13 = UnitTest( "TA13: Product, Basic Construction", fA13, " {GT1_d0}  {GT2_d0}  {GT3_d0}" )
+    TA13.runMe()
+    
     def fB01():
         A = pt.Product( [ pt.TermA(), pt.Trace( pt.Sum( [ GenericTestTerm(1,0), GenericTestTerm(2,0) ] ) ) ] )
         B = pt.distributeAllTraces( A )
@@ -216,7 +223,6 @@ def executeAllUnitTests():
     
     def fB05():
         A = pt.Product( [ pt.Trace( pt.Product( [ pt.CoefficientFloat( -1.0 ), pt.Product( [ pt.MatrixM( 1, 1, 1 ), pt.MatrixM( 1, 1, 1 ) ] ) ] ) ), pt.Trace( pt.Product( [ pt.CoefficientFloat( -3.0 ), pt.Product( [ pt.MatrixM( 1, 1, 1 ), pt.MatrixM( 1, 1, 1 ) ] ) ] ) ) ] )
-        print str(A)
         B = pt.distributeAllTraces( A )
         return str( B )
     
@@ -225,7 +231,6 @@ def executeAllUnitTests():
     
     def fB06():
         A = pt.Sum( [ pt.Trace( pt.Product( [ pt.CoefficientFloat( -1.0 ), pt.Product( [ pt.MatrixM( 1, 1, 1 ), pt.MatrixM( 1, 1, 1 ) ] ) ] ) ), pt.Trace( pt.Product( [ pt.CoefficientFloat( -3.0 ), pt.Product( [ pt.MatrixM( 1, 1, 1 ), pt.MatrixM( 1, 1, 1 ) ] ) ] ) ) ] )
-        print str(A)
         B = pt.distributeAllTraces( A )
         return str( B )
     
@@ -522,6 +527,186 @@ def executeAllUnitTests():
     
     TH07 = UnitTest( "TH07: Gamma, getIntegratedTensorElement(), Intermediate III", fH07, " {3 / 8}  {1 / 2}  {T_(5, 2)}  {T_(1, 2)}  {T_(4, 2)}  {T_(2, 2)}  {T_(7, 2)}  {T_(2, 2)}" )
     TH07.runMe()
+    
+    def fH08():
+        A = pt.MatrixM(1,1,1).derivative()
+        B = pt.Product( [ A, A ] )
+        C = pt.Gamma( B, [ (0, 1), (2, 3) ] )
+        D = C.getIntegratedTensorElement( [((5,3),(1,4)), ((1,3),(2,4))], True )
+        return str( D )
+    
+    TH08 = UnitTest( "TH08: Gamma, getIntegratedTensorElement(), Delta I", fH08, " {1 / 2}  {T_(5, 1)}  {T_(1, 2)}  {Delta<X>( 1, 2 )}" )
+    TH08.runMe()
+    
+    def fH09():
+        A = pt.MatrixM(1,1,1).derivative()
+        B = pt.Product( [ A, A, A, A ] )
+        C = pt.Gamma( B, [ (0, 1), (2, 3), (4, 5), (6, 7) ] )
+        D = C.getIntegratedTensorElement( [((5,3),(1,4)), ((1,3),(2,4)), ((5,3),(5,4)), ((1,3),(8,4))], True )
+        return str( D )
+    
+    TH09 = UnitTest( "TH09: Gamma, getIntegratedTensorElement(), Delta II", fH09, " {3 / 8}  {T_(5, 1)}  {T_(1, 2)}  {T_(5, 5)}  {T_(1, 8)}  {Delta<X>( 1, 2 )}  {Delta<X>( 2, 5 )}  {Delta<X>( 5, 8 )}" )
+    TH09.runMe()
+    
+    def fH10():
+        A = pt.MatrixM(1,1,1).derivative()
+        B = pt.Product( [ A, A, A, A ] )
+        C = pt.Gamma( B, [ (0, 1), (2, 3), (4, 5), (6, 7) ] )
+        D = C.getIntegratedTensorElement( [((5,5),(1,6)), ((1,5),(2,6)), ((5,3),(5,4)), ((1,3),(8,4))], True )
+        return str( D )
+    
+    TH10 = UnitTest( "TH10: Gamma, getIntegratedTensorElement(), Delta III", fH10, " {1 / 2}  {1 / 2}  {T_(5, 1)}  {T_(1, 2)}  {T_(5, 5)}  {T_(1, 8)}  {Delta<X>( 5, 8 )}  {Delta<X>( 1, 2 )}" )
+    TH10.runMe()
+    
+    def fH11():
+        A = pt.MatrixM(1,1,1).derivative()
+        B = pt.Product( [ A, A, A, A ] )
+        C = pt.Gamma( B, [ (0, 1), (2, 3), (4, 5), (6, 7) ] )
+        D = C.getIntegratedTensorElement( [((5,5),(1,7)), ((1,5),(2,6)), ((5,3),(5,4)), ((1,3),(8,4))], True )
+        return str( D )
+    
+    TH11 = UnitTest( "TH11: Gamma, getIntegratedTensorElement(), Delta IV", fH11, "0.0" )
+    TH11.runMe()
+    
+    def fH12():
+        A = pt.MatrixM(1,1,1).derivative()
+        B = pt.Product( [ A, A, A, A ] )
+        C = pt.Gamma( B, [ (0, 1), (2, 3), (4, 5), (6, 7) ] )
+        D = C.getIntegratedTensorElement( [((5,5),(1,6)), ((1,5),(2,6)), ((5,5),(5,6)), ((1,3),(8,4))], True )
+        return str( D )
+    
+    TH12 = UnitTest( "TH12: Gamma, getIntegratedTensorElement(), Delta V", fH12, "0.0" )
+    TH12.runMe()
+    
+    def tI01():
+        A = pt.calculateAllContractions( 2 )
+        return str( A )
+    
+    TI01 = UnitTest( "TI01: calculateAllContractions(), n = 2", tI01, "[(2,)]" )
+    TI01.runMe()
+    
+    def tI02():
+        A = pt.calculateAllContractions( 4 )
+        return str( A )
+    
+    TI02 = UnitTest( "TI02: calculateAllContractions(), n = 4", tI02, "[(4,), (2, 2)]" )
+    TI02.runMe()
+    
+    def tI03():
+        A = pt.calculateAllContractions( 6 )
+        return str( A )
+    
+    TI03 = UnitTest( "TI03: calculateAllContractions(), n = 6", tI03, "[(6,), (2, 4), (2, 2, 2)]" )
+    TI03.runMe()
+    
+    def tI04():
+        A = pt.calculateAllContractions( 8 )
+        return str( A )
+    
+    TI04 = UnitTest( "TI04: calculateAllContractions(), n = 8", tI04, "[(8,), (2, 6), (2, 2, 4), (2, 2, 2, 2)]" )
+    TI04.runMe()
+    
+    def tI05():
+        A = pt.calculateAllContractions( 10 )
+        return str( A )
+    
+    TI05 = UnitTest( "TI05: calculateAllContractions(), n = 10", tI05, "[(10,), (2, 8), (2, 2, 6), (2, 2, 2, 4), (2, 2, 2, 2, 2)]" )
+    TI05.runMe()
+
+    def tI06():
+        A = pt.getDeltaSignature( (2,) )
+        return str( A )
+    
+    TI06 = UnitTest( "TI06: getDeltaSignature() I", tI06, "[[(0, 1)], []]" )
+    TI06.runMe()
+    
+    def tI07():
+        A = pt.getDeltaSignature( (4,) )
+        return str( A )
+    
+    TI07 = UnitTest( "TI07: getDeltaSignature() II", tI07, "[[(0, 1), (1, 2), (2, 3)], []]" )
+    TI07.runMe()
+    
+    def tI08():
+        A = pt.getDeltaSignature( (2,2) )
+        return str( A )
+    
+    TI08 = UnitTest( "TI08: getDeltaSignature() III", tI08, "[[(0, 1), (2, 3)], [(1, 2)]]" )
+    TI08.runMe()
+    
+    def tI09():
+        A = pt.getDeltaSignature( (6,) )
+        return str( A )
+    
+    TI09 = UnitTest( "TI09: getDeltaSignature() IV", tI09, "[[(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)], []]" )
+    TI09.runMe()
+    
+    def tI10():
+        A = pt.getDeltaSignature( (4,2) )
+        return str( A )
+    
+    TI10 = UnitTest( "TI10: getDeltaSignature() V", tI10, "[[(0, 1), (1, 2), (2, 3), (2, 3)], [(3, 4)]]" )
+    TI10.runMe()
+    
+    def tI11():
+        A = pt.getDeltaSignature( (2,2,2) )
+        return str( A )
+    
+    TI11 = UnitTest( "TI11: getDeltaSignature() VI", tI11, "[[(0, 1), (2, 3), (4, 5)], [(1, 2), (3, 4)]]" )
+    TI11.runMe()
+    
+    def tI12():
+        A = pt.generateCoordinateSpacePathIntegral( 2 )
+        return str( A )
+     
+    TI12 = UnitTest( "TI12: generateCoordinateSpacePathIntegral(), n = 2", tI12, " {1 / 2}  { {Delta<XT>( 0, 1 )}}" )
+    TI12.runMe()
+    
+    def tI13():
+        A = pt.generateCoordinateSpacePathIntegral( 4 )
+        return str( A )
+     
+    TI13 = UnitTest( "TI13: generateCoordinateSpacePathIntegral(), n = 4", tI13, " {3 / 8}  { {Delta<XT>( 0, 1 )}  {Delta<XT>( 1, 2 )}  {Delta<XT>( 2, 3 )}} +  {1 / 2}  {1 / 2}  { {Delta<XT>( 0, 1 )}  {Delta<XT>( 2, 3 )}  {DeltaBar<XT>( 1, 2 )} +  {Delta<XT>( 0, 1 )}  {Delta<XT>( 3, 2 )}  {DeltaBar<XT>( 1, 3 )} +  {Delta<XT>( 0, 2 )}  {Delta<XT>( 3, 1 )}  {DeltaBar<XT>( 2, 3 )}}" )
+    TI13.runMe()
+    
+    def tI14():
+        A = pt.generateCoordinateSpacePathIntegral( 6 )
+        return str( A )
+     
+    TI14 = UnitTest( "TI14: generateCoordinateSpacePathIntegral(), n = 6", tI14, " {5 / 16}  { {Delta<XT>( 0, 1 )}  {Delta<XT>( 1, 2 )}  {Delta<XT>( 2, 3 )}  {Delta<XT>( 3, 4 )}  {Delta<XT>( 4, 5 )}} +  {1 / 2}  {3 / 8}  { {Delta<XT>( 0, 1 )}  {Delta<XT>( 2, 3 )}  {Delta<XT>( 3, 4 )}  {Delta<XT>( 4, 5 )}  {DeltaBar<XT>( 1, 2 )} +  {Delta<XT>( 0, 1 )}  {Delta<XT>( 3, 2 )}  {Delta<XT>( 2, 4 )}  {Delta<XT>( 4, 5 )}  {DeltaBar<XT>( 1, 3 )} +  {Delta<XT>( 0, 1 )}  {Delta<XT>( 4, 2 )}  {Delta<XT>( 2, 3 )}  {Delta<XT>( 3, 5 )}  {DeltaBar<XT>( 1, 4 )} +  {Delta<XT>( 0, 1 )}  {Delta<XT>( 5, 2 )}  {Delta<XT>( 2, 3 )}  {Delta<XT>( 3, 4 )}  {DeltaBar<XT>( 1, 5 )} +  {Delta<XT>( 0, 2 )}  {Delta<XT>( 3, 1 )}  {Delta<XT>( 1, 4 )}  {Delta<XT>( 4, 5 )}  {DeltaBar<XT>( 2, 3 )} +  {Delta<XT>( 0, 2 )}  {Delta<XT>( 4, 1 )}  {Delta<XT>( 1, 3 )}  {Delta<XT>( 3, 5 )}  {DeltaBar<XT>( 2, 4 )} +  {Delta<XT>( 0, 2 )}  {Delta<XT>( 5, 1 )}  {Delta<XT>( 1, 3 )}  {Delta<XT>( 3, 4 )}  {DeltaBar<XT>( 2, 5 )} +  {Delta<XT>( 0, 3 )}  {Delta<XT>( 4, 1 )}  {Delta<XT>( 1, 2 )}  {Delta<XT>( 2, 5 )}  {DeltaBar<XT>( 3, 4 )} +  {Delta<XT>( 0, 3 )}  {Delta<XT>( 5, 1 )}  {Delta<XT>( 1, 2 )}  {Delta<XT>( 2, 4 )}  {DeltaBar<XT>( 3, 5 )} +  {Delta<XT>( 0, 4 )}  {Delta<XT>( 5, 1 )}  {Delta<XT>( 1, 2 )}  {Delta<XT>( 2, 3 )}  {DeltaBar<XT>( 4, 5 )}} +  {1 / 2}  {1 / 2}  {1 / 2}  { {Delta<XT>( 0, 1 )}  {Delta<XT>( 2, 3 )}  {Delta<XT>( 4, 5 )}  {DeltaBar<XT>( 1, 2 )}  {DeltaBar<XT>( 3, 4 )} +  {Delta<XT>( 0, 1 )}  {Delta<XT>( 2, 3 )}  {Delta<XT>( 5, 4 )}  {DeltaBar<XT>( 1, 2 )}  {DeltaBar<XT>( 3, 5 )} +  {Delta<XT>( 0, 1 )}  {Delta<XT>( 2, 4 )}  {Delta<XT>( 5, 3 )}  {DeltaBar<XT>( 1, 2 )}  {DeltaBar<XT>( 4, 5 )} +  {Delta<XT>( 0, 1 )}  {Delta<XT>( 3, 4 )}  {Delta<XT>( 5, 2 )}  {DeltaBar<XT>( 1, 3 )}  {DeltaBar<XT>( 4, 5 )} +  {Delta<XT>( 0, 2 )}  {Delta<XT>( 3, 4 )}  {Delta<XT>( 5, 1 )}  {DeltaBar<XT>( 2, 3 )}  {DeltaBar<XT>( 4, 5 )}}" )
+    TI14.runMe()
+     
+    def tI15():
+        A = pt.getDeltaSignature( (2,) )
+        B = pt.getIndexPermutations( A , 2 )
+        return str( B )
+     
+    TI15 = UnitTest( "TI15: getIndexPermutations() I", tI15, "[[0, 1]]" )
+    TI15.runMe()
+     
+    def tI16():
+        A = pt.getDeltaSignature( (2,2) )
+        B = pt.getIndexPermutations( A , 4 )
+        return str( B )
+     
+    TI16 = UnitTest( "TI16: getIndexPermutations() II", tI16, "[[0, 1, 2, 3], [0, 1, 3, 2], [0, 2, 3, 1]]" )
+    TI16.runMe()
+    
+    def tI17():
+        A = pt.getDeltaSignature( (4,2) )
+        B = pt.getIndexPermutations( A , 6 )
+        return str( B )
+     
+    TI17 = UnitTest( "TI17: getIndexPermutations() III", tI17, "[[2, 3, 4, 0, 1, 5], [1, 3, 4, 0, 2, 5], [1, 2, 4, 0, 3, 5], [1, 2, 3, 0, 4, 5], [1, 2, 3, 0, 5, 4], [0, 3, 4, 1, 2, 5], [0, 2, 4, 1, 3, 5], [0, 2, 3, 1, 4, 5], [0, 2, 3, 1, 5, 4], [0, 1, 4, 2, 3, 5], [0, 1, 3, 2, 4, 5], [0, 1, 3, 2, 5, 4], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 5, 4], [0, 1, 2, 4, 5, 3]]" )
+    TI17.runMe()
+    
+    def tI18():
+        A = pt.getDeltaSignature( (2,2,2) )
+        B = pt.getIndexPermutations( A , 6 )
+        return str( B )
+     
+    TI18 = UnitTest( "TI18: getIndexPermutations() II", tI18, "[[0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 5, 4], [0, 1, 2, 4, 5, 3], [0, 1, 3, 4, 5, 2], [0, 2, 3, 4, 5, 1]]" )
+    TI18.runMe()
     
     print "\n-------------------------------------------------"
     print "Tests PASSED: " + str( UnitTest.testsPassed ) + " , tests FAILED: " + str( UnitTest.testsFailed ) + "."
