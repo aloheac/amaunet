@@ -1,5 +1,6 @@
 """
-Amaunet - High-order Perturbation Theory Expansion for Interacting Quantum Matter
+Amaunet - High-order Lattice Perturbation Theory Expansion 
+          for Interacting Quantum Matter
 Weak-coupling Expansion for Fermionic Systems with Contact Interactions
 
 Classes and Methods for Symbolic Perturbation Theory Manipulation
@@ -12,25 +13,21 @@ University of North Carolina at Chapel Hill
 from copy import deepcopy
 import gc
 from itertools import combinations
-import scipy
 
 # Static variables that define the behavior of symbolic calculations, system parameters,
 # and output.
-global NX, NTAU, MINIMAL_U_DISPLAY, MINIMAL_M_DISPLAY, MINIMAL_GAMMA_DISPLAY, GC_COLLECT_INTERVAL, num_memory_intensive_calls
+global NX, NTAU, GC_COLLECT_INTERVAL, num_memory_intensive_calls
 
 NX = 2                      # Spatial volume of the system.
 NTAU = 2                    # Temporal volume of the system.
 
-MINIMAL_U_DISPLAY = False      # If true, the matrix U will be output using a shorthand notation.
-MINIMAL_M_DISPLAY = True       # If true, the matrix M will be output using a shorthand notation.
-MINIMAL_GAMMA_DISPLAY = False  # If true, Gamma expressions will be output using a shorthand notation.
-SPLIT_SUMS_BY_LINE = False    # If true, each term of a sum will be output on a separate late.
-GC_COLLECT_INTERVAL = 1000     # Number of calls to memory-intensive functions before garbage
-                               # collection is explicitly called.
+SPLIT_SUMS_BY_LINE = True   # If true, each term of a sum will be output on a separate late.
+GC_COLLECT_INTERVAL = 5000   # Number of calls to memory-intensive functions before garbage
+                             # collection is explicitly called.
 
 num_memory_intensive_calls = 0  # Local global copy for each process. Tracks the number of calls to
                                 # memory intensive functions.
-
+                                
 # ****************************************************************************
 #   EXCEPTION CLASSES
 # ****************************************************************************
@@ -46,11 +43,10 @@ class PTSymbolicException(Exception):
     """
     def __init__(self, value):
         self.value = value
-
+        
 # ****************************************************************************
 #   SCALAR AND MATRIX/TENSOR TERM CLASSES
 # ****************************************************************************
-
 """
 Representation of the matrix M in the defined perturbation theory language.
 Elements are in a basis such that they are indexed by two coupled (in space
@@ -60,24 +56,7 @@ The data structure for this matrix is optimized assuming that M is a sparse
 matrix. Only non-zero elements are stored in memory.
 """
 class MatrixM:
-    def __init__( self, Nx, Ntau, spatialDimension, isInteracting=True, flavorLabel="", constructMatrix=False ):
-        # Dictionary that holds non-zero matrix elements. The key is given as a
-        # two element tuple with temporal indices ( i, j ). The value may be any
-        # valid expression.
-        self.elements = dict()
-        
-        # Spatial length independent of the volume. Note that the spatial
-        # dimension is specified separately; Nx**spatialDimension gives
-        # the total spatial volume. Must be an int.
-        self.Nx = Nx
-        
-        # Temporal volume. Must be an int.
-        self.Ntau = Ntau
-        
-        # Spatial dimension; Nx**spatialDimension gives the total spatial volume.
-        # Must be an int.
-        self.spatialDimension = spatialDimension
-
+    def __init__( self, isInteracting=True, flavorLabel="" ):
         # Order of the derivative with respect to A for this instance of the matrix.
         # Must be an int.
         self.derivativeOrder = 0
@@ -89,101 +68,51 @@ class MatrixM:
         # String indicating a unique identifier for each particle flavor.
         self.flavorLabel = flavorLabel
         
-        # Boolean indicating if the matrix representation was explicitly
-        # constructed. For some steps of the calculation this is not
-        # necessary, so resource utilization is reduced somewhat.
-        self.matrixIsConstructed = constructMatrix
-        
-        if constructMatrix:
-            # Place identity elements along the matrix diagonal.
-            for i in range( 0, self.Ntau):
-                self.setElement(i, i, CoefficientFloat( 1.0 ) )
-                
-            # Place U matrices along lower triangular off diagonal, indexed
-            # explicitly by a temporal index. The spatial index is left
-            # unsummed, as denoted by the index "S$".
-            for i in range( 0, self.Ntau - 1 ):
-                self.setElement( i + 1, i, Product( [ CoefficientFloat( -1.0 ), MatrixU( "$",  i + 1, Nx, spatialDimension ) ] ) )
-                
-            # Place final U matrix at upper right hand corner element.
-            self.setElement( 0, self.Ntau - 1, MatrixU("$", self.Ntau, Nx, spatialDimension ) )
         
     """
     Pretty prints string representation of this matrix.
     """   
     def __str__( self ):
-        if not MINIMAL_M_DISPLAY and self.matrixIsConstructed:
-            columnWidth = 60        
-            elementValues = []
-            s = ""
-            for i in range( 0, self.Ntau ):
-                for j in range( 0, self.Ntau ):
-                    s += "{:>" + str( columnWidth ) + "}"
-                    if ( i, j ) in self.elements:
-                        elementValues.append( str( self.elements[ ( i, j ) ] ) )   
-                    else:
-                        elementValues.append( '0.0' )
-                    s += '\t'
-                s += '\n'
-            
-            return s.format( *elementValues )
-        else:
-            if self.flavorLabel == "":
-                if self.isInteracting:
-                    if self.derivativeOrder == 0:
-                        return "M"
-                    elif self.derivativeOrder == 1:
-                        return "dM / dA"
-                    else:
-                        #return "d^" + str( self.derivativeOrder ) + " M / dA^" + str( self.derivativeOrder )
-                        return "0.0"
+        if self.flavorLabel == "":
+            if self.isInteracting:
+                if self.derivativeOrder == 0:
+                    return "M"
+                elif self.derivativeOrder == 1:
+                    return "dM / dA"
                 else:
-                    if self.derivativeOrder == 0:
-                        return "M0_" + str( self.flavorLabel )
-                    else:
-                        return "dM0 / dA"
+                    #return "d^" + str( self.derivativeOrder ) + " M / dA^" + str( self.derivativeOrder )
+                    return "0.0"
             else:
-                if self.isInteracting:
-                    if self.derivativeOrder == 0:
-                        return "M_" + str( self.flavorLabel )
-                    elif self.derivativeOrder == 1:
-                        return "dM_" + str( self.flavorLabel ) + " / dA"
-                    else:
-                        #return "d^" + str( self.derivativeOrder ) + " M_" + str( self.flavorLabel ) + " / dA^" + str( self.derivativeOrder )
-                        return "0.0"
+                if self.derivativeOrder == 0:
+                    return "M0"
                 else:
-                    if self.derivativeOrder == 0:
-                        return "M0_" + str( self.flavorLabel )
-                    else:
-                        return "dM0_" + str( self.flavorLabel ) + " / dA" 
-    
-    """
-    Gets the matrix elements at temporal indices ( i, j ). Returns zero if the
-    indices are not found in the internal dictionary.
-    @param: i First temporal index (row) of the matrix element.
-    @param: j Second temporal index (column) of the matrix element.
-    @return: The expression of the matrix element at indices ( i, j ).
-    """            
-    def getElement( self, i, j ):
-        if not self.matrixIsConstructed:
-            raise PTSymbolicException( "getElement() was called on an instance of MatrixM whose matrix was not constructed." )
-        
-        if ( i, j ) in self.elements:
-            return self.elements[ ( i, j ) ]
+                    return "dM0 / dA"
         else:
-            return CoefficientFloat( 0.0 )
+            if self.isInteracting:
+                if self.derivativeOrder == 0:
+                    return "M_" + str( self.flavorLabel )
+                elif self.derivativeOrder == 1:
+                    return "dM_" + str( self.flavorLabel ) + " / dA"
+                else:
+                    #return "d^" + str( self.derivativeOrder ) + " M_" + str( self.flavorLabel ) + " / dA^" + str( self.derivativeOrder )
+                    return "0.0"
+            else:
+                if self.derivativeOrder == 0:
+                    return "M0_" + str( self.flavorLabel )
+                else:
+                    return "dM0_" + str( self.flavorLabel ) + " / dA" 
     
     """
-    Sets the matrix element at temporal indices ( i, j ).
-    @param i First temporal index (row) of the matrix element to set.
-    @param j Second temporal index (column) of the matrix element to set.
-    @param entry Expression of the matrix element to set.
+    Operator overload for equality comparison ('==').
+    @param: other MatrixM object on the right hand side of operator.
+    @return: True if the right hand side is equivalent to the left hand side.
     """
-    def setElement(self, i, j, entry ):
-        if not self.matrixIsConstructed:
-            raise PTSymbolicException( "setElement() was called on an instance of MatrixM whose matrix was not constructed." )
-        
-        self.elements[ ( i, j ) ] = entry
+    def __eq__( self, other ):
+        if isinstance( other, MatrixM ):
+            return self.derivativeOrder == other.derivativeOrder \
+                and self.flavorLabel == other.flavorLabel
+        else:
+            return False
     
     """
     Calculates the derivative of all matrix elements, and returns a new
@@ -191,25 +120,20 @@ class MatrixM:
     @return: The derivative of this matrix.
     """
     def derivative( self ):
-        D = MatrixM( self.Nx, self.Ntau, self.spatialDimension, self.isInteracting, self.flavorLabel, self.matrixIsConstructed )
-        
-        if self.matrixIsConstructed:
-            for key in self.elements:
-                D.setElement( key[0], key[1], self.elements[ key ].derivative() )
-            D.simplify()
-            
+        D = MatrixM( self.isInteracting, self.flavorLabel )
         D.derivativeOrder = self.derivativeOrder + 1
         
         return D
     
     """
-    Mathematically simplifies the expressions for all matrix elements.
+    Matrix M cannot be simplified -- do nothing.
     """
     def simplify( self ):
-        if self.matrixIsConstructed:
-            for key in self.elements:
-                self.elements[ key ].simplify()
-            
+        pass
+           
+    """
+    Sets this matrix as a non-interacting object (evaluate A to zero).
+    """ 
     def setAsNoninteracting( self ):
         self.isInteracting = False
         
@@ -218,13 +142,9 @@ Representation of the matrix B, or the inverse of the matrix M, in the defined
 perturbation theory language.
 """
 class MatrixB:
-    def __init__( self, Nx, Ntau, spatialDimension, isInteracting=True, flavorLabel="" ):
-        self.elements = dict()
-        self.Nx = Nx
-        self.Ntau = Ntau
-        self.spatialDimension = spatialDimension
-        self.isInteracting = isInteracting
+    def __init__( self, isInteracting=True, flavorLabel="" ):
         self.derivativeOrder = 0
+        self.isInteracting = isInteracting
         self.flavorLabel = flavorLabel
         
     def __str__( self ):
@@ -254,73 +174,70 @@ class MatrixB:
                     return "B0_" + str( self.flavorLabel )
                 else:
                     return "0.0"
+    
+    def __eq__( self, other ):
+        if isinstance( other, MatrixB ):
+            return self.derivativeOrder == other.derivativeOrder \
+                and self.flavorLabel == other.flavorLabel
+                
+        else:
+            return False
         
     def derivative( self ):
-        dM = MatrixM( self.Nx, self.Ntau, self.spatialDimension, self.isInteracting, self.flavorLabel )
-        dM.derivativeOrder = self.derivativeOrder + 1
+        if self.isInteracting:
+            dM = MatrixM( self.isInteracting, self.flavorLabel )
+            dM.derivativeOrder = self.derivativeOrder + 1
         
-        return Product( [ CoefficientFloat( -1.0 ), MatrixB( self.Nx, self.Ntau, self.spatialDimension, self.isInteracting, self.flavorLabel ), dM, MatrixB( self.Nx, self.Ntau, self.spatialDimension, self.isInteracting, self.flavorLabel ) ] )
+            return Product( [ CoefficientFloat( -1.0 ), MatrixB( self.isInteracting, self.flavorLabel ), dM, MatrixB( self.isInteracting, self.flavorLabel ) ] )
+        
+        else:
+            return CoefficientFloat( 0.0 )
           
     def simplify( self ):
         pass
     
     def setAsNoninteracting( self ):
         self.isInteracting = False
-    
-"""
-Representation of the matrix U in the defined perturbation theory language.
-"""
-class MatrixU:
-    """
-    Constructor for MatrixU.
-    @param: spatialIndex Spatial index of this matrix.
-    @param: temporalIndex Temporal index of this matrix.
-    @param: Nx Spatial lattice size of this matrix.
-    @param: spatialDimension Spatial dimension of this matrix, such that the
-                             total spatial volume is Nx**d.
-    """
-    def __init__( self, spatialIndex, temporalIndex, Nx, spatialDimension ):
-        self.derivativeOrder = 0
-        self.spatialIndex = spatialIndex
-        self.temporalIndex = temporalIndex
-        self.Nx = Nx
-        self.spatialDimension = spatialDimension
-     
-    def __str__( self ):
-        # The reported expression depends on the derivative order. Implemented
-        # for contact interactions.
-        if not MINIMAL_U_DISPLAY:
-            if self.derivativeOrder == 0:
-                return "Exp(-T/2) (1+A Sin[Sigma_{ T" + str( self.temporalIndex ) + " }( S" + str( self.spatialIndex ) + " )]) Exp(-T/2)"
-            elif self.derivativeOrder == 1:
-                return "Exp(-T/2) Sin[Sigma_{ T" + str( self.temporalIndex ) + " }( S" + str( self.spatialIndex ) + " )] Exp(-T/2)"
-            elif self.derivativeOrder >= 2:
-                return "0.0"
-            else:
-                raise PTSymbolicException( "Invalid derivative order specifier in MatrixU with indices ( " + str( self.spatialIndex ) + str( self.temporalIndex ) + " )." )
-        else:
-            if self.derivativeOrder < 2:
-                return "U^(" + str( self.derivativeOrder ) + ")_{ T" + str( self.temporalIndex ) + " }( S" + str( self.spatialIndex ) + " )"
-            else:
-                return "0.0"
 
-    """
-    Evaluates the derivative of U, which in practice increments the derivative
-    order counter. The reported expression depends on the specific interaction.
-    @return: self with the derivative counter incremented.
-    """
-    def derivative( self ):
-        D = MatrixU( self.spatialIndex, self.temporalIndex, self.Nx, self.spatialDimension )
-        D.derivativeOrder = self.derivativeOrder + 1
-        return D
-    
-    """
-    Mathematically simplify this expression. MatrixU cannot be further
-    simplified, so do nothing.
-    """
+class MatrixK:
+    def __init__( self, flavorLabel = "" ):
+        self.indices = None
+        self.isFourierTransformed = False
+        self.flavorLabel = flavorLabel
+        
+    def __str__( self ):
+        if self.isFourierTransformed:
+            return "D_" + str( self.flavorLabel ) + "_" + str( self.indices )
+        else:
+            if self.indices == None:
+                return "K_" + str( self.flavorLabel )
+            else:
+                return "K_" + str( self.flavorLabel ) + "_"  + str( self.indices )
+        
+    def __eq__( self, other ):
+        if isinstance( other, MatrixK ):
+            return self.indices == other.indices and self.isFourierTransformed == other.isFourierTransformed and self.flavorLabel == other.flavorLabel
+        else:
+            return False
+            
     def simplify( self ):
         pass
-
+    
+    def fourierTransform( self ):
+        self.isFourierTransformed = True
+        
+class MatrixS:
+    def __init__( self ):
+        self.indices = None
+        
+    def __str__( self ):
+        if self.indices == None:
+            return "S"
+        else:
+            return "S_" + str( self.indices )
+        
+    def simplify(self):
+        pass
 """
 Representation of the determinant of M.
 """
@@ -361,6 +278,12 @@ class DetM:
                 else:
                     return "Det[ M0_" + str( self.M.flavorLabel ) + " ]"
     
+    def __eq__( self, other ):
+        if isinstance( other, DetM):
+            return self.M == other.M and self.isInverted == other.isInverted
+        else:
+            return False
+    
     """
     Calculates the analytic derivative of this expression and returns the
     expression.
@@ -374,7 +297,7 @@ class DetM:
                 # return Product( [ CoefficientFloat( -1.0 ), Trace( Product( [ DetM( self.flavorLabel, True, True ), self.M.derivative() ] ) ), DetM( self.flavorLabel, True, True ) ] )
                 raise PTSymbolicException( "The derivative of an inverted, interacting determinant should not be taken in this context." )
             else:
-                return Product( [ DetM( self.M, True, False ), Trace( Product( [ MatrixB( self.M.Nx, self.M.Ntau, self.M.spatialDimension, True, self.M.flavorLabel ), self.M.derivative() ] ) ) ] )
+                return Product( [ DetM( self.M, True, False ), Trace( Product( [ MatrixB( True, self.M.flavorLabel ), self.M.derivative() ] ) ) ] )
         else:
             if self.isInverted:
                 return "1 / Det[ M0 ]"
@@ -421,6 +344,9 @@ class CoefficientFloat:
     """
     def simplify( self ):
         pass
+    
+    def eval( self ):
+        return float( self.value )
     
 """
 Representation of a coefficient fraction, or ratio of two integers.
@@ -470,11 +396,16 @@ class TermA:
     
     def __str__(self):
         return "A"
-       
+    
+    def __eq__( self, other ):
+        if isinstance( other, TermA ):
+            return True
+        else:
+            return False
+                
 # ****************************************************************************
 #   OPERATOR AND EXPRESSION CLASSES
 # ****************************************************************************
-
 """
 Representation of a sum of an arbitrary number of terms.
 """
@@ -497,6 +428,13 @@ class Sum:
                 
         return s
     
+    def __eq__( self, other ):
+        for term in self.terms:
+            if not term in other.terms:
+                return False
+            
+        return True
+        
     """
     Calculate the derivative of a sum of terms.
     @returns: A sum that is the derivative of the calling sum.
@@ -519,7 +457,7 @@ class Sum:
         for term in self.terms:
             term.simplify()
             term = unpackTrivialExpr( term )
-            if not ( str( term ).strip() == '0.0' or  isZeroTrace( term ) ):
+            if not ( str( term ).strip() == '0.0' or str( term ).strip() == '-0.0' or  isZeroTrace( term ) ):
                 simplifiedTerms.append( term )
                 
         if simplifiedTerms == []:
@@ -590,6 +528,8 @@ class Product:
     """
     def __init__( self, terms ): 
         self.terms = terms
+        self.startingIndex = None
+        self.endingIndex = None
     
     """
     @returns: Returns a string representation of the expression.
@@ -628,7 +568,7 @@ class Product:
         for term in self.terms:
             term.simplify()
             term = unpackTrivialExpr( term )
-            if str( term ) == '0.0' or isZeroTrace( term ):
+            if str( term ) == '0.0' or str( term ) == '-0.0' or isZeroTrace( term ):
                 self.terms = [CoefficientFloat( 0.0 )]
                 return
             elif not str( term ) == '1.0':
@@ -775,61 +715,19 @@ class Trace:
             if isinstance( term, Sum ) or isinstance( term, Product ) or isinstance( term, Trace ) or isinstance( term, DetM ) or isinstance( term, MatrixM ) or isinstance( term, MatrixB ): 
                 term.setAsNoninteracting()
                 
-"""
-Representation of an expression where all terms within a trace are assigned a
-set of indices. Note that the expression that is passed to the constructor
-must be a single product; the complete expression being evaluated must
-be fully expanded prior to using this object. At present this assertion
-is not enforced.
-"""               
-class IndexedTrace:
-    """
-    Constructor for IndexedTrace.
-    @param: expr Expression that is the argument to the trace. Must be a single product.
-    @param: startingIndex Starting integer for indexing elements of the trace, which is
-                          by definition cyclic. Default value is 0.
-    """
-    def __init__( self, expr, startingIndex=0 ):
-        self.expr = expr
-        self.indices = []
-        self.startingIndex = startingIndex
-        self.endingIndex = None  # Set scope.
+    def rewriteTraceInKSFormalism( self ):
+        if not isinstance( self.expr, Product ):
+            raise PTSymbolicException( "Argument of a Trace must be a Product before rewriting in KS formalism. Distribute trace operators first." )
         
-        # Index all terms within traces. Note that the expression passed to the
-        # constructor is expected to be already distributed, in the sense that
-        # all constant coefficients are pulled out of the trace, and the trace
-        # operator has been linearly distributed over all terms in a sum.
-        self._getExprIndices()
-    
-    """
-    Private method which indexes all elements within a trace. In principle this method may
-    be called when updating the argument of the trace, although this behavior is not
-    preferred.
-    """    
-    def _getExprIndices( self ):
-        # Check for trivial cases and set the appropriate result.
-        if len( self.expr.terms ) == 0:
-            self.indices = []
-            self.endingIndex = None
-        elif len( self.expr.terms ) == 1:
-            self.indices = [ (self.startingIndex, self.startingIndex) ]
-            self.endingIndex = self.startingIndex
-        else:  # For non-trivial products, calculate the connected indices.
-            indices = []
-            for i in range( 0, len( self.expr.terms ) - 1):
-                indices.append( (self.startingIndex + i, self.startingIndex + i + 1) )
-            indices.append( (self.startingIndex + i + 1, self.startingIndex) )
-            
-            self.indices = indices
-            self.endingIndex = self.startingIndex + i + 1
-         
-    def __str__( self ):
-        s = "Trace[ "
-        for i in range( 0, len( self.expr.terms ) ):
-            s += "{ " + str( self.expr.terms[i] ) + "_" + str( self.indices[i] ) + " }"
-        s += " ]"
-        return s
-
+        newExpr = Product([])
+        for term in self.expr.terms:
+            if isinstance( term, MatrixB ):
+                newExpr.addTerm( MatrixK( term.flavorLabel ) )
+            elif isinstance( term, MatrixM ):
+                newExpr.addTerm( MatrixS() )
+                
+        self.expr = newExpr            
+                
 """
 Representation of a slightly modified definition of the Kronecker delta. A 
 Delta object with two assigned indices behaves the same as \delta_{i,j}; an
@@ -851,6 +749,11 @@ class Delta:
         if not len( indices ) == 2:
             raise PTSymbolicException( "Two indices must be specified in the constructor of Delta (" + str( len( indices ) ) + " was specified)." )
     
+        if indices[1] > indices[0]:
+            self.indices = ( indices[0], indices[1] )
+        else:
+            self.indices = ( indices[1], indices[0] )
+            
     def __str__( self ):
         s = "Delta"
         if self.isBar:
@@ -867,259 +770,35 @@ class Delta:
         s += str( self.indices[-1] )
         s += " )"
         return s
-            
-    def getAllPairings( self ):
-        pairings = []
-        for i in range( 0, len( self.indices ) ):
-            for j in range( i + 1, len( self.indices ) ):
-                pairings.append( (self.indices[i], self.indices[j]) )
-        return pairings
- 
-class IndexedProduct( Product ):
-    def __init__( self, terms, indices ):
-        Product.__init__( self, terms )  # Call constructor of parent class Product.
-        self.indices = indices
+
+    def __eq__( self, other ):
+        if isinstance( other, Delta ):
+            return self.indices == other.indices and self.isBar == other.isBar
+        else:
+            return False
         
-    """
-    @returns: Returns a string representation of the expression.
-    """   
-    def __str__( self ):
-        s = " "
-        for i in range( 0, len( self.terms ) ):
-            s += "{" + str( self.terms[ i ] )
-            
-            if not self.indices[ i ] == None:
-                s += "_" + str( self.indices[ i ] )
-            
-            s += "}"
-            
-            if not i == len( self.terms ) - 1:
-                s += "  "
-                
-        return s
-    
-    def addTerm( self, term, index ):
-        self.terms.append( term )
-        self.indices.append( index )
+    def simplify( self ):
+        pass
 
 class FourierSum:
-    def __init__( self, indices, gammaOrder ):
+    def __init__( self, indices, KOrder ):
         self.indices = indices
+        self.KOrder = KOrder
         
     def __str__( self ):
         return "FourierSum<XT>" + str( self.indices )
     
-    def getEvaluatedSum( self ):
-        def _singleTemporalOffset( i ):
-            omega = ( 2.0 * i + 1.0 ) * scipy.pi / float( NTAU )
-            return scipy.exp( complex( 0, omega ) )
-        
-        def _temporalOffsetFunc( indices ):
-            result = 1.0
-            for i in range( 0, len( indices ) ):
-                result *= _singleTemporalOffset( indices[ i ] )
-
-            return result
-            
-class MatrixT:
-    def __init__( self, spatialIndices, flavorLabel="" ):
-        self.spatialIndices = spatialIndices
-        self.flavorLabel = flavorLabel
-        
-    def __str__( self ):
-        s = "T"
-        
-        if not self.flavorLabel == "":
-            s += "_" + self.flavorLabel
-            
-        return s + "_" + str( self.spatialIndices )
-    
-"""
-Representation of the mathematical Gamma object that appears in perturbation
-theory under the current context. Indices are managed separately by this object;
-the expression in this container should be a Product.
-"""
-class Gamma:
-    """
-    Constructor for Gamma. Note that this object does not construct any indices
-    for the contained expressions; the list of indices corresponding to each
-    factor should be generated elsewhere (as required by the corresponding math).
-    @param: expr A non-indexed Product that is an argument to this object.
-    @param: indices A list of two-element tuples that correspond to the indices
-                    of each factor in the contained Product.
-    """
-    def __init__( self, expr, indices ):
-        self.expr = expr  # A non-indexed Product.
-        self.indices = indices
-        self.uniqueIndices = []
-        self.integratedTensor = None  # Tensor must be constructed later with a
-                                      # call to constructIntegratedTensor().
-        self.gammaOrder = len( self.expr.terms )
-              
-    def __str__( self ):
-        s = "Gamma<" + str( len( self.expr.terms ) ) + ">_" + self._getUniqueIndexStr()
-        
-        if not MINIMAL_GAMMA_DISPLAY:
-            s += "[ "
-            for i in range( 0, len( self.expr.terms ) ):
-                s += "{ " + str( self.expr.terms[ i ] ) + "_" + str( self.indices[ i ] ) + " }"
-            s += " ]"
-            
-        return s  
-    
-    """
-    Private helper method that generates a string of unique indices
-    referenced in this object.
-    """    
-    def _getUniqueIndexStr( self ):
-        self.updateUniqueIndices()
-        
-        s = "( "
-        for index in self.uniqueIndices:
-            s += str( index ) + " "
-            
-        return s + ")"
-    
-    def updateUniqueIndices( self ):
-        for index in self.indices:
-            if not index[0] in self.uniqueIndices:
-                self.uniqueIndices.append( index[0] )
-                
-            if not index[1] in self.uniqueIndices:
-                self.uniqueIndices.append( index[1] )
-                
-            self.gammaOrder = len( self.expr.terms )
-                
-    def getIntegratedTensorElement(self, elementIndices, provideSpatialDeltas=False ):
-        # Check if element will be trivially non-zero from the known matrix
-        # structure of M. Mathematically equivalent to enforcing Kronocker
-        # deltas \sum_i \delta_{i_\tau, i_{\tau + 1}}. Checking for structure
-        # of temporal indices at this point only. Note that the index pair on
-        # each \frac{\partial M}{\partial A} term is a set of nested tuples,
-        # such that the particular indices are ordered by (spatial, temporal),
-        # e.g. ( (x1, t1), (x2, t2) ), where of course in practice xi and ti
-        # are integers that determine a tensor element.
-        for indexPair in elementIndices:
-            if not indexPair[1][1] - indexPair[0][1] == 1 :  # Remember, we are grabbing
-                return CoefficientFloat( 0.0 )                 # the temporal indices here.
-        
-        if not provideSpatialDeltas:            
-            # Perform path integral for contact interactions. Note that a pair of
-            # temporal indices must coincide for the term to be non-vanishing;
-            # since the interaction matrix is diagonal in coordinate space, the
-            # spatial components of both indices are implied as equal. Count the
-            # number of spacetime (x2 t2) indices that coincide:
-            spacetimeIndexCount = dict()
-            for indexPair in elementIndices:
-                if indexPair[1] in spacetimeIndexCount:
-                    spacetimeIndexCount[ indexPair[1] ] += 1
-                else:
-                    spacetimeIndexCount[ indexPair[1] ] = 1
-    
-            # For each unique index, determine if the path integral of the
-            # corresponding power of sine vanishes or is non-trivial, and
-            # generate the appropriate expression.
-            integralResult = Product([])         
-            for spacetimeIndex in spacetimeIndexCount:
-                spacetimeCount = spacetimeIndexCount[ spacetimeIndex ]
-                if spacetimeCount % 2 == 1:  # If temporalCount is odd.
-                    return CoefficientFloat( 0.0 )  # Integral vanishes.
-                else:
-                    integralResult.addTerm(  SINE_PATH_INTEGRALS[ spacetimeCount ] )
-                    
-            # If we haven't returned yet, the integral is non-vanishing, and we
-            # need to add the kinetic energy matrices which were implicitly
-            # factored out in the previous steps. The indicies of these matrices
-            # are given by the corresponding spatial components (e.g. (x1 x2)).
-            for indexPair in elementIndices:
-                integralResult.addTerm( MatrixT( (indexPair[0][0], indexPair[1][0]) ) )
-                
-            return integralResult
-        
+    def __eq__( self, other ):
+        if isinstance( other, FourierSum ):
+            return str( set( self.indices ) ) == str( set( other.indices ) )
         else:
-            # See the general comments above -- they apply to this case also. In this
-            # case, however, we allow a non-zero result to be returned in the case of
-            # differing spatial indices, and add corresponding delta functions to the
-            # returned result.
-            temporalIndexCount = dict()
-            matchingIndexPairs = dict()  # Create a dictionary of indices whose temporal
-                                         # components match -- this will be used to construct
-                                         # delta functions later.
-            for indexPair in elementIndices:
-                if indexPair[1][1] in temporalIndexCount:
-                    temporalIndexCount[ indexPair[1][1] ] += 1
-                    matchingIndexPairs[ indexPair[1][1] ].append( indexPair[1] )
-                else:
-                    temporalIndexCount[ indexPair[1][1] ] = 1
-                    matchingIndexPairs[ indexPair[1][1] ] = [ indexPair[1] ]
-                    
-            integralResult = Product([])
-            for temporalIndex in temporalIndexCount:
-                temporalCount = temporalIndexCount[ temporalIndex ]
-                if temporalCount % 2 == 1:
-                    return CoefficientFloat( 0.0 )
-                else:
-                    integralResult.addTerm( SINE_PATH_INTEGRALS[ temporalCount ] )
-                    
-            for indexPair in elementIndices:
-                integralResult.addTerm( MatrixT( (indexPair[0][0], indexPair[1][0]) ) )
-                
-            for temporalIndex in matchingIndexPairs:
-                matchingIndices = matchingIndexPairs[ temporalIndex ]
-                for i in range( 0, len( matchingIndices ) - 1 ):
-                    integralResult.addTerm( Delta( (matchingIndices[i][0], matchingIndices[i + 1][0]) ) )
-                    
-            return integralResult
-  
-    """
-    Add a term to the product contained in this object.
-    @param: term Term to add to the end of the product.
-    @param: index Two-element tuple that references the indices of this term.
-    """
-    def addTerm( self, term, index ):
-        self.expr.addTerm( term )
-        self.indices.append( index )
+            return False
+        
+    def simplify( self ):
+        pass
     
-    def getFourierTransform( self ):
-        self.gammaOrder = len( self.indices )
-        
-        integralResult = Product([])
-        
-        # Add kinetic energy matrices to the integral result. Since the
-        # operator is diagonal in momentum space we will "take the Fourier
-        # transform" simply by contracting the two spatial indices, such that
-        # a single sum over all momenta remain. Be sure to carry along the
-        # proper flavor label.
-        for i in range( 0, len( self.indices ) ):
-            integralResult.addTerm( MatrixT( (self.indices[i][0],), self.expr.terms[i].flavorLabel ) )
-
-        # Get the path integral over the sines resulting from the form of the
-        # contact interaction. Expand the expression.
-        pathIntegral = generateCoordinateSpacePathIntegral( self.gammaOrder )
-        pathIntegral = pathIntegral.getExpandedExpr()
-        pathIntegral.reduceTree()
-        pathIntegral.reduceTree()
-        contractedSum = Sum([])
-        for term in pathIntegral.terms:
-            contractedTerm = Product([])
-            activeIndices = range( 0, self.gammaOrder * 2 )
-            for factor in term.terms:
-                if isinstance( factor, Delta ):
-                    for i in range( 0, len( activeIndices ) ):
-                        if activeIndices[i] == factor.indices[0]:
-                            activeIndices[i] = factor.indices[1] 
-                    #activeIndices.remove( factor.indices[0] )
-                else:
-                    contractedTerm.addTerm( factor )
-                    
-            contractedTerm.addTerm( FourierSum( activeIndices, self.gammaOrder ) )
-            contractedSum.addTerm( contractedTerm )
-            
-        integralResult.addTerm( contractedSum )
-        return integralResult
-        
 # ****************************************************************************
-#   PRIVATE BASIC HELPER AND EXPRESSION MANIPULATION FUNCTIONS
+#   GENERIC HELPER FUNCTIONS
 # ****************************************************************************
 
 """
@@ -1193,36 +872,21 @@ def getDualProductAOrder( prodA, prodB ):
             prodBOrder += 1
             
     return prodAOrder + prodBOrder
-        
-"""
-Multiplies two M matrices as a binary product.
-@param: X First MatrixM term.
-@param: Y Second MatrixM term.
-@return: The product of X and Y.
-"""   
-def multiplyMMatrices( X, Y ):
-    # Enforce that the dimensions of matrices X and Y must be the same. If not,
-    # raise an exception.
-    if not X.Nx == Y.Nx:
-        raise PTSymbolicException( "Spatial volume Nx of M matrices do not match in matrix multiplication." )
-    elif not X.Ntau == Y.Ntau:
-        raise PTSymbolicException( "Temporal volume Ntau of M matrices do not match in matrix multiplication." )
-    elif not X.spatialDimension == Y.spatialDimension:
-        raise PTSymbolicException( "Spatial dimension of M matrices do not match in matrix multiplication." )
+  
+def getAOrder( prod ):
+    prodOrder = 0
+    if not isinstance( prod, Product ):
+        raise PTSymbolicException( "All expressions passed to getAOrder() must be a Product." )
     
-    # Carry on with matrix multiplication.
-    Z = MatrixM( X.Nx, X.Ntau, X.spatialDimension )
-    
-    for i in range( 0, X.Ntau ):
-        for j in range( 0, X.Ntau ):
-            newMatrixElement = Sum([])
-            for k in range( 0, X.Ntau ):
-                newMatrixElement.addTerm( Product( [X.getElement( i, k ), Y.getElement( k, j )] ) )
+    for term in prod.terms:
+        if isinstance( term, TermA ):
+            prodOrder += 1
             
-            newMatrixElement.simplify()
-            Z.setElement( i, j, unpackTrivialExpr( newMatrixElement ) )
-            
-    return Z
+    return prodOrder
+      
+# ****************************************************************************
+#   EXPRESSION MANIPULATION FUNCTIONS
+# ****************************************************************************
 
 """
 Mathematically simplifies the expression of a trace. The trace operator is
@@ -1320,37 +984,7 @@ def distributeAllTraces( expr ):
         distributedExpr.addTerm( distributeTrace( expr ) )
            
     distributedExpr.reduceTree()                         
-    return unpackTrivialExpr( distributedExpr ) 
-
-"""
-Converts all traces in an expression to indexed traces.
-@param: expr An expression that is a Sum.
-@return: A Sum() whose Trace objects are now IndexedTrace objects.
-"""
-def indexExpr( expr ):
-    indexedExpr = Sum([])
-    if isinstance( expr, Sum ):
-        for term in expr.terms:
-            if isinstance( term, Product ):
-                nextIndexedTerm = Product([])
-                nextIndexedTrace = None
-                nextStartingIndex = 0
-                for factor in term.terms:
-                    if isinstance( factor, Trace ):
-                        nextIndexedTrace = IndexedTrace( factor.expr, nextStartingIndex )
-                        nextStartingIndex = nextIndexedTrace.endingIndex + 1
-                        nextIndexedTerm.addTerm( nextIndexedTrace )
-                    else:
-                        nextIndexedTerm.addTerm( factor )
-                indexedExpr.addTerm( nextIndexedTerm )
-            elif isinstance( term, Trace ):
-                indexedExpr.addTerm( IndexedTrace( term.expr ) )
-            else:
-                indexedExpr.addTerm( term )
-    else:
-        raise PTSymbolicException( "indexExpr() expects a Sum as the passed expression." )
-    
-    return indexedExpr
+    return unpackTrivialExpr( distributedExpr )
 
 """
 Truncate the order of A of an expansion.
@@ -1394,129 +1028,240 @@ def truncateOddOrders( sum ):
             
     return truncatedSum
 
-"""
-Private helper function to determine whether all elements in a list are equal.
-Typical use is within truncateSingleFlavorTerms().
-@param: lst List to check contents of.
-@return: True if all elements in lst are equal, False otherwise.
-"""
-def _elementsAreAllEqual( lst ):
-    if len( lst ) == 0 or len( lst ) == 1:
-        return True
-    
-    for i in range( 0, len( lst ) - 1 ):
-        if not lst[ i ] == lst[ i + 1 ]:
-            return False
-        
-    return True
+def rewriteExprInKSFormalism( expr ):
+    if not isinstance( expr, Sum ):
+        raise PTSymbolicException( "Expression passed to rewriteExprInKSFormalism() must be an instance of a Sum." )
 
-"""
-Terms which have matrices under a single particle flavor are shown to vanish
-under the path integral, therefore we truncate them from the expansion.
-@param: sum Expansion to truncate terms from.
-@return: The truncated expansion.
-"""        
-def truncateSingleFlavorTerms( sum ):
-    truncatedSum = Sum([])
-    
-    for term in sum.terms:
-        # Obtain all flavor labels for each matrix that appears in this term.
-        flavorLabels = []
-        for factor in term.terms:
-            if isinstance( factor, Trace ):
-                for subterm in factor.expr.terms:
-                    if isinstance( subterm, MatrixM ) or isinstance( subterm, MatrixB ):
-                        flavorLabels.append( subterm.flavorLabel )
+    for term in expr.terms:
+        if isinstance( term, Product ):
+            for factor in term.terms:
+                if isinstance( factor, Trace ):
+                    factor.rewriteTraceInKSFormalism()
+        elif isinstance( term, Trace ):
+            term.rewriteTraceInKSFormalism()
             
-        # Check list of flavor labels; if all labels are equivalent, omit the
-        # term from the sum. Keep terms that do not have matrices (the
-        # non-interacting contribution).
-        if not _elementsAreAllEqual( flavorLabels ) or len( flavorLabels ) == 0:
-            truncatedSum.addTerm( term )
-            
-    return truncatedSum
-
-"""
-Public method to evaluate the product of all coefficients in an expression.
-Passed expression can either be a Sum or a Product; the method is called
-recursively as appropriate. If a Sum is passed, it is expected to be fully
-distributed first.
-@param: expr Expression whose coefficients are to be evaluated.
-@return: Expression where each product contains at most one evaluated coefficient. 
-"""
-def evaluateCoefficients( expr ):
-    if isinstance( expr, Product ):
-        simplifiedProduct = Product([])
-        coefficient = 1.0
-        for term in expr.terms:
-            if isinstance( term, CoefficientFloat ):
-                coefficient *= term.value
-            elif isinstance( term, CoefficientFraction ):
-                coefficient *= term.eval()
-            else:
-                simplifiedProduct.addTerm( term )
-                
-        # If the coefficient is 1.0, don't bother adding it the expression.
-        if not coefficient == 1.0:
-            simplifiedProduct.addTerm( CoefficientFloat( coefficient ) )
-           
-        return simplifiedProduct
-    
-    elif isinstance( expr, Sum ):
-        simplifiedSum = Sum([])
-        for term in expr.terms:
-            simplifiedSum.addTerm( evaluateCoefficients( term ) )
-            
-        return simplifiedSum
-
-"""
-Factors inverted M matrices (MatrixB) from IndexedTraces and produces an
-IndexedProduct with all associated indices carried along. Scalar objects
-do not carry any indices (they are assigned None in the index data
-structure).
-"""
-def _factorInvertedMatrices( product ):
-    factoredProduct = IndexedProduct([], [])
-    gammaProduct = Gamma(Product([]), [])
-    for factor in product.terms:
-        if isinstance( factor, IndexedTrace ):
-            # Check for an error case - raise exception if needed.
-            if not isinstance( factor.expr, Product ):
-                raise PTSymbolicException( "All traces passed to _factorInvertedMatrices must be fully distributed; arguments of traces must be a product." )
-            
-            i = 0    
-            for element in factor.expr.terms:
-                if isinstance( element, MatrixB ):
-                    factoredProduct.addTerm( element, factor.indices[ i ] )
-                elif isinstance( element, MatrixM ):
-                    gammaProduct.addTerm( element, factor.indices[ i ] )
-                i += 1
-                
-        else:
-            factoredProduct.addTerm( factor, None )
-    
-    if not len( gammaProduct.expr.terms ) == 0:
-        factoredProduct.addTerm( gammaProduct, None )       
-         
-    return factoredProduct
-
-"""
-Public method to factor B matrices from indexed traces and place all M matrices
-in a Gamma object. Indices are carried throughout. The passed expression must
-be a fully distributed sum, and all traces must already be indexed.
-@param: expr Sum to be modified.
-@return: The modified expression (a Sum).
-"""    
-def generateGammaExpression( expr ):
+    return expr
+             
+def indexExpr( expr ):
+    indexedExpr = Sum([])
     if isinstance( expr, Sum ):
-        newSum = Sum([])
         for term in expr.terms:
-            if not isinstance( term, Product ):
-                raise PTSymbolicException( "Expression passed to generateGammaExpression must be fully distributed; expr must be a Sum of Products." )
-            newSum.addTerm( _factorInvertedMatrices( term ))
-            
-    return newSum
+            if isinstance( term, Product ):
+                if getAOrder( term ) == 2:
+                    print "shtap!"
+                nextIndex = 0
+                indexedProduct = Product([])
+                for factor in term.terms:
+                    if isinstance( factor, Trace ):
+                        for i in range( 0, len( factor.expr.terms ) - 1 ):
+                            factor.expr.terms[i].indices = ( nextIndex + i, nextIndex + i + 1 )
+                            indexedProduct.addTerm( factor.expr.terms[i] )
+                        factor.expr.terms[-1].indices = ( nextIndex + i + 1, nextIndex )
+                        indexedProduct.addTerm( factor.expr.terms[-1] )
+                        nextIndex += i + 2
+                    else:
+                        indexedProduct.addTerm( factor )
+                indexedExpr.addTerm( indexedProduct )
+            else:
+                indexedExpr.addTerm( term )
+    else:
+        raise PTSymbolicException( "indexExpr() expects a Sum as the passed expression." )
+    
+    return indexedExpr
 
+def _getTerminatedContraction( index, deltas ):
+    print (index, deltas[index])
+    if index in deltas:
+        if deltas[ index ] in deltas and not index == deltas[ index ]:
+            return _getTerminatedContraction( deltas[ index ], deltas )
+        else:
+            return deltas[ index ]
+    else:
+        return index
+
+def _constructContractionDict( contractions ):
+    indexMapping = dict()
+    for indexPair in contractions:
+        if not indexPair[1] in indexMapping:
+            if not indexPair[0] in indexMapping:
+                indexMapping[ indexPair[1] ] = indexPair[0]
+                indexMapping[ indexPair[0] ] = indexPair[0]
+            else:
+                if indexPair[0] < indexMapping[ indexPair[0] ]:
+                    indexMapping[ indexPair[0] ] = indexPair[0]
+                    indexMapping[ indexPair[1] ] = indexPair[0]
+                else:
+                    indexMapping[ indexPair[1] ] = indexMapping[ indexPair[0] ]
+        else:
+            if indexPair[0] < indexMapping[ indexPair[1] ]:
+                indexMapping[ indexPair[0] ] = indexPair[0]
+                indexMapping[ indexMapping[ indexPair[1] ] ] = indexPair[0]
+                indexMapping[ indexPair[1] ] = indexPair[0]
+                
+                #if not indexPair[0] in indexMapping:
+                    #indexMapping[ indexPair[0] ] = indexPair[0]
+            elif not indexPair[0] in indexMapping:
+                indexMapping[ indexPair[0] ] = indexMapping[ indexPair[1] ]
+                
+        if indexPair[1] in indexMapping.values():
+                for index in indexMapping:
+                    if indexMapping[ index ] > indexPair[0]:
+                        indexMapping[ index ] = indexPair[0]
+                        
+    return indexMapping
+
+
+def fourierTransformExpr( expr ):
+    if not isinstance( expr, Sum ):
+        raise PTSymbolicException( "Expression passed to fourierTransformExpr() must be an instance of a Sum." )
+
+    transformedSum = Sum([])    
+    for term in expr.terms:
+        if not isinstance( term, Product ):
+            raise PTSymbolicException( "Sum passed to fourierTransformExpr() must be fully distributed and reduced." )
+        
+        transformedProduct = Product([])
+        KOrder = 0
+        deltas = dict()
+        fourierIndices = []
+        indexPairsToBeContracted = []
+        for factor in term.terms:
+            if isinstance( factor, MatrixK ):
+                factor.fourierTransform()
+                #factor.indices = factor.indices[0]
+                transformedProduct.addTerm( factor )
+                fourierIndices.append( factor.indices )
+                KOrder += 1
+            elif isinstance( factor, Delta ) and factor.isBar == False:
+                indexPairsToBeContracted.append( factor.indices )
+                #if factor.indices[0] in deltas:
+                #    deltas[ factor.indices[1] ] = deltas[ factor.indices[0] ]
+                #else:
+                #    deltas[ factor.indices[1] ] = factor.indices[0]
+            else:
+                transformedProduct.addTerm( factor )
+            
+        deltas = _constructContractionDict( indexPairsToBeContracted )
+        if KOrder > 0:    
+            #fourierIndices = range( 0, KOrder * 2, 2 )
+            for contractedIndex in deltas:
+                for i in range( 0, len( fourierIndices ) ):
+                    if fourierIndices[i][0] == contractedIndex and not fourierIndices[i][1] == contractedIndex:
+                        fourierIndices[i] = (deltas[ contractedIndex ], fourierIndices[i][1])
+                    elif fourierIndices[i][1] == contractedIndex and not fourierIndices[i][0] == contractedIndex:
+                        fourierIndices[i] = (fourierIndices[i][0], deltas[ contractedIndex ])
+                    elif fourierIndices[i][1] == contractedIndex and fourierIndices[i][0] == contractedIndex:
+                        fourierIndices[i] = (deltas[ contractedIndex ], deltas[ contractedIndex ])
+                    # else: do nothing! The indices do not need to be contracted.
+                        
+                for term in transformedProduct.terms:
+                    if isinstance( term, MatrixK ):
+                        if term.indices[0] == contractedIndex and not term.indices[1] == contractedIndex:
+                            term.indices = (deltas[ contractedIndex ], term.indices[1])
+                        elif term.indices[1] == contractedIndex and not term.indices[0] == contractedIndex:
+                            term.indices = (term.indices[0], deltas[ contractedIndex ])
+                        elif term.indices[0] == contractedIndex and term.indices[1] == contractedIndex:
+                            term.indices = (deltas[ contractedIndex ], deltas[ contractedIndex ])
+                        # else: do nothing! The indices do not need to be contracted.
+        
+            transformedProduct.addTerm( FourierSum( fourierIndices, KOrder ) )
+            
+        transformedSum.addTerm( transformedProduct )
+    
+    return transformedSum    
+
+def areTermsCommon( termA, termB ):
+    #if isinstance( termA, CoefficientFloat ) or isinstance( termB, CoefficientFloat ):
+    #    return False 
+    if len( termA.terms ) == 1 or len( termB.terms ) == 1:
+        return False
+    
+    determinantsA = dict()
+    determinantsB = dict()
+    AorderA = 0
+    AorderB = 0
+    DtermsA = dict()
+    DtermsB = dict()
+    fourierSumA = None
+    fourierSumB = None
+    
+    for term in termA.terms:
+        if isinstance( term, DetM ):
+            if not term.M.flavorLabel in determinantsA:
+                determinantsA[ term.M.flavorLabel ] = 1
+            else:
+                determinantsA[ term.M.flavorLabel ] += 1
+        elif isinstance( term, TermA ):
+            AorderA += 1
+        elif isinstance( term, MatrixK ):
+            if not term.flavorLabel in DtermsA:
+                DtermsA[ term.flavorLabel ] = 1
+            else:
+                DtermsA[ term.flavorLabel ] += 1
+        elif isinstance( term, FourierSum ):
+            fourierSumA = term
+            
+    for term in termB.terms:
+        if isinstance( term, DetM ):
+            if not term.M.flavorLabel in determinantsB:
+                determinantsB[ term.M.flavorLabel ] = 1
+            else:
+                determinantsB[ term.M.flavorLabel ] += 1
+        elif isinstance( term, TermA ):
+            AorderB += 1
+        elif isinstance( term, MatrixK ):
+            if not term.flavorLabel in DtermsB:
+                DtermsB[ term.flavorLabel ] = 1
+            else:
+                DtermsB[ term.flavorLabel ] += 1
+        elif isinstance( term, FourierSum ):
+            fourierSumB = term
+
+    if not AorderA == AorderB:
+        return False
+    
+    if not fourierSumA == fourierSumB:
+        return False
+    
+    if not DtermsA == DtermsB:
+        return False
+    
+    if not determinantsA == determinantsB:
+        return False
+    
+    return True                     
+   
+def combineLikeTerms( expr ):
+    if not isinstance( expr, Sum ):
+        raise PTSymbolicException( "Expression passed to combineLikeTerms() must be an instance of a Sum." )
+    
+    for i in range( 0, len( expr.terms ) ):
+        runningLikeTermsCoefficient = 0
+        
+        termATotalCoefficient = 1
+        combinedFactorA = Product([])
+        for factor in expr.terms[i].terms:
+            if isinstance( factor, CoefficientFloat ) or isinstance( factor, CoefficientFraction ):
+                termATotalCoefficient *= factor.eval()
+            else:
+                combinedFactorA.addTerm( factor )
+                
+        for j in range( 0, len( expr.terms ) ):
+            termBTotalCoefficient = 1
+            if not i == j and areTermsCommon( expr.terms[i], expr.terms[j] ):       
+                termBTotalCoefficient = 1
+                for factor in expr.terms[j].terms:
+                    if isinstance( factor, CoefficientFloat ) or isinstance( factor, CoefficientFraction ):
+                        termBTotalCoefficient *= factor.eval()
+                
+                runningLikeTermsCoefficient += termBTotalCoefficient        
+                expr.terms[j] = Product( [CoefficientFloat( 0.0 )] )
+                
+        combinedFactorA.addTerm( CoefficientFloat( round( termATotalCoefficient + runningLikeTermsCoefficient, 8 ) ) )
+        expr.terms[i] = combinedFactorA
+        
+             
+    return expr 
 
 # ****************************************************************************
 #   NUMERICAL LOOKUP TABLES
@@ -1536,9 +1281,9 @@ SINE_PATH_INTEGRALS = { 1: CoefficientFloat( 0 ), 2: CoefficientFraction( 1, 2 )
 # expansions at arbitrary orders; although at that point you have much bigger
 # problems to worry about.
 TAYLORS_SERIES_COEFFICIENTS = { 0: CoefficientFloat( 1.0 ), 1: CoefficientFloat( 1.0 ), 2: CoefficientFraction( 1, 2 ), 3: CoefficientFraction( 1, 6 ), 4: CoefficientFraction( 1, 24 ), 5: CoefficientFraction( 1, 120 ), 6: CoefficientFraction( 1, 720 ), 7: CoefficientFraction( 1, 5040 ), 8: CoefficientFraction( 1, 40320 ), 9: CoefficientFraction( 1, 362880 ), 10: CoefficientFraction( 1, 3628800 ) }
-
+   
 # ****************************************************************************
-#   INTEGRATION ROUTINE HELPER FUNCTIONS FOR CONTACT INTERACTIONS
+#   PATH INTEGRATION AND ANALYTIC FOURIER TRANSFORM FUNCTIONS
 # ****************************************************************************
 
 def getDeltaSignature( contraction ):
@@ -1619,11 +1364,11 @@ def generateCoordinateSpacePathIntegral( n ):
             
             # Add delta functions to the next product.
             for deltaIndices in signature[0]:
-                deltaProduct.addTerm( Delta( ( p[ deltaIndices[0] ], p[ deltaIndices[1] ]), True, True ) )
+                deltaProduct.addTerm( Delta( ( p[ deltaIndices[0] ] * 2, p[ deltaIndices[1] ] * 2 ), True, True ) )
                 
             # Add delta bar functions to the next product.
             for deltaBarIndices in signature[1]:
-                deltaProduct.addTerm( Delta( ( p[ deltaBarIndices[0] ], p[ deltaBarIndices[1]] ), True, True, True ) )
+                deltaProduct.addTerm( Delta( ( p[ deltaBarIndices[0] ] * 2, p[ deltaBarIndices[1] ] * 2 ), True, True, True ) )
                 
             deltaSum.addTerm( deltaProduct )
         
@@ -1631,17 +1376,34 @@ def generateCoordinateSpacePathIntegral( n ):
         integralResult.addTerm( integralResultTerm )
     
     return integralResult
-        
-def fourierTransformExpr( expr ):
+
+def pathIntegrateExpression( expr ):
+    integratedSum = Sum([])
     if not isinstance( expr, Sum ):
-        raise PTSymbolicException( "Expression passed to fourierTransformExpr() must be an instance of a fully-distributed Sum." )
+        raise PTSymbolicException( "Expression passed to pathIntegrateExpression() must be an instance of a Sum." )
     
     for term in expr.terms:
-        for i in range( 0, len( term.terms ) ):
-            if isinstance( term.terms[i], Gamma ):
-                term.terms[i] = term.terms[i].getFourierTransform()
-                
-    return expr
-            
+        if not isinstance( term, Product ):
+            raise PTSymbolicException( "Each term in the Sum passed to pathIntegrateExpression() must be an instance of a Product." )
         
-    
+        integratedProduct = Product([])
+        sigmaOrder = 0
+        for factor in term.terms:
+            if isinstance( factor, MatrixS ):
+                sigmaOrder +=1
+                if factor.indices[1] > factor.indices[0]:
+                    integratedProduct.addTerm( Delta( (factor.indices[0], factor.indices[1]) ) )
+                else:
+                    integratedProduct.addTerm( Delta( (factor.indices[1], factor.indices[0]) ) )
+            else:
+                integratedProduct.addTerm( factor )
+        
+        if sigmaOrder > 0:
+            if sigmaOrder % 2 == 0:        
+                integratedProduct.addTerm( generateCoordinateSpacePathIntegral( sigmaOrder ) )
+            else:
+                integratedProduct.addTerm( CoefficientFloat( 0.0 ) )
+            
+        integratedSum.addTerm( integratedProduct )
+        
+    return integratedSum
