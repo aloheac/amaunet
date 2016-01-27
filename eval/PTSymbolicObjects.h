@@ -19,32 +19,11 @@
  * ****************************************************************************
  */
 
-// Forward declarations:
+/*
+ * Forward declarations.
+ */
+
 class Factor;
-
-class Expression {
-public:
-	Expression();
-
-	/*
-	 * Typical-use constructor.
-	 * @param numTerms Number of terms in this product.
-	 * @param terms Array of factors in this product.
-	 */
-	Expression( int numTerms, Factor* terms );
-
-private:
-	/*
-	 * Number of terms in this expression (length of array terms).
-	 */
-	int numTerms;
-
-	/*
-	 * Array of terms in this expression.
-	 */
-	Factor* terms;
-
-};
 
 /*
  * Representation of a product of factors. Expressions are already in a fully
@@ -59,12 +38,32 @@ public:
 
 	std::vector<Factor>::const_iterator getIterator() const;
 
+	std::vector<Factor>::const_iterator getEnd() const;
+
 	friend std::ostream& operator<<( std::ostream& os, const Product& prod );
 
 	std::string to_string() const;
 
-protected:
+	int getNumberOfFactors() const;
+
+	int getOrderInA() const;
+
+	int getNumberOfUniqueIndices() const;
+
+	void finalize();
+
+//protected:
 	std::vector<Factor> factors;
+
+	int orderInA;
+
+	int numUniqueIndices;
+
+	bool isFinalized;
+
+	void calcOrderInA();
+
+	void calcNumberOfUniqueIndices();
 
 };
 
@@ -76,11 +75,15 @@ public:
 
 	std::vector<Product>::const_iterator getIterator() const;
 
+	std::vector<Product>::const_iterator getEnd() const;
+
 	friend std::ostream& operator<<( std::ostream& os, const Sum& s );
 
 	std::string to_string() const;
 
-protected:
+	int getNumberOfTerms() const;
+
+//protected:
 	std::vector<Product> products;
 };
 
@@ -100,6 +103,8 @@ class Factor {
 public:
 	Factor();
 
+	virtual ~Factor() { }
+
 	Factor( std::vector<int> indices );
 
 	/*
@@ -111,15 +116,21 @@ public:
 	 * @param numIndices The number of indices passed to the method.
 	 * @param indices Array of integers that represent the explicit indices.
 	 */
-	double eval( std::vector<int> indices, pt_util::PTSystemParameters params );
+	virtual double eval( std::vector<int> indices, pt_util::PTSystemParameters params );
 
-	std::string to_string() const;
+	virtual std::string to_string() const;
 
 	friend std::ostream& operator<<( std::ostream& os, const Factor& f );
 
 	void setFlavorLabel( std::string label );
 
 	std::string getFlavorLabel();
+
+	char getFactorType() const;
+
+	std::vector<int>::const_iterator getIndexIterator() const;
+
+	std::vector<int>::const_iterator getIndexEnd() const;
 
 protected:
 	/*
@@ -138,6 +149,8 @@ protected:
 	std::string stringRepresentation;
 
 	std::string flavorLabel;
+
+	char factorType;
 };
 
 /*
@@ -153,11 +166,15 @@ public:
 	 */
 	TermA( int order );
 
+	//virtual ~TermA() { }
+
 	std::string to_string() const;
 
 	double eval( std::vector<int> indices, pt_util::PTSystemParameters params );
 
-private:
+	int getOrder() const;
+
+//private:
 	/*
 	 * Mathematical order (power) of A, to represent A^{order}.
 	 */
@@ -177,11 +194,23 @@ public:
 	 * 				  explicit.
 	 */
 	TermD( std::vector<int> indices );  // Recall that D always carries a single index in
-							// momentum space, so numIndices = 1.
+										// momentum space, so numIndices = 1.
 
 	std::string to_string() const;
 
+	void setFlavorLabel( std::string label );  // Override implementation in Factor.
+
 	double eval( std::vector<int> indices, pt_util::PTSystemParameters params );
+};
+
+class DeltaBar : public Factor {
+public:
+	DeltaBar( std::vector<int> indices );
+
+	std::string to_string() const;
+
+	friend std::ostream& operator<<( std::ostream& os, const DeltaBar& db );
+
 };
 
 class FourierSum : public Factor {
@@ -189,6 +218,8 @@ public:
 	FourierSum( std::vector<int> indices );
 
 	std::string to_string() const;
+
+	friend std::ostream& operator<<( std::ostream& os, const FourierSum& fs );
 
 	double eval( std::vector<int> indices, pt_util::PTSystemParameters params );
 };
@@ -199,7 +230,13 @@ public:
 
 	std::string to_string() const;
 
+	friend std::ostream& operator<<( std::ostream& os, const CoefficientFloat& cf );
+
 	double eval( std::vector<int> indices, pt_util::PTSystemParameters params );
+
+	void setValue( double v );
+
+	double getValue();
 
 private:
 	double value;
