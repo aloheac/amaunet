@@ -16,13 +16,12 @@ from itertools import combinations
 
 # Static variables that define the behavior of symbolic calculations, system parameters,
 # and output.
-global NX, NTAU, GC_COLLECT_INTERVAL, num_memory_intensive_calls
-
-NX = 2                      # Spatial volume of the system.
-NTAU = 2                    # Temporal volume of the system.
+global GC_COLLECT_INTERVAL, num_memory_intensive_calls  # In general global variables are a no-no,
+                                                        # but here is one of those instances where
+                                                        # we need them.
 
 SPLIT_SUMS_BY_LINE = True   # If true, each term of a sum will be output on a separate late.
-GC_COLLECT_INTERVAL = 5000   # Number of calls to memory-intensive functions before garbage
+GC_COLLECT_INTERVAL = 20000   # Number of calls to memory-intensive functions before garbage
                              # collection is explicitly called.
 
 num_memory_intensive_calls = 0  # Local global copy for each process. Tracks the number of calls to
@@ -175,6 +174,13 @@ class MatrixB:
                 else:
                     return "0.0"
     
+    """
+    Boolean equivalance (==) operator overload for comparing MatrixB instances.
+    @param: other Object that is on the right-hand side of the expression.
+    @return: True if this object and other are mathematically equivalent,
+             False otherwise (including if other is not an instance of
+             MatrixB).
+    """
     def __eq__( self, other ):
         if isinstance( other, MatrixB ):
             return self.derivativeOrder == other.derivativeOrder \
@@ -182,7 +188,12 @@ class MatrixB:
                 
         else:
             return False
-        
+    
+    """
+    Takes and returns the derivative of this instance. If it is marked as
+    non-interacting, it is treated as constant and zero is returned.
+    @return: The derivative of this instance (a Sum).
+    """    
     def derivative( self ):
         if self.isInteracting:
             dM = MatrixM( self.isInteracting, self.flavorLabel )
@@ -192,19 +203,40 @@ class MatrixB:
         
         else:
             return CoefficientFloat( 0.0 )
-          
+    
+    """
+    This matrix cannot be further simplified in terms of mathematical
+    representation, so do nothing.
+    """      
     def simplify( self ):
         pass
     
+    """
+    Mark this matrix as non-interacting (independent of A).
+    """
     def setAsNoninteracting( self ):
         self.isInteracting = False
 
+"""
+Representation of the matrix K in the current perturbation theory formalism.
+Under a Fourier transformation, this object is the representation of the
+diagonal matrix D.
+"""
 class MatrixK:
-    def __init__( self, flavorLabel = "" ):
+    """
+    Constructor for MatrixK.
+    @param flavorLabel: (string) Unique flavor label for the particle species
+                        corresponding to this matrix. Default value is the
+                        empty string.
+    """
+    def __init__( self, flavorLabel="" ):
         self.indices = None
         self.isFourierTransformed = False
         self.flavorLabel = flavorLabel
-        
+      
+    """
+    Pretty print this object.
+    """  
     def __str__( self ):
         if self.isFourierTransformed:
             return "D_" + str( self.flavorLabel ) + "_" + str( self.indices )
@@ -213,31 +245,57 @@ class MatrixK:
                 return "K_" + str( self.flavorLabel )
             else:
                 return "K_" + str( self.flavorLabel ) + "_"  + str( self.indices )
-        
+    
+    """
+    Boolean equivalence operator (==) overload.
+    @param other: (object) Object on the right-hand side of the expression.
+    @return: (boolean) True if this object is mathematically equivalent to other,
+             False otherwise (including if other is not an instance of MatrixK).
+    """    
     def __eq__( self, other ):
         if isinstance( other, MatrixK ):
             return self.indices == other.indices and self.isFourierTransformed == other.isFourierTransformed and self.flavorLabel == other.flavorLabel
         else:
             return False
-            
+    
+    """
+    This matrix cannot be further simplified mathematically, so do nothing.
+    """        
     def simplify( self ):
         pass
     
+    """
+    Symbolically marks this matrix as the Fourier transform of K, which is then
+    represented as the matrix D.
+    """
     def fourierTransform( self ):
         self.isFourierTransformed = True
-        
+
+"""
+Representation of the matrix S in terms of the current perturbation theory.
+"""        
 class MatrixS:
+    """
+    Constructor for MatrixS. Takes no arguments.
+    """
     def __init__( self ):
         self.indices = None
-        
+    
+    """
+    Pretty prints this object.
+    """    
     def __str__( self ):
         if self.indices == None:
             return "S"
         else:
             return "S_" + str( self.indices )
-        
+     
+    """
+    This matrix cannot be simplified, so do nothing.
+    """    
     def simplify(self):
         pass
+    
 """
 Representation of the determinant of M.
 """
@@ -253,7 +311,10 @@ class DetM:
         self.M = M
         self.isInteracting = isInteracting
         self.isInverted = isInverted
-
+    
+    """
+    Pretty print this determinant.
+    """
     def __str__(self):
         if self.M.flavorLabel == "":
             if self.isInteracting:
@@ -278,6 +339,13 @@ class DetM:
                 else:
                     return "Det[ M0_" + str( self.M.flavorLabel ) + " ]"
     
+    """
+    Boolean equivalence operator (==) overload.
+    @param other: (object) Object on the right-hand side of the expression.
+    @return: (boolean) True if this object is mathematically equivalent to the
+             instance of DetM on the right-hand side, False otherwise
+             (including of object is not an instance of DetM).
+    """
     def __eq__( self, other ):
         if isinstance( other, DetM):
             return self.M == other.M and self.isInverted == other.isInverted
@@ -394,9 +462,17 @@ class TermA:
     def simplify(self):
         pass
     
+    """
+    Pretty print this object.
+    """
     def __str__(self):
         return "A"
     
+    """
+    Boolean equivalence operator (==) overload.
+    @param other: (object) Object on the right-hand side of the expression.
+    @return: True if other is an instance of TermA, False otherwise. 
+    """
     def __eq__( self, other ):
         if isinstance( other, TermA ):
             return True
@@ -416,7 +492,10 @@ class Sum:
     """
     def __init__( self, terms ):
         self.terms = terms
-        
+    
+    """
+    Pretty print this expression.
+    """    
     def __str__( self ):
         s = ""
         for i in range( 0, len( self.terms ) ):
@@ -428,6 +507,10 @@ class Sum:
                 
         return s
     
+    """
+    Boolean equivalence operator(==) overload.
+    TODO: Need to improve; not in use for now.
+    """
     def __eq__( self, other ):
         for term in self.terms:
             if not term in other.terms:
@@ -780,6 +863,10 @@ class Delta:
     def simplify( self ):
         pass
 
+"""
+Representation of a generalized Fourier sum across a set of free indices in
+terms of the current perturbation theory language.
+"""
 class FourierSum:
     def __init__( self, indices, KOrder ):
         self.indices = indices
@@ -1028,6 +1115,13 @@ def truncateOddOrders( sum ):
             
     return truncatedSum
 
+"""
+Rewrite an expression written in the "M dM/dA-matrix formalism" in terms of the more
+mathematically-compact "KS-matrix formalism". All integration routines in this
+implementation requires this representation.
+@param expr: (Sum) Sum to be rewritten in the KS-matrix formalism.
+@return: (Sum) The rewritten expression. 
+"""
 def rewriteExprInKSFormalism( expr ):
     if not isinstance( expr, Sum ):
         raise PTSymbolicException( "Expression passed to rewriteExprInKSFormalism() must be an instance of a Sum." )
@@ -1041,14 +1135,19 @@ def rewriteExprInKSFormalism( expr ):
             term.rewriteTraceInKSFormalism()
             
     return expr
-             
+    
+"""
+Place indices on all matrix objects according to the structure of traces within
+an expression. Trace objects are dropped after evaluating an expression with
+this method.
+@param: expr: (Sum) Expression to be indexed.
+@return: (Sum) The indexed expression.
+"""         
 def indexExpr( expr ):
     indexedExpr = Sum([])
     if isinstance( expr, Sum ):
         for term in expr.terms:
             if isinstance( term, Product ):
-                if getAOrder( term ) == 2:
-                    print "shtap!"
                 nextIndex = 0
                 indexedProduct = Product([])
                 for factor in term.terms:
@@ -1069,16 +1168,19 @@ def indexExpr( expr ):
     
     return indexedExpr
 
-def _getTerminatedContraction( index, deltas ):
-    print (index, deltas[index])
-    if index in deltas:
-        if deltas[ index ] in deltas and not index == deltas[ index ]:
-            return _getTerminatedContraction( deltas[ index ], deltas )
-        else:
-            return deltas[ index ]
-    else:
+def _getTerminatedContraction( index, indexMapping ):
+    if not index in indexMapping or ( index in indexMapping and index == indexMapping[ index ] ):
         return index
+    else:
+        return _getTerminatedContraction( indexMapping[ index ], indexMapping )
 
+def _terminateContractions( indexMapping ):
+    for index in indexMapping:
+        indexMapping[ index ] = _getTerminatedContraction( index, indexMapping )
+ 
+    return indexMapping
+
+#TODO: Try to simplify and verify this method using _terminateContractions effectively.
 def _constructContractionDict( contractions ):
     indexMapping = dict()
     for indexPair in contractions:
@@ -1094,9 +1196,12 @@ def _constructContractionDict( contractions ):
                     indexMapping[ indexPair[1] ] = indexMapping[ indexPair[0] ]
         else:
             if indexPair[0] < indexMapping[ indexPair[1] ]:
-                indexMapping[ indexPair[0] ] = indexPair[0]
                 indexMapping[ indexMapping[ indexPair[1] ] ] = indexPair[0]
                 indexMapping[ indexPair[1] ] = indexPair[0]
+                if indexPair[0] in indexMapping and indexPair[0] < indexMapping[ indexPair[0] ]:
+                    indexMapping[ indexPair[0] ] = indexPair[0]
+                elif not indexPair[0] in indexMapping:
+                    indexMapping[ indexPair[0] ] = indexPair[0]
                 
                 #if not indexPair[0] in indexMapping:
                     #indexMapping[ indexPair[0] ] = indexPair[0]
@@ -1108,7 +1213,7 @@ def _constructContractionDict( contractions ):
                     if indexMapping[ index ] > indexPair[0]:
                         indexMapping[ index ] = indexPair[0]
                         
-    return indexMapping
+    return _terminateContractions( indexMapping )
 
 
 def fourierTransformExpr( expr ):
@@ -1146,6 +1251,8 @@ def fourierTransformExpr( expr ):
             #fourierIndices = range( 0, KOrder * 2, 2 )
             for contractedIndex in deltas:
                 for i in range( 0, len( fourierIndices ) ):
+                    # Note that we have to go over this mess of if statements because
+                    # tuples in Python are non-mutable objects.
                     if fourierIndices[i][0] == contractedIndex and not fourierIndices[i][1] == contractedIndex:
                         fourierIndices[i] = (deltas[ contractedIndex ], fourierIndices[i][1])
                     elif fourierIndices[i][1] == contractedIndex and not fourierIndices[i][0] == contractedIndex:
@@ -1164,6 +1271,15 @@ def fourierTransformExpr( expr ):
                             term.indices = (deltas[ contractedIndex ], deltas[ contractedIndex ])
                         # else: do nothing! The indices do not need to be contracted.
         
+                    elif isinstance( term, Delta ) and term.isBar == True:
+                        if term.indices[0] == contractedIndex and not term.indices[1] == contractedIndex:
+                            term.indices = (deltas[ contractedIndex ], term.indices[1])
+                        elif term.indices[1] == contractedIndex and not term.indices[0] == contractedIndex:
+                            term.indices = (term.indices[0], deltas[ contractedIndex ])
+                        elif term.indices[0] == contractedIndex and term.indices[1] == contractedIndex:
+                            term.indices = (deltas[ contractedIndex ], deltas[ contractedIndex ])
+                        # else: do nothing! The indices do not need to be contracted.
+                        
             transformedProduct.addTerm( FourierSum( fourierIndices, KOrder ) )
             
         transformedSum.addTerm( transformedProduct )

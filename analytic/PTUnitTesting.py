@@ -397,6 +397,30 @@ def executeUnitTests():
     TY04 = UnitTest( "TY02: combineLikeTerms() IV", tY04, " {A}  {Det[ M_up ]}  {Det[ M_dn ]}  {D_up_0}  {D_dn_0}  {3.0} +  {A}  {Det[ M_up ]}  {Det[ M_dn ]}  {D_up_0}  {D_up_0}  {14.0}" )
     TY04.runMe()
     
+    def aX01():
+        A = {0: 0, 1: 0, 2: 0, 3: 2}
+        B = pt._getTerminatedContraction( 3, A )
+        return str( B )
+        
+    TX01 = UnitTest( "TX01: _terminateContractions() I", aX01, "0" )
+    TX01.runMe()
+    
+    def aX02():
+        A = {0: 0, 4: 2, 2: 1, 3: 2}
+        B = pt._terminateContractions( A )
+        return str( B )
+        
+    TX01 = UnitTest( "TX01: _terminateContractions() I", aX02, "" )
+    TX01.runMe()
+    
+    def aX03():
+        A = {0: 0, 1: 0, 4: 2, 2: 3, 3: 1}
+        B = pt._terminateContractions( A )
+        return str( B )
+        
+    TX01 = UnitTest( "TX01: _terminateContractions() I", aX03, "" )
+    TX01.runMe()
+    
     def tX01():
         A = [(0,1),(2,3),(0,2)]
         B = pt._constructContractionDict( A )
@@ -453,6 +477,31 @@ def executeUnitTests():
     TX07 = UnitTest( "TX07: _constructContractionDict() VII", tX07, "{0: 0, 1: 0, 2: 0, 3: 3, 4: 3, 5: 0, 6: 3}" )
     TX07.runMe()
     
+    def tX08():
+        A =  [(1, 2), (3, 4), (5, 6), (0, 7), (0, 4), (2, 6)]
+        B = pt._constructContractionDict( A )
+        return str( B )
+        
+    TX08 = UnitTest( "TX08: _constructContractionDict() VIII", tX08, "{0: 0, 1: 1, 2: 1, 3: 0, 4: 0, 5: 1, 6: 1, 7: 0}" )
+    TX08.runMe()
+    
+    def tX09():
+        A =  [(1, 2), (3, 4),(2, 6), (5, 6), (0, 7), (0, 4) ]
+        B = pt._constructContractionDict( A )
+        return str( B )
+        
+    TX09 = UnitTest( "TX08: _constructContractionDict() IX", tX09, "{0: 0, 1: 1, 2: 1, 3: 0, 4: 0, 5: 1, 6: 1, 7: 0}" )
+    TX09.runMe()
+    
+    def tX10():
+        A =  [ (1, 2), (0, 2) ]
+        B = pt._constructContractionDict( A )
+        return str( B )
+        
+    TX10 = UnitTest( "TX10: _terminateContractions() IX", tX10, "" )
+    TX10.runMe()
+    
+    #[(1, 2), (3, 4), (5, 6), (0, 7), (0, 4), (2, 6)]
 executeUnitTests()
 print "\n-------------------------------------------------"
 print "Tests PASSED: " + str( UnitTest.testsPassed ) + " , tests FAILED: " + str( UnitTest.testsFailed ) + "."
