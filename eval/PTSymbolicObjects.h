@@ -34,11 +34,11 @@ class Product {
 public:
 	Product();
 
-	void addFactor( Factor f );
+	void addFactor( Factor* f );
 
-	std::vector<Factor>::const_iterator getIterator() const;
+	std::vector<Factor*>::const_iterator getIterator() const;
 
-	std::vector<Factor>::const_iterator getEnd() const;
+	std::vector<Factor*>::const_iterator getEnd() const;
 
 	friend std::ostream& operator<<( std::ostream& os, const Product& prod );
 
@@ -53,7 +53,7 @@ public:
 	void finalize();
 
 //protected:
-	std::vector<Factor> factors;
+	std::vector<Factor*> factors;
 
 	int orderInA;
 

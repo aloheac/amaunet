@@ -66,20 +66,11 @@ int main( int argc, char** argv ) {
 
 	cout << "Number of terms to evaluate:\t" << expr.getNumberOfTerms() << endl;
 	int i = 0;
-
 	for ( vector<Product>::const_iterator iter = expr.products.begin(); iter != expr.products.end(); iter++ ) {
 		cout << "\tTerm " << i << "\t\torder: " << (*iter).getOrderInA() << ", unique index count: " << (*iter).getNumberOfUniqueIndices() << endl;
+		i++;
 	}
 
-	Factor A = TermA( 7 );
-	Factor* pA = &A;
-	TermA* ptr = dynamic_cast<TermA*>(pA);
-	if (ptr) {
-		cout << "ptr good" << endl;
-	} else {
-		cout << "ptr bad: " << ptr << endl;
-	}
-	cout << "_______" << endl << ptr << endl;
 }
 
 

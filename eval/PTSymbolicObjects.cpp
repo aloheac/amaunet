@@ -58,7 +58,7 @@ Sum::Sum() {
  * Default constructor for an empty Product.
  */
 Product::Product() {
-	factors = vector<Factor>();
+	factors = vector<Factor*>();
 	orderInA = -1; // Notes this has not been set yet.
 	numUniqueIndices = -1; // Note this has not been set yet.
 	isFinalized = false;
@@ -99,7 +99,6 @@ void Product::finalize() {
 	calcOrderInA();
 	calcNumberOfUniqueIndices();
 	isFinalized = true;
-	cout << orderInA << " " << numUniqueIndices << endl;;
 }
 
 std::string Factor::to_string() const {
@@ -181,15 +180,10 @@ int Product::getNumberOfFactors() const {
 }
 
 void Product::calcOrderInA() {
-	for ( vector<Factor>::const_iterator iter = getIterator(); iter != factors.end(); ++iter ) {
-		if ( (*iter).getFactorType() == 'A' ) {
-			const Factor* Fptr = &(*iter);
-			cout << *((TermA*)(&(*iter))) << endl;
-			//const TermA* Aptr = dynamic_cast<const TermA*>(Fptr);
-			TermA* Aptr;
-			Aptr = ((TermA*)(&(*iter)));
+	for ( vector<Factor*>::const_iterator iter = getIterator(); iter != factors.end(); ++iter ) {
+		if ( (*(*iter)).getFactorType() == 'A' ) {
+			TermA* Aptr = (TermA*)(*iter);
 			orderInA = Aptr->getOrder();
-			cout << Aptr->order << "  ORDER: " << Aptr->order << endl;
 		}
 	}
 }
@@ -211,16 +205,15 @@ vector<int>::const_iterator Factor::getIndexEnd() const {
 }
 
 int TermA::getOrder() const {
-	cout << "TERMA: " << pt_util::str( order ) << endl;
 	return order;
 }
 
 void Product::calcNumberOfUniqueIndices() {
 	set<int> indexSet = set<int>();
 
-	for ( vector<Factor>::const_iterator iter = getIterator(); iter != factors.end(); ++iter ) {
-		if ( (*iter).getFactorType() == 'F' ) {
-			for ( vector<int>::const_iterator indexIter = (*iter).getIndexIterator(); indexIter != (*iter).getIndexEnd(); ++indexIter ) {
+	for ( vector<Factor*>::const_iterator iter = getIterator(); iter != factors.end(); ++iter ) {
+		if ( (*(*iter)).getFactorType() == 'F' ) {
+			for ( vector<int>::const_iterator indexIter = (*(*iter)).getIndexIterator(); indexIter != (*(*iter)).getIndexEnd(); ++indexIter ) {
 				indexSet.insert( *indexIter );
 			}
 		}
@@ -237,15 +230,15 @@ vector<Product>::const_iterator Sum::getEnd() const {
 	return products.end();
 }
 
-void Product::addFactor( Factor f ) {
+void Product::addFactor( Factor* f ) {
 	factors.push_back( f );
 }
 
-vector<Factor>::const_iterator Product::getIterator() const {
+vector<Factor*>::const_iterator Product::getIterator() const {
 	return factors.begin();
 }
 
-vector<Factor>::const_iterator Product::getEnd() const {
+vector<Factor*>::const_iterator Product::getEnd() const {
 	return factors.end();
 }
 
@@ -290,8 +283,8 @@ ostream& operator<<( ostream& os, const Sum& s ) {
 
 string Product::to_string() const {
 	stringstream ss;
-	for ( vector<Factor>::const_iterator iter = getIterator(); iter != factors.end(); ++iter ) {
-		ss << (*iter) << " ";
+	for ( vector<Factor*>::const_iterator iter = getIterator(); iter != factors.end(); ++iter ) {
+		ss << (*(*iter)) << " ";
 	}
 
 	return ss.str();
@@ -324,7 +317,8 @@ Sum ExpressionInterpreter::parseExpression( string expr ) {
 
 				if ( (*begTerm)[0] == 'A' ) {  // TermA
 					int order = atoi( (*begTerm).substr( 2, (*begTerm).size() - 1 ).c_str() );  // Extract order n from syntax "A,n".
-					nextProduct.addFactor( TermA( order ) );
+					TermA* pNewTermA = new TermA( order );
+					nextProduct.addFactor( pNewTermA );
 
 				} else if ( (*begTerm)[0] == 'F' ) {  // FourierSum
 					string indexList = (*begTerm).substr( 2, (*begTerm).size() - 1 ); // List of indices as a string.
@@ -342,7 +336,8 @@ Sum ExpressionInterpreter::parseExpression( string expr ) {
 						indices.push_back( atoi( (*iter).c_str() ) );
 					}
 
-					nextProduct.addFactor( FourierSum( indices ) );
+					FourierSum* pNewFourierSum = new FourierSum( indices );
+					nextProduct.addFactor( pNewFourierSum );
 
 				} else if ( (*begTerm)[0] == 'D' ) {  // TermD
 					// TODO: Add exception handler here.
@@ -363,14 +358,15 @@ Sum ExpressionInterpreter::parseExpression( string expr ) {
 					vector<int> indexVector = vector<int>();
 					indexVector.push_back( atoi( tokenizedArgs[1].c_str() ) );
 					indexVector.push_back( atoi( tokenizedArgs[2].c_str() ) );
-					TermD newFactor = TermD( indexVector );
-					newFactor.setFlavorLabel( tokenizedArgs[0] );
+					TermD* newFactor = new TermD( indexVector );
+					newFactor->setFlavorLabel( tokenizedArgs[0] );
 
 					nextProduct.addFactor( newFactor );
 
 				} else if ( (*begTerm)[0] == 'C' ) {  // CoefficientFloat
 					double value = atof( (*begTerm).substr( 2, (*begTerm).size() - 1 ).c_str() );
-					nextProduct.addFactor( CoefficientFloat( value ) );
+					CoefficientFloat* pNewCoeffFloat = new CoefficientFloat( value );
+					nextProduct.addFactor( pNewCoeffFloat );
 
 				} else if ( (*begTerm)[0] == 'B' ) {  // DeltaBar
 					string args = (*begTerm).substr( 2, (*begTerm).size() - 1 );
@@ -388,7 +384,8 @@ Sum ExpressionInterpreter::parseExpression( string expr ) {
 					indexVector.push_back( atoi( tokenizedArgs[0].c_str() ) );
 					indexVector.push_back( atoi( tokenizedArgs[1].c_str() ) );
 
-					nextProduct.addFactor( DeltaBar( indexVector ) );
+					DeltaBar* pNewDeltaBar = new DeltaBar( indexVector );
+					nextProduct.addFactor( pNewDeltaBar );
 
 				} else {
 					cout << "***ERROR: (ParseExpression): Invalid token encountered: " << (*begTerm) << "." << endl;
