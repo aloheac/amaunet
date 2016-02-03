@@ -2,12 +2,12 @@
  * Amaunet: High-order Lattice Perturbation Theory
  *          for Non-Relativistic Quantum Matter
  *
- * Numerical CUDA Perturbation Theory Fourier Transform Evaluation
+ * High-order Perturbation Theory Analytics
  * Weak-coupling Expansion for Fermionic Contact Interactions
  *
  * Symbolic Peturbation Theory Expression Objects Source Implementation
  *
- * v. 0.1		27 Jan 2015
+ * v. 0.1		02 Feb 2016
  *
  * Andrew C. Loheac, Joaquin E. Drut
  * Department of Physics and Astronomy
@@ -54,13 +54,20 @@ bool SymbolicTerm::operator==( const SymbolicTerm &other ) const {
 			( flavorLabel == other.flavorLabel );
 }
 
+ostream& operator<<( ostream& os, const SymbolicTerm &st ) {
+	stringstream ss;
+	ss << st.to_string();
+	os << ss.str();
+	return os;
+}
+
 Sum* SymbolicTerm::getDerivative() {
 	return new Sum();
 }
 
 void SymbolicTerm::simplify() { }
 
-const string SymbolicTerm::to_string() {
+const string SymbolicTerm::to_string() const {
 	return "<invalid_term>";
 }
 
@@ -359,7 +366,7 @@ TermA::TermA( const TermA* A ) : SymbolicTerm() {
 	termID = 'A';
 }
 
-const std::string TermA::to_string() {
+const std::string TermA::to_string() const {
 	return "A";
 }
 
@@ -831,4 +838,9 @@ void unpackTrivialExpression( SymbolicTerm* st ) {
 
 bool isZeroTrace( SymbolicTerm* tr ) {
 	return false; // TODO
+}
+
+std::ostream& operator<<( std::ostream& os, const TermA &obj ) {
+	os << obj.to_string();
+	return os;
 }

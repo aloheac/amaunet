@@ -2,12 +2,12 @@
  * Amaunet: High-order Lattice Perturbation Theory
  *          for Non-Relativistic Quantum Matter
  *
- * Numerical CUDA Perturbation Theory Fourier Transform Evaluation
+ * High-order Perturbation Theory Analytics
  * Weak-coupling Expansion for Fermionic Contact Interactions
  *
  * Symbolic Peturbation Theory Expression Objects Header
  *
- * v. 0.1		27 Jan 2015
+ * v. 0.1		02 Feb 2016
  *
  * Andrew C. Loheac, Joaquin E. Drut
  * Department of Physics and Astronomy
@@ -52,7 +52,7 @@ public:
 
 	virtual void reduceTree();
 
-	virtual const std::string to_string();
+	virtual const std::string to_string() const;
 
 	void setAsNonInteracting();
 
@@ -183,7 +183,7 @@ public:
 
 	TermA( const TermA* A );
 
-	const std::string to_string();
+	const std::string to_string() const;
 
 	bool operator==( const TermA &other ) const;
 };
@@ -408,5 +408,15 @@ Sum truncateOddOrders( Sum expr );
 Sum rewriteSumInKSFormalism( Sum expr );
 
 Sum indexExpression( Sum expr );
+
+/*
+ * ***********************************************************************
+ * INPUT REDIRECTION OPERATOR OVERLOADS
+ * ***********************************************************************
+ */
+
+std::ostream& operator<<( std::ostream& os, const SymbolicTerm &st );
+
+std::ostream& operator<<( std::ostream& os, const TermA &st );
 
 #endif /* PTSYMBOLICOBJECTS_H_ */
