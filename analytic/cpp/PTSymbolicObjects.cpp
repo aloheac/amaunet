@@ -41,12 +41,10 @@ SymbolicTerm::SymbolicTerm() {
 
 
 SymbolicTerm::SymbolicTerm( const SymbolicTerm* st ) {
-
+	cout << "***** Pointer copy constructor called.";
 }
 
-SymbolicTerm::~SymbolicTerm() {
-	delete indices;
-}
+SymbolicTerm::~SymbolicTerm() { }
 
 bool SymbolicTerm::operator==( const SymbolicTerm &other ) const {
 	return ( derivativeOrder == other.derivativeOrder ) and
@@ -61,8 +59,8 @@ ostream& operator<<( ostream& os, const SymbolicTerm &st ) {
 	return os;
 }
 
-Sum* SymbolicTerm::getDerivative() {
-	return new Sum();
+Sum SymbolicTerm::getDerivative() {
+	return Sum( new CoefficientFloat( 0.0 ) );
 }
 
 void SymbolicTerm::simplify() { }
@@ -118,6 +116,12 @@ SymbolicTerm* SymbolicTerm::copy() {
 		copy = new CoefficientFloat( dynamic_cast<CoefficientFloat*>( this ) );
 	} else if ( termID == 'R' ) {
 		copy = new CoefficientFraction( dynamic_cast<CoefficientFraction*>( this ) );
+	} else if ( termID == 'M' ) {
+		copy = dynamic_cast<MatrixM*>( this )->copy();
+	} else if ( termID == 'g' ) {
+		copy = dynamic_cast<GenericTestTerm*>( this )->copy();
+	} else {
+		cout << "***ERROR: Invalid SymbolicTerm* copy requested for term ID '" << termID << "'." << endl;
 	}
 
 	return copy;
@@ -130,6 +134,40 @@ SymbolicTerm* SymbolicTerm::copy() {
  */
 
 /*
+ * GenericTestTerm
+ */
+
+GenericTestTerm::GenericTestTerm( int thisId, int thisDerivativeOrder ) : SymbolicTerm() {
+	id = thisId;
+	derivativeOrder = thisDerivativeOrder;
+	termID = 'g';
+}
+
+const string GenericTestTerm::to_string() const {
+	stringstream ss;
+	ss << "GT_" << id << "^" << derivativeOrder;
+	return ss.str();
+}
+
+Sum GenericTestTerm::getDerivative() {
+	return Sum( new GenericTestTerm( id, derivativeOrder + 1 ) );
+}
+
+GenericTestTerm* GenericTestTerm::copy() {
+	GenericTestTerm* cpy = new GenericTestTerm( 0, 0 );
+	cpy->id = id;
+	cpy->derivativeOrder = derivativeOrder;
+	cpy->termID = 'g';
+
+	return cpy;
+}
+
+std::ostream& operator<<( std::ostream& os, const GenericTestTerm &st ) {
+	os << st.to_string();
+	return os;
+}
+
+/*
  * MatrixM
  */
 
@@ -138,6 +176,7 @@ MatrixM::MatrixM() : SymbolicTerm() {
 };
 
 MatrixM::MatrixM( char* thisFlavorLabel ) : SymbolicTerm() {
+	termID = 'M';
 	flavorLabel = thisFlavorLabel;
 }
 
@@ -148,7 +187,7 @@ bool MatrixM::operator==( const MatrixM &other ) const {
 				other.termID == 'M';
 }
 
-Sum* MatrixM::getDerivative() {
+Sum MatrixM::getDerivative() {
     MatrixM* D = new MatrixM( flavorLabel );
     D->derivativeOrder = derivativeOrder + 1;
     if ( !isInteracting ) {
@@ -158,10 +197,10 @@ Sum* MatrixM::getDerivative() {
     vector<SymbolicTerm*> vecD = vector<SymbolicTerm*>();
     vecD.push_back( D );
 
-    return new Sum( vecD );
+    return Sum( vecD );
 }
 
-const string MatrixM::to_string() {
+const string MatrixM::to_string() const {
 	stringstream ss;
 	if ( strcmp( flavorLabel, "" ) != 0 ) {
 		if ( isInteracting ) {
@@ -172,13 +211,13 @@ const string MatrixM::to_string() {
 				} else {
 					// If placing a matrix that does not vanish for derivativeOrder > 1,
 					// changes must be inserted here.
-					ss << "0.0";
+					ss << "0";
 				}
-		} else {
+		} else {  // M is non-interacting.
 			if ( derivativeOrder == 0 ) {
 				ss << "M0_" << flavorLabel;
 			} else {
-				ss << "dM0_" << flavorLabel << " / dA";
+				ss << "0";
 			}
 		}
 	} else {
@@ -196,7 +235,7 @@ const string MatrixM::to_string() {
 			if ( derivativeOrder == 0 ) {
 				ss << "M0";
 			} else {
-				ss << "dM0 / dA";
+				ss << "0";
 			}
 		}
 	}
@@ -204,10 +243,20 @@ const string MatrixM::to_string() {
 	return ss.str();
 }
 
+MatrixM* MatrixM::copy() {
+	MatrixM* cpy = new MatrixM();
+	cpy->derivativeOrder = derivativeOrder;
+	cpy->flavorLabel = flavorLabel;
+	cpy->isInteracting = isInteracting;
+	cpy->indices = indices;
+	cpy->termID = 'M';
+
+	return cpy;
+}
+
 /*
  * MatrixB
  */
-
 
 MatrixB::MatrixB() : SymbolicTerm() {
 	termID = 'B';
@@ -232,29 +281,29 @@ bool MatrixB::operator==( const MatrixB &other ) const {
 			( other.termID == 'B' );
 }
 
-Sum* MatrixB::getDerivative() {
+Sum MatrixB::getDerivative() {
 	if ( isInteracting ) {
 		MatrixM* dM = new MatrixM( flavorLabel );
 		dM->derivativeOrder = derivativeOrder + 1;
 
-		vector<SymbolicTerm*>* derivativeTerms = new vector<SymbolicTerm*>();
-		derivativeTerms->push_back( new CoefficientFloat( -1.0 ) );
-		derivativeTerms->push_back( new MatrixB( flavorLabel ) );
-		derivativeTerms->push_back( dM );
-		derivativeTerms->push_back( new MatrixB( flavorLabel ) );
+		vector<SymbolicTerm*> derivativeTerms = vector<SymbolicTerm*>();
+		derivativeTerms.push_back( new CoefficientFloat( -1.0 ) );
+		derivativeTerms.push_back( new MatrixB( flavorLabel ) );
+		derivativeTerms.push_back( dM );
+		derivativeTerms.push_back( new MatrixB( flavorLabel ) );
 
-		vector<SymbolicTerm*>* productTerms = new vector<SymbolicTerm*>();
-		productTerms->push_back( new Product( *derivativeTerms ) );
+		vector<SymbolicTerm*> productTerms = vector<SymbolicTerm*>();
+		productTerms.push_back( new Product( derivativeTerms ) );
 
-		return new Sum( *productTerms );
+		return Sum( productTerms );
 	} else {
-		vector<SymbolicTerm*>* derivativeTerms = new vector<SymbolicTerm*>();
-		derivativeTerms->push_back( new CoefficientFloat( -1.0 ) );
-		return new Sum( *derivativeTerms );
+		vector<SymbolicTerm*> derivativeTerms = vector<SymbolicTerm*>();
+		derivativeTerms.push_back( new CoefficientFloat( 0.0 ) );
+		return Sum( derivativeTerms );
 	}
 }
 
-const std::string MatrixB::to_string() {
+const std::string MatrixB::to_string() const {
 	stringstream ss;
 	if ( strcmp( flavorLabel, "" ) == 0 ) {
 		if ( isInteracting ) {
@@ -283,7 +332,7 @@ const std::string MatrixB::to_string() {
 			}
 		} else {
 			if ( derivativeOrder == 0 ) {
-				ss << "B_" << flavorLabel << "0";
+				ss << "B0_" << flavorLabel;
 			} else {
 				ss << "0.0";
 			}
@@ -291,6 +340,17 @@ const std::string MatrixB::to_string() {
 	}
 
 	return ss.str();
+}
+
+MatrixB* MatrixB::copy() {
+	MatrixB* cpy = new MatrixB();
+	cpy->derivativeOrder = derivativeOrder;
+	cpy->flavorLabel = flavorLabel;
+	cpy->isInteracting = isInteracting;
+	cpy->indices = indices;
+	cpy->termID = 'B';
+
+	return cpy;
 }
 
 /*
@@ -318,7 +378,7 @@ bool MatrixK::operator==( const MatrixK &other ) const {
 	return ( isFourierTransformed == other.isFourierTransformed ) and ( flavorLabel == other.flavorLabel );
 }
 
-const string MatrixK::to_string() {
+const string MatrixK::to_string() const {
 	stringstream ss;
 
 	if ( isFourierTransformed ) {
@@ -328,6 +388,17 @@ const string MatrixK::to_string() {
 	}
 
 	return ss.str();
+}
+
+MatrixK* MatrixK::copy() {
+	MatrixK* cpy = new MatrixK();
+	cpy->derivativeOrder = derivativeOrder;
+	cpy->flavorLabel = flavorLabel;
+	cpy->isInteracting = isInteracting;
+	cpy->indices = indices;
+	cpy->termID = 'K';
+
+	return cpy;
 }
 
 void MatrixK::fourierTransform() {
@@ -347,11 +418,22 @@ MatrixS::MatrixS( MatrixS* s ) {
 	termID = 's';
 }
 
-const string MatrixS::to_string() {
+const string MatrixS::to_string() const {
 	stringstream ss;
 	ss << "S_" << indices;
 
 	return ss.str();
+}
+
+MatrixS* MatrixS::copy() {
+	MatrixS* cpy = new MatrixS();
+	cpy->derivativeOrder = derivativeOrder;
+	cpy->flavorLabel = flavorLabel;
+	cpy->isInteracting = isInteracting;
+	cpy->indices = indices;
+	cpy->termID = 'B';
+
+	return cpy;
 }
 
 /*
@@ -368,6 +450,10 @@ TermA::TermA( const TermA* A ) : SymbolicTerm() {
 
 const std::string TermA::to_string() const {
 	return "A";
+}
+
+TermA* TermA::copy() {
+	return new TermA();
 }
 
 bool TermA::operator==( const TermA &other ) const {
@@ -388,14 +474,19 @@ CoefficientFloat::CoefficientFloat( const CoefficientFloat* f ) : SymbolicTerm()
 	termID = 'L';
 }
 
-const string CoefficientFloat::to_string() {
+const string CoefficientFloat::to_string() const {
 	stringstream ss;
 	ss << value;
 	return ss.str();
 }
 
-Sum* CoefficientFloat::getDerivative() {
-	return new Sum();
+CoefficientFloat* CoefficientFloat::copy() {
+	CoefficientFloat* cpy = new CoefficientFloat( value );
+	return cpy;
+}
+
+Sum CoefficientFloat::getDerivative() {
+	return Sum();
 }
 
 double CoefficientFloat::eval() {
@@ -418,14 +509,19 @@ CoefficientFraction::CoefficientFraction( CoefficientFraction* f ) : SymbolicTer
 	termID = 'R';
 }
 
-const string CoefficientFraction::to_string() {
+const string CoefficientFraction::to_string() const {
 	stringstream ss;
 	ss << num << " / " << den;
 	return ss.str();
 }
 
-Sum* CoefficientFraction::getDerivative() {
-	return new Sum(); // TODO
+CoefficientFraction* CoefficientFraction::copy() {
+	CoefficientFraction* cpy = new CoefficientFraction( num, den );
+	return cpy;
+}
+
+Sum CoefficientFraction::getDerivative() {
+	return Sum(); // TODO
 }
 
 double CoefficientFraction::eval() {
@@ -452,27 +548,45 @@ Sum::Sum( std::vector<SymbolicTerm*> thisTerms ) {
 	termID = 'S';
 }
 
+Sum::Sum( SymbolicTerm* term ) {
+	terms = vector<SymbolicTerm*>();
+	termID = 'S';
+	terms.push_back( term );
+}
+
 Sum::Sum( const Sum* s ) {
 	// TODO
 }
 
 Sum::~Sum() {
-	terms.clear();
+	//terms.clear();
 }
 
-const std::string Sum::to_string() {
+const std::string Sum::to_string() const {
 	stringstream ss;
-	bool SPLIT_SUMS_BY_LINE = true;
-	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
+	bool SPLIT_SUMS_BY_LINE = false;
+	int counter = 0;
+	for ( vector<SymbolicTerm*>::const_iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
 		ss << (*iter)->to_string();
-		if ( iter != terms.end()-- ) {
+		if ( counter != (terms.size() - 1) ) {
 			if ( SPLIT_SUMS_BY_LINE ) ss << "\n\n";
 			ss << " + ";
 		}
+		counter++;
 	}
 
 	return ss.str();
 }
+
+Sum* Sum::copy() {
+	Sum* cpy = new Sum();
+	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
+		cpy->addTerm( (*iter)->copy() );
+	}
+
+	return cpy;
+}
+
 void Sum::simplify() {
 	vector<SymbolicTerm*> simplifiedTerms = vector<SymbolicTerm*>();
 
@@ -481,8 +595,8 @@ void Sum::simplify() {
 		unpackTrivialExpression( (*iter) );
 		string trimmedRepresentation = (*iter)->to_string();  // To be trimmed on next statement.
 		boost::trim( trimmedRepresentation );
-		if ( trimmedRepresentation == "0.0" or trimmedRepresentation == "-0.0" or isZeroTrace( *iter ) ) {
-			delete *iter;
+		if ( trimmedRepresentation == "0" or trimmedRepresentation == "-0" or isZeroTrace( *iter ) ) {
+			//delete *iter;
 			iter = terms.erase( iter );
 		} else {
 			++iter;
@@ -517,14 +631,16 @@ void Sum::reduceTree() {
 }
 
 
-Sum* Sum::getDerivative() {
+Sum Sum::getDerivative() {
 	reduceTree();
-	Sum* D = new Sum( this );
+	Sum D = Sum();
+	Sum termDerivative;
 	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
-		(*iter) = (*iter)->getDerivative();
+		termDerivative = (*iter)->getDerivative();
+		D.addTerm( termDerivative.copy() );
 	}
 
-	D->simplify();
+	D.simplify();
 
 	return D;
 }
@@ -572,10 +688,19 @@ vector<SymbolicTerm*>::iterator Sum::getIteratorEnd() {
 
 Product::Product() : SymbolicTerm() {
 	terms = vector<SymbolicTerm*>();
+	termID = 'P';
 }
 
 Product::Product( vector<SymbolicTerm*> t ) : SymbolicTerm() {
 	terms = t;
+	termID = 'P';
+}
+
+Product::Product( SymbolicTerm* term ) : SymbolicTerm() {
+	terms = vector<SymbolicTerm*>();
+	terms.push_back( term );
+	termID = 'P';
+
 }
 
 Product::Product( const Product* p ) {
@@ -586,11 +711,11 @@ Product::~Product() {
 
 }
 
-const string Product::to_string() {
+const string Product::to_string() const {
 	stringstream ss;
 
 	ss << " ";
-	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
+	for ( vector<SymbolicTerm*>::const_iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
 		ss << "{" << (*iter)->to_string() << "}";
 		if ( iter != terms.end()-- ) {
 			ss << " ";
@@ -598,6 +723,15 @@ const string Product::to_string() {
 	}
 
 	return ss.str();
+}
+
+Product* Product::copy() {
+	Product* cpy = new Product();
+	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
+		cpy->addTerm( (*iter)->copy() );
+	}
+
+	return cpy;
 }
 
 void Product::simplify() {
@@ -641,16 +775,16 @@ void Product::reduceTree() {
 	unpackTrivialExpression( this );
 }
 
-Sum* Product::getDerivative() {
+Sum Product::getDerivative() {
 	reduceTree();
-	Sum* D = new Sum();
+	Sum D = new Sum();
 	for ( vector<SymbolicTerm*>::iterator iter =  terms.begin(); iter != terms.end(); ++iter ) {
 		vector<SymbolicTerm*> term_derivative = vector<SymbolicTerm*>();
-		term_derivative.push_back( (*iter)->getDerivative() );
-		D->addTerm( new Product( term_derivative ) );
+		term_derivative.push_back( ((*iter)->getDerivative()).copy() );
+		D.addTerm( new Product( term_derivative ) );
 	}
 
-	D->simplify();
+	D.simplify();
 	return D;
 }
 //def getExpandedExpr( self ):
@@ -747,11 +881,13 @@ Sum* Product::getExpandedExpr() {
 }
 
 void Product::addTerm( SymbolicTerm* t ) {
-
+	terms.push_back( t );
 }
 
 void Product::setAsNonInteracting() {
-
+	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
+		(*iter)->setAsNonInteracting();
+	}
 }
 
 bool Product::operator==( const Sum &other ) const {
@@ -797,7 +933,7 @@ Trace::~Trace() {
 
 }
 
-const string Trace::to_string() {
+const string Trace::to_string() const {
 	stringstream ss;
 	ss << "Trace[";
 	ss << "]";
@@ -812,8 +948,8 @@ void Trace::reduceTree() {
 
 }
 
-Sum* Trace::getDerivative(){
-	return new Sum(); // TODO
+Sum Trace::getDerivative(){
+	return Sum(); // TODO
 }
 
 void Trace::setAsNonInteracting() {
@@ -841,6 +977,11 @@ bool isZeroTrace( SymbolicTerm* tr ) {
 }
 
 std::ostream& operator<<( std::ostream& os, const TermA &obj ) {
+	os << obj.to_string();
+	return os;
+}
+
+std::ostream& operator<<( std::ostream& os, const MatrixM &obj ) {
 	os << obj.to_string();
 	return os;
 }

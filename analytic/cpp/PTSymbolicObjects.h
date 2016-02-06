@@ -46,7 +46,7 @@ public:
 
 	virtual bool operator==( const SymbolicTerm &other ) const;
 
-	virtual Sum* getDerivative();
+	virtual Sum getDerivative();
 
 	virtual void simplify();
 
@@ -66,7 +66,7 @@ public:
 
 	char getTermID();
 
-	SymbolicTerm* copy();
+	virtual SymbolicTerm* copy();
 
 protected:
 
@@ -87,6 +87,22 @@ protected:
  * ***********************************************************************
  */
 
+class GenericTestTerm : public SymbolicTerm {
+public:
+
+	GenericTestTerm( int thisId, int thisDerivativeOrder );
+
+	const std::string to_string() const;
+
+	Sum getDerivative();
+
+	GenericTestTerm* copy();
+
+	int id;
+
+	char termID;
+};
+
 class MatrixM : public SymbolicTerm {
 
 	friend class MatrixB;
@@ -101,9 +117,11 @@ public:
 
 	bool operator==( const MatrixM &other ) const;
 
-	Sum* getDerivative();
+	Sum getDerivative();
 
-	const std::string to_string();
+	const std::string to_string() const;
+
+	MatrixM* copy();
 };
 
 class MatrixB : public SymbolicTerm {
@@ -117,9 +135,11 @@ public:
 
 	bool operator==( const MatrixB &other ) const;
 
-	Sum* getDerivative();
+	Sum getDerivative();
 
-	const std::string to_string();
+	const std::string to_string() const;
+
+	MatrixB* copy();
 };
 
 class MatrixK : public SymbolicTerm {
@@ -133,7 +153,9 @@ public:
 
 	bool operator==( const MatrixK &other ) const;
 
-	const std::string to_string();
+	const std::string to_string() const;
+
+	MatrixK* copy();
 
 	void fourierTransform();
 
@@ -149,7 +171,9 @@ public:
 
 	MatrixS( MatrixS* s );
 
-	const std::string to_string();
+	const std::string to_string() const;
+
+	MatrixS* copy();
 
 };
 
@@ -168,7 +192,9 @@ public:
 
 	bool operator==( const DetM &other ) const;
 
-	Sum* getDerivative();
+	Sum getDerivative();
+
+	DetM* copy();
 
 private:
 
@@ -186,6 +212,8 @@ public:
 	const std::string to_string() const;
 
 	bool operator==( const TermA &other ) const;
+
+	TermA* copy();
 };
 
 class CoefficientFloat : public SymbolicTerm {
@@ -195,9 +223,11 @@ public:
 
 	CoefficientFloat( const CoefficientFloat* f );
 
-	const std::string to_string();
+	const std::string to_string() const;
 
-	Sum* getDerivative();
+	CoefficientFloat* copy();
+
+	Sum getDerivative();
 
 	double eval();
 
@@ -213,9 +243,11 @@ public:
 
 	CoefficientFraction( CoefficientFraction* f );
 
-	const std::string to_string();
+	const std::string to_string() const;
 
-	Sum* getDerivative();
+	CoefficientFraction* copy();
+
+	Sum getDerivative();
 
 	double eval();
 
@@ -237,17 +269,21 @@ public:
 
 	Sum( std::vector<SymbolicTerm*> thisTerms );
 
+	Sum( SymbolicTerm* term );
+
 	Sum( const Sum* s );
 
 	~Sum();
 
-	const std::string to_string();
+	const std::string to_string() const;
+
+	Sum* copy();
 
 	void simplify();
 
 	void reduceTree();
 
-	Sum* getDerivative();
+	Sum getDerivative();
 
 	Sum* getExpandedExpr();
 
@@ -277,17 +313,21 @@ public:
 
 	Product( std::vector<SymbolicTerm*> t );
 
+	Product( SymbolicTerm* term );
+
 	Product( const Product* p );
 
 	~Product();
 
-	const std::string to_string();
+	const std::string to_string() const;
+
+	Product* copy();
 
 	void simplify();
 
 	void reduceTree();
 
-	Sum* getDerivative();
+	Sum getDerivative();
 
 	Sum* getExpandedExpr();
 
@@ -322,13 +362,13 @@ public:
 
 	~Trace();
 
-	const std::string to_string();
+	const std::string to_string() const;
 
 	void simplify();
 
 	void reduceTree();
 
-	Sum* getDerivative();
+	Sum getDerivative();
 
 	void setAsNonInteracting();
 
@@ -350,7 +390,7 @@ public:
 
 	Delta( const Delta* d );
 
-	const std::string to_string();
+	const std::string to_string() const;
 
 	bool operator==( const Delta &other ) const;
 
@@ -415,8 +455,10 @@ Sum indexExpression( Sum expr );
  * ***********************************************************************
  */
 
-std::ostream& operator<<( std::ostream& os, const SymbolicTerm &st );
+std::ostream& operator<<( std::ostream& os, const SymbolicTerm &obj );
 
-std::ostream& operator<<( std::ostream& os, const TermA &st );
+std::ostream& operator<<( std::ostream& os, const TermA &obj );
+
+std::ostream& operator<<( std::ostream& os, const MatrixM &obj );
 
 #endif /* PTSYMBOLICOBJECTS_H_ */

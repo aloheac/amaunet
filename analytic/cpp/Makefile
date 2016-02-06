@@ -13,25 +13,26 @@
 # University of North Carolina at Chapel Hill
 
 CC=g++
+CFLAGS=-g
 
 all: amaunet
 
 amaunet: main.o PTSymbolicObjects.o
-	$(CC) main.o PTSymbolicObjects.o -o amaunet
+	$(CC) $(CFLAGS) main.o PTSymbolicObjects.o -o amaunet
 	
 main.o: main.cpp
-	$(CC) -c main.cpp
+	$(CC) $(CFLAGS) -c main.cpp
 	
 PTSymbolicObjects.o: PTSymbolicObjects.cpp
-	$(CC) -c PTSymbolicObjects.cpp
+	$(CC) $(CFLAGS) -c PTSymbolicObjects.cpp
 	
 ut: unittst
 
 unittst: UnitTesting.o PTSymbolicObjects.o
-	$(CC) UnitTesting.o PTSymbolicObjects.o -o unittst
+	$(CC) $(CFLAGS) UnitTesting.o PTSymbolicObjects.o -o unittst
 	
 UnitTesting.o: UnitTesting.cpp
-	$(CC) -c UnitTesting.cpp
+	$(CC) $(CFLAGS) -c UnitTesting.cpp
 
 clean:
 	rm *o amaunet
