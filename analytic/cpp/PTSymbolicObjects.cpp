@@ -595,7 +595,7 @@ void Sum::simplify() {
 		unpackTrivialExpression( (*iter) );
 		string trimmedRepresentation = (*iter)->to_string();  // To be trimmed on next statement.
 		boost::trim( trimmedRepresentation );
-		if ( trimmedRepresentation == "0" or trimmedRepresentation == "-0" or isZeroTrace( *iter ) ) {
+		if ( trimmedRepresentation == "0" or trimmedRepresentation == "{0}" or isZeroTrace( *iter ) ) {
 			//delete *iter;
 			iter = terms.erase( iter );
 		} else {
@@ -632,7 +632,7 @@ void Sum::reduceTree() {
 
 
 Sum Sum::getDerivative() {
-	reduceTree();
+	//reduceTree();
 	Sum D = Sum();
 	Sum termDerivative;
 	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
@@ -640,7 +640,7 @@ Sum Sum::getDerivative() {
 		D.addTerm( termDerivative.copy() );
 	}
 
-	D.simplify();
+	//D.simplify();
 
 	return D;
 }
@@ -778,10 +778,10 @@ void Product::reduceTree() {
 Sum Product::getDerivative() {
 	reduceTree();
 	Sum D = new Sum();
-	for ( vector<SymbolicTerm*>::iterator iter =  terms.begin(); iter != terms.end(); ++iter ) {
-		vector<SymbolicTerm*> term_derivative = vector<SymbolicTerm*>();
-		term_derivative.push_back( ((*iter)->getDerivative()).copy() );
-		D.addTerm( new Product( term_derivative ) );
+	for ( unsigned int i = 0; i < terms.size(); i++ ) {
+		Product* derivativeTerm = this->copy();
+		derivativeTerm->terms[ i ] = dynamic_cast<SymbolicTerm*>( derivativeTerm->terms[ i ]->getDerivative().copy() );
+		D.addTerm( derivativeTerm );
 	}
 
 	D.simplify();

@@ -345,6 +345,17 @@ string K05() {
 	return ss.str();
 }
 
+string K06() {
+	stringstream ss;
+	Product A = Product();
+	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( new GenericTestTerm(1,0) );
+	A.addTerm( new GenericTestTerm(2,0) );
+	Sum B = A.getDerivative();
+	ss << B;
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -426,7 +437,7 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "E04: MatrixB, to_string(), isInteracting = 0", &E04, "B0_up" );
 
-	UnitTest( "E05: MatrixB, getDerivative()", &E05, " {-1} {B_up} {dM_up / dA} {B_up} " );
+	UnitTest( "E05: MatrixB, getDerivative()", &E05, " {-1} {B_up} {dM_up / dA} {B_up}. " );
 
 	UnitTest( "E06: MatrixB, Second derivative", &E06, "" );
 
@@ -473,6 +484,8 @@ int main( int argc, char** argv ) {
 	UnitTest( "K04: Product, containsSum() I", &K04, "1" );
 
 	UnitTest( "K05: Product, containsSum() II", &K05, "0" );
+
+	UnitTest( "K06: Product, getDerivative() I", &K06, " {GT_0^1} {GT_1^0} {GT_2^0}  +  {GT_0^0} {GT_1^1} {GT_2^0}  +  {GT_0^0} {GT_1^0} {GT_2^1} " );
 
 	/*
 	 * L: Trace

@@ -28,6 +28,7 @@
  */
 
 class Sum;
+class Product;
 
 /*
  * ***********************************************************************
@@ -263,6 +264,9 @@ private:
  */
 
 class Sum : public SymbolicTerm {
+
+	friend Product;
+
 public:
 
 	Sum();
@@ -307,6 +311,9 @@ private:
 };
 
 class Product : public SymbolicTerm {
+
+	friend Sum;
+
 public:
 
 	Product();
