@@ -79,7 +79,7 @@ protected:
 
 	char* flavorLabel;
 
-	int* indices;
+	int indices[ 2 ];
 
 	char termID;
 };
