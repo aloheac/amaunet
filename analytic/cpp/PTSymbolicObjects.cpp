@@ -35,7 +35,7 @@ SymbolicTerm::SymbolicTerm() {
 	derivativeOrder = 0;
 	isInteracting = true;
 	flavorLabel = "";
-	indices = new int[ 2 ];
+	//indices = new int[ 2 ];
 	termID = '0';
 }
 
@@ -45,7 +45,7 @@ SymbolicTerm::SymbolicTerm( const SymbolicTerm* st ) {
 }
 
 SymbolicTerm::~SymbolicTerm() {
-	delete[] indices;
+	//delete[] indices;
 }
 
 bool SymbolicTerm::operator==( const SymbolicTerm &other ) const {
@@ -88,7 +88,8 @@ int* SymbolicTerm::getIndices() {
 }
 
 void SymbolicTerm::setIndices( int* newIndices ) {
-	indices = newIndices;
+	indices[0] = newIndices[0];
+	indices[1] = newIndices[1];
 }
 
 char SymbolicTerm::getTermID() {
@@ -250,7 +251,8 @@ MatrixM* MatrixM::copy() {
 	cpy->derivativeOrder = derivativeOrder;
 	cpy->flavorLabel = flavorLabel;
 	cpy->isInteracting = isInteracting;
-	cpy->indices = indices;
+	cpy->indices[0] = indices[0];
+	cpy->indices[1] = indices[1];
 	cpy->termID = 'M';
 
 	return cpy;
@@ -349,7 +351,8 @@ MatrixB* MatrixB::copy() {
 	cpy->derivativeOrder = derivativeOrder;
 	cpy->flavorLabel = flavorLabel;
 	cpy->isInteracting = isInteracting;
-	cpy->indices = indices;
+	cpy->indices[0] = indices[0];
+	cpy->indices[1] = indices[1];
 	cpy->termID = 'B';
 
 	return cpy;
@@ -397,7 +400,8 @@ MatrixK* MatrixK::copy() {
 	cpy->derivativeOrder = derivativeOrder;
 	cpy->flavorLabel = flavorLabel;
 	cpy->isInteracting = isInteracting;
-	cpy->indices = indices;
+	cpy->indices[0] = indices[0];
+	cpy->indices[1] = indices[1];
 	cpy->termID = 'K';
 
 	return cpy;
@@ -416,7 +420,8 @@ MatrixS::MatrixS() : SymbolicTerm() {
 }
 
 MatrixS::MatrixS( MatrixS* s ) {
-	indices = s->indices;
+	indices[0] = s->indices[0];
+	indices[1] = s->indices[1];
 	termID = 's';
 }
 
@@ -432,7 +437,8 @@ MatrixS* MatrixS::copy() {
 	cpy->derivativeOrder = derivativeOrder;
 	cpy->flavorLabel = flavorLabel;
 	cpy->isInteracting = isInteracting;
-	cpy->indices = indices;
+	cpy->indices[0] = indices[0];
+	cpy->indices[1] = indices[1];
 	cpy->termID = 'B';
 
 	return cpy;
@@ -561,7 +567,12 @@ Sum::Sum( const Sum* s ) {
 }
 
 Sum::~Sum() {
-	//terms.clear();
+//	for ( int i = 0; i < terms.size(); i++ ) {
+//		if ( terms[ i ] != 0 ) {
+//			cout << "destroy " << terms[ i ]->to_string() << endl;
+//			delete terms[ i ];
+//		}
+//	}
 }
 
 const std::string Sum::to_string() const {
@@ -637,6 +648,7 @@ Sum Sum::getDerivative() {
 	Sum termDerivative;
 	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
 		termDerivative = (*iter)->getDerivative();
+		cout << "in getDerivative: " << (*iter)->to_string() << endl;
 		D.addTerm( termDerivative.copy() );
 	}
 
@@ -712,7 +724,11 @@ Product::Product( const Product* p ) {
 }
 
 Product::~Product() {
-
+//	for ( int i = 0; i < terms.size(); i++ ) {
+//		if ( terms[ i ] != 0 ) {
+//			delete terms[ i ];
+//		}
+//	}
 }
 
 const string Product::to_string() const {
@@ -754,6 +770,7 @@ void Product::simplify() {
 			terms = zeroVector;
 			return;
 		} else if ( trimmedRepresentation == "1" ) {
+			cout << "delete called in product simplify()" << endl;
 			delete *iter;
 			iter = terms.erase( iter );
 		}
@@ -779,7 +796,7 @@ void Product::reduceTree() {
 
 Sum Product::getDerivative() {
 	reduceTree();
-	Sum D = new Sum();
+	Sum D = Sum();
 	for ( unsigned int i = 0; i < terms.size(); i++ ) {
 		Product* derivativeTerm = this->copy();
 		derivativeTerm->terms[ i ] = dynamic_cast<SymbolicTerm*>( derivativeTerm->terms[ i ]->getDerivative().copy() );
