@@ -29,6 +29,8 @@
 
 class Sum;
 class Product;
+class SymbolicTerm;
+void unpackTrivialExpression( SymbolicTerm* & );
 
 /*
  * ***********************************************************************
@@ -100,8 +102,6 @@ public:
 	GenericTestTerm* copy();
 
 	int id;
-
-	char termID;
 };
 
 class MatrixM : public SymbolicTerm {
@@ -265,7 +265,7 @@ private:
 
 class Sum : public SymbolicTerm {
 
-	friend Product;
+	friend void unpackTrivialExpression( SymbolicTerm* & );
 
 public:
 
@@ -293,6 +293,8 @@ public:
 
 	void addTerm( SymbolicTerm* thisTerm );
 
+	int getNumberOfTerms();
+
 	void setAsNonInteracting();
 
 	bool operator==( const Sum &other ) const;
@@ -312,7 +314,7 @@ private:
 
 class Product : public SymbolicTerm {
 
-	friend Sum;
+	friend void unpackTrivialExpression( SymbolicTerm* & );
 
 public:
 
@@ -340,6 +342,8 @@ public:
 
 	void addTerm( SymbolicTerm* t );
 
+	int getNumberOfTerms();
+
 	void setAsNonInteracting();
 
 	bool operator==( const Sum &other ) const;
@@ -354,7 +358,7 @@ public:
 
 	std::vector<SymbolicTerm*>::iterator getIteratorEnd();
 
-private:
+//private:
 
 	std::vector<SymbolicTerm*> terms;
 
@@ -430,7 +434,7 @@ private:
  * ***********************************************************************
  */
 
-void unpackTrivialExpression( SymbolicTerm* expr );
+void unpackTrivialExpression( SymbolicTerm*& expr );
 
 bool isZeroTrace( SymbolicTerm* tr );
 

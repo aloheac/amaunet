@@ -35,7 +35,7 @@ SymbolicTerm::SymbolicTerm() {
 	derivativeOrder = 0;
 	isInteracting = true;
 	flavorLabel = "";
-	indices = new int[2];
+	indices = new int[ 2 ];
 	termID = '0';
 }
 
@@ -44,7 +44,9 @@ SymbolicTerm::SymbolicTerm( const SymbolicTerm* st ) {
 	cout << "***** Pointer copy constructor called.";
 }
 
-SymbolicTerm::~SymbolicTerm() { }
+SymbolicTerm::~SymbolicTerm() {
+	delete[] indices;
+}
 
 bool SymbolicTerm::operator==( const SymbolicTerm &other ) const {
 	return ( derivativeOrder == other.derivativeOrder ) and
@@ -565,7 +567,7 @@ Sum::~Sum() {
 const std::string Sum::to_string() const {
 	stringstream ss;
 	bool SPLIT_SUMS_BY_LINE = false;
-	int counter = 0;
+	unsigned int counter = 0;
 	for ( vector<SymbolicTerm*>::const_iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
 		ss << (*iter)->to_string();
 		if ( counter != (terms.size() - 1) ) {
@@ -615,7 +617,7 @@ void Sum::reduceTree() {
 		if ( (*iter)->getTermID() == 'S' ) {
 			(*iter)->reduceTree();
 			Sum* iteratingSum = dynamic_cast<Sum*>(*iter); // TODO: Add exception check here.
-			for ( vector<SymbolicTerm*>::const_iterator iter_term = iteratingSum->getIteratorBegin(); iter_term != iteratingSum->getIteratorEnd(); ++iter_term ) {
+			for ( vector<SymbolicTerm*>::iterator iter_term = iteratingSum->getIteratorBegin(); iter_term != iteratingSum->getIteratorEnd(); ++iter_term ) {
 				unpackTrivialExpression( *iter_term );
 			}
 
@@ -626,13 +628,11 @@ void Sum::reduceTree() {
 			unpackTrivialExpression( *iter );
 		}
 	}
-
-	unpackTrivialExpression( this );  // Unpack this instance.
 }
 
 
 Sum Sum::getDerivative() {
-	//reduceTree();
+	reduceTree();
 	Sum D = Sum();
 	Sum termDerivative;
 	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
@@ -640,7 +640,7 @@ Sum Sum::getDerivative() {
 		D.addTerm( termDerivative.copy() );
 	}
 
-	//D.simplify();
+	D.simplify();
 
 	return D;
 }
@@ -662,6 +662,10 @@ Sum* Sum::getExpandedExpr() {
 
 void Sum::addTerm( SymbolicTerm* t ) {
 	terms.push_back( t );
+}
+
+int Sum::getNumberOfTerms() {
+	return terms.size();
 }
 
 void Sum::setAsNonInteracting() {
@@ -742,14 +746,14 @@ void Product::simplify() {
 		string trimmedRepresentation = (*iter)->to_string();  // To be trimmed on next statement.
 		boost::trim( trimmedRepresentation );
 
-		if ( trimmedRepresentation == "0.0" or trimmedRepresentation == "-0.0" or isZeroTrace( *iter ) ) {
+		if ( trimmedRepresentation == "0" or trimmedRepresentation == "-0" or isZeroTrace( *iter ) ) {
 			CoefficientFloat* zero = new CoefficientFloat( 0.0 );
 			vector<SymbolicTerm*> zeroVector = vector<SymbolicTerm*>();
 			zeroVector.push_back( zero );
 			// delete terms?
 			terms = zeroVector;
 			return;
-		} else if ( trimmedRepresentation == "1.0" ) {
+		} else if ( trimmedRepresentation == "1" ) {
 			delete *iter;
 			iter = terms.erase( iter );
 		}
@@ -771,8 +775,6 @@ void Product::reduceTree() {
 			unpackTrivialExpression( *iter );
 		}
 	}
-
-	unpackTrivialExpression( this );
 }
 
 Sum Product::getDerivative() {
@@ -884,6 +886,10 @@ void Product::addTerm( SymbolicTerm* t ) {
 	terms.push_back( t );
 }
 
+int Product::getNumberOfTerms() {
+	return terms.size();
+}
+
 void Product::setAsNonInteracting() {
 	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
 		(*iter)->setAsNonInteracting();
@@ -968,8 +974,18 @@ void Trace::rewriteInKSFormalism() {
  * FourierSum
  */
 
-void unpackTrivialExpression( SymbolicTerm* st ) {
-
+void unpackTrivialExpression( SymbolicTerm*& st ) {
+	if ( st->getTermID() == 'P' ) {
+		Product* castProduct = dynamic_cast<Product*>( st );
+		if ( castProduct->terms.size() == 1 ) {
+			st = castProduct->terms[ 0 ];
+		}
+	} else if ( st->getTermID() == 'S' ) {
+		Sum* castSum = dynamic_cast<Sum*>( st );
+		if ( castSum->terms.size() == 1) {
+			st = castSum->terms[ 0 ];
+		}
+	}
 }
 
 bool isZeroTrace( SymbolicTerm* tr ) {

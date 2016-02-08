@@ -84,6 +84,13 @@ string i04() {
 	return ss.str();
 }
 
+string i05() {
+	stringstream ss;
+	GenericTestTerm A = GenericTestTerm( 0, 0 );
+	ss << A.getTermID();
+	return ss.str();
+}
+
 string A01() {
 	stringstream ss;
 	SymbolicTerm A = SymbolicTerm();
@@ -95,6 +102,13 @@ string A02() {
 	stringstream ss;
 	SymbolicTerm A = SymbolicTerm();
 	ss << A.getDerivative();
+	return ss.str();
+}
+
+string A03() {
+	stringstream ss;
+	SymbolicTerm A = SymbolicTerm();
+	ss << A.getTermID();
 	return ss.str();
 }
 
@@ -118,6 +132,21 @@ string B03() {
 	TermA A = TermA();
 	TermA* B = A.copy();
 	ss << *B;
+	return ss.str();
+}
+
+string B04() {
+	stringstream ss;
+	TermA A = TermA();
+	ss << A.getTermID();
+	return ss.str();
+}
+
+string B05() {
+	stringstream ss;
+	TermA A = TermA();
+	TermA* B = A.copy();
+	ss << B->getTermID();
 	return ss.str();
 }
 
@@ -297,6 +326,23 @@ string J05() {
 	return ss.str();
 }
 
+string J06() {
+	stringstream ss;
+	Sum A = Sum();
+	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( new GenericTestTerm(1,0) );
+	Sum B = Sum();
+	B.addTerm( new GenericTestTerm(2,0) );
+	B.addTerm( new GenericTestTerm(3,0) );
+	Sum C = Sum();
+	C.addTerm( A.copy() );
+	C.addTerm( B.copy() );
+	ss << C << "   " << C.getNumberOfTerms() << "    ";
+	C.reduceTree();
+	ss << C << "   " << C.getNumberOfTerms();
+	return ss.str();
+}
+
 string K01() {
 	stringstream ss;
 	Product A = Product( new GenericTestTerm(0,0) );
@@ -356,6 +402,85 @@ string K06() {
 	return ss.str();
 }
 
+string K07() {
+	stringstream ss;
+	Product A = Product();
+	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( new GenericTestTerm(1,0) );
+	A.addTerm( new CoefficientFloat( 0.0 ) );
+	A.addTerm( new GenericTestTerm(2,0) );
+	A.simplify();
+	ss << A;
+	return ss.str();
+}
+
+string K08() {
+	stringstream ss;
+	Product A = Product();
+	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( new GenericTestTerm(1,0) );
+	A.addTerm( new CoefficientFloat( 1.0 ) );
+	A.addTerm( new GenericTestTerm(2,0) );
+	A.simplify();
+	ss << A;
+	return ss.str();
+}
+
+string K09() {
+	stringstream ss;
+	Product A = Product();
+	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( new GenericTestTerm(1,0) );
+	A.addTerm( new CoefficientFloat( 1.0 ) );
+	A.addTerm( new GenericTestTerm(2,0) );
+	A.addTerm( new CoefficientFloat( 0.0 ) );
+	A.simplify();
+	ss << A;
+	return ss.str();
+}
+
+string O01() {
+	stringstream ss;
+	Product A = Product();
+	A.addTerm( new GenericTestTerm(0,0) );
+	SymbolicTerm* B = A.copy();
+	unpackTrivialExpression( B );
+	ss << *B << " " << B->getTermID();
+	return ss.str();
+}
+
+string O02() {
+	stringstream ss;
+	Product A = Product();
+	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( new GenericTestTerm(1,0) );
+	SymbolicTerm* B = A.copy();
+	unpackTrivialExpression( B );
+	ss << *B << " " << B->getTermID();
+	return ss.str();
+}
+
+string O03() {
+	stringstream ss;
+	Sum A = Sum();
+	A.addTerm( new GenericTestTerm(0,0) );
+	SymbolicTerm* B = A.copy();
+	unpackTrivialExpression( B );
+	ss << *B << " " << B->getTermID();
+	return ss.str();
+}
+
+string O04() {
+	stringstream ss;
+	Sum A = Sum();
+	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( new GenericTestTerm(1,0) );
+	SymbolicTerm* B = A.copy();
+	unpackTrivialExpression( B );
+	ss << *B << " " << B->getTermID();
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -379,6 +504,8 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "i04: GenericTestTerm, copy() II", &i04, "GT_1^0 GT_1^1" );
 
+	UnitTest ("i05: GenericTestTerm, getTermID()", &i05, "g" );
+
 	/*
 	 * SymbolicTerm
 	 */
@@ -386,6 +513,8 @@ int main( int argc, char** argv ) {
 	UnitTest( "A01: SymbolicTerm, Default Constructor", &A01, "<invalid_term>" );
 
 	UnitTest( "A02: SymbolicTerm, getDerivative()", &A02, "0" );
+
+	UnitTest( "A03: SymbolicTerm, getTermID()", &A03, "0" );
 
 	/*
 	 * B: TermA
@@ -396,6 +525,10 @@ int main( int argc, char** argv ) {
 	UnitTest( "B02: TermA, == Overload", &B02, "1" );
 
 	UnitTest( "B03: TermA, copy()", &B03, "A" );
+
+	UnitTest( "B04: TermA, getTermID()", &B04, "A" );
+
+	UnitTest( "B05: TermA, getTermID(), copy()", &B05, "A" );
 
 	/*
 	 * C: MatrixM
@@ -437,7 +570,7 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "E04: MatrixB, to_string(), isInteracting = 0", &E04, "B0_up" );
 
-	UnitTest( "E05: MatrixB, getDerivative()", &E05, " {-1} {B_up} {dM_up / dA} {B_up}. " );
+	UnitTest( "E05: MatrixB, getDerivative()", &E05, " {-1} {B_up} {dM_up / dA} {B_up} " );
 
 	UnitTest( "E06: MatrixB, Second derivative", &E06, "" );
 
@@ -471,6 +604,8 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "J05: Sum, simplify() I", &J05, "M_a + M_b + 0 + M_c M_a + M_b + M_c" );
 
+	UnitTest( "J06: Sum, reduceTree() I", &J06, "" );
+
 	/*
 	 * K: Product
 	 */
@@ -486,6 +621,12 @@ int main( int argc, char** argv ) {
 	UnitTest( "K05: Product, containsSum() II", &K05, "0" );
 
 	UnitTest( "K06: Product, getDerivative() I", &K06, " {GT_0^1} {GT_1^0} {GT_2^0}  +  {GT_0^0} {GT_1^1} {GT_2^0}  +  {GT_0^0} {GT_1^0} {GT_2^1} " );
+
+	UnitTest( "K07: Product, simplify() I", &K07, " {0} " );
+
+	UnitTest( "K08: Product, simplify() II", &K08, " {GT_0^0} {GT_1^0} {GT_2^0} " );
+
+	UnitTest( "K09: Product, simplify() III", &K09, " {0} " );
 
 	/*
 	 * L: Trace
@@ -508,6 +649,14 @@ int main( int argc, char** argv ) {
 	/*
 	 * O: unpackTrivialExpression()
 	 */
+
+	UnitTest( "O01: unpackTrivialExpression(), Product I", &O01, "GT_0^0 g" );
+
+	UnitTest( "O02: unpackTrivialExpression(), Product II", &O02, " {GT_0^0} {GT_1^0}  P" );
+
+	UnitTest( "O03: unpackTrivialExpression(), Sum I", &O03, "GT_0^0 g" );
+
+	UnitTest( "O04: unpackTrivialExpression(), Sum II", &O04, "GT_0^0 + GT_1^0 S" );
 
 	/*
 	 * P: isZeroTrace()
