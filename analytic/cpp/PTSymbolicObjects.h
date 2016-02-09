@@ -275,9 +275,11 @@ public:
 
 	Sum( SymbolicTerm* term );
 
-	Sum( const Sum* s );
+	Sum( const Sum &s );
 
 	~Sum();
+
+	Sum& operator=( const Sum &rhs );
 
 	const std::string to_string() const;
 
@@ -324,9 +326,9 @@ public:
 
 	Product( SymbolicTerm* term );
 
-	Product( const Product* p );
-
 	~Product();
+
+	Product& operator=( const Product &rhs );
 
 	const std::string to_string() const;
 

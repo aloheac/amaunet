@@ -41,12 +41,10 @@ SymbolicTerm::SymbolicTerm() {
 
 
 SymbolicTerm::SymbolicTerm( const SymbolicTerm* st ) {
-	cout << "***** Pointer copy constructor called.";
+
 }
 
-SymbolicTerm::~SymbolicTerm() {
-	//delete[] indices;
-}
+SymbolicTerm::~SymbolicTerm() { }
 
 bool SymbolicTerm::operator==( const SymbolicTerm &other ) const {
 	return ( derivativeOrder == other.derivativeOrder ) and
@@ -232,7 +230,7 @@ const string MatrixM::to_string() const {
 			} else {
 				// If placing a matrix that does not vanish for derivativeOrder > 1,
 				// changes must be inserted here.
-				ss << "0.0";
+				ss << "0";
 			}
 		} else {
 			if ( derivativeOrder == 0 ) {
@@ -296,10 +294,7 @@ Sum MatrixB::getDerivative() {
 		derivativeTerms.push_back( dM );
 		derivativeTerms.push_back( new MatrixB( flavorLabel ) );
 
-		vector<SymbolicTerm*> productTerms = vector<SymbolicTerm*>();
-		productTerms.push_back( new Product( derivativeTerms ) );
-
-		return Sum( productTerms );
+		return Sum( new Product( derivativeTerms ) );
 	} else {
 		vector<SymbolicTerm*> derivativeTerms = vector<SymbolicTerm*>();
 		derivativeTerms.push_back( new CoefficientFloat( 0.0 ) );
@@ -322,7 +317,7 @@ const std::string MatrixB::to_string() const {
 			if ( derivativeOrder == 0 ) {
 				ss << "B0";
 			} else {
-				ss << "0.0";
+				ss << "0";
 			}
 		}
 	} else {
@@ -338,7 +333,7 @@ const std::string MatrixB::to_string() const {
 			if ( derivativeOrder == 0 ) {
 				ss << "B0_" << flavorLabel;
 			} else {
-				ss << "0.0";
+				ss << "0";
 			}
 		}
 	}
@@ -562,17 +557,28 @@ Sum::Sum( SymbolicTerm* term ) {
 	terms.push_back( term );
 }
 
-Sum::Sum( const Sum* s ) {
-	// TODO
+Sum::Sum( const Sum &s ) {
+	terms = vector<SymbolicTerm*>();
+	termID = 'S';
+	for ( vector<SymbolicTerm*>::const_iterator iter = s.terms.begin(); iter != s.terms.end(); ++iter ) {
+			addTerm( (*iter)->copy() );
+	}
 }
 
 Sum::~Sum() {
-//	for ( int i = 0; i < terms.size(); i++ ) {
-//		if ( terms[ i ] != 0 ) {
-//			cout << "destroy " << terms[ i ]->to_string() << endl;
-//			delete terms[ i ];
-//		}
-//	}
+	for ( int i = 0; i < terms.size(); i++ ) {
+			delete terms[ i ];
+	}
+}
+
+Sum& Sum::operator=( const Sum &rhs ) {
+	terms = vector<SymbolicTerm*>();
+	termID = 'S';
+	for ( vector<SymbolicTerm*>::const_iterator iter = rhs.terms.begin(); iter != rhs.terms.end(); ++iter ) {
+			addTerm( (*iter)->copy() );
+	}
+
+	return *this;
 }
 
 const std::string Sum::to_string() const {
@@ -643,16 +649,15 @@ void Sum::reduceTree() {
 
 
 Sum Sum::getDerivative() {
-	reduceTree();
-	Sum D = Sum();
-	Sum termDerivative;
+	//reduceTree();
+	Sum D;
+	SymbolicTerm* termDerivative;
 	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
-		termDerivative = (*iter)->getDerivative();
-		cout << "in getDerivative: " << (*iter)->to_string() << endl;
-		D.addTerm( termDerivative.copy() );
+		termDerivative = (*iter)->getDerivative().copy();
+		D.addTerm( termDerivative );
 	}
 
-	D.simplify();
+	//D.simplify();
 
 	return D;
 }
@@ -719,16 +724,20 @@ Product::Product( SymbolicTerm* term ) : SymbolicTerm() {
 
 }
 
-Product::Product( const Product* p ) {
-
+Product::~Product() {
+	for ( int i = 0; i < terms.size(); i++ ) {
+			delete terms[ i ];
+	}
 }
 
-Product::~Product() {
-//	for ( int i = 0; i < terms.size(); i++ ) {
-//		if ( terms[ i ] != 0 ) {
-//			delete terms[ i ];
-//		}
-//	}
+Product& Product::operator=( const Product &rhs ) {
+	terms = vector<SymbolicTerm*>();
+	termID = 'P';
+	for ( vector<SymbolicTerm*>::const_iterator iter = rhs.terms.begin(); iter != rhs.terms.end(); ++iter ) {
+		addTerm( (*iter)->copy() );
+	}
+
+	return *this;
 }
 
 const string Product::to_string() const {
@@ -770,7 +779,6 @@ void Product::simplify() {
 			terms = zeroVector;
 			return;
 		} else if ( trimmedRepresentation == "1" ) {
-			cout << "delete called in product simplify()" << endl;
 			delete *iter;
 			iter = terms.erase( iter );
 		}
@@ -795,15 +803,16 @@ void Product::reduceTree() {
 }
 
 Sum Product::getDerivative() {
-	reduceTree();
-	Sum D = Sum();
+	//reduceTree();
+	Sum D;
+	Product* derivativeTerm;
 	for ( unsigned int i = 0; i < terms.size(); i++ ) {
-		Product* derivativeTerm = this->copy();
-		derivativeTerm->terms[ i ] = dynamic_cast<SymbolicTerm*>( derivativeTerm->terms[ i ]->getDerivative().copy() );
+		derivativeTerm = copy();
+		derivativeTerm->terms[ i ] = dynamic_cast<SymbolicTerm*>( terms[ i ]->getDerivative().copy() );
 		D.addTerm( derivativeTerm );
 	}
 
-	D.simplify();
+	//D.simplify();
 	return D;
 }
 //def getExpandedExpr( self ):
@@ -993,14 +1002,20 @@ void Trace::rewriteInKSFormalism() {
 
 void unpackTrivialExpression( SymbolicTerm*& st ) {
 	if ( st->getTermID() == 'P' ) {
+		SymbolicTerm* tmp;
 		Product* castProduct = dynamic_cast<Product*>( st );
 		if ( castProduct->terms.size() == 1 ) {
-			st = castProduct->terms[ 0 ];
+			tmp = castProduct->terms[ 0 ]->copy();
+			delete st;
+			st = tmp;
 		}
 	} else if ( st->getTermID() == 'S' ) {
+		SymbolicTerm* tmp;
 		Sum* castSum = dynamic_cast<Sum*>( st );
 		if ( castSum->terms.size() == 1) {
-			st = castSum->terms[ 0 ];
+			tmp = castSum->terms[ 0 ]->copy();
+			delete st;
+			st = tmp;
 		}
 	}
 }

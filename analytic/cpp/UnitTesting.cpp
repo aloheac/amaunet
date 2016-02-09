@@ -72,6 +72,7 @@ string i03() {
 	GenericTestTerm A = GenericTestTerm( 1, 0 );
 	GenericTestTerm* B = A.copy();
 	ss << *B << " " << A;
+	delete B;
 	return ss.str();
 }
 
@@ -81,6 +82,7 @@ string i04() {
 	GenericTestTerm* B = A.copy();
 	Sum C = A.getDerivative();
 	ss << *B << " " << C;
+	delete B;
 	return ss.str();
 }
 
@@ -132,6 +134,7 @@ string B03() {
 	TermA A = TermA();
 	TermA* B = A.copy();
 	ss << *B;
+	delete B;
 	return ss.str();
 }
 
@@ -147,6 +150,7 @@ string B05() {
 	TermA A = TermA();
 	TermA* B = A.copy();
 	ss << B->getTermID();
+	delete B;
 	return ss.str();
 }
 
@@ -208,6 +212,7 @@ string C08() {
 	MatrixM* B = A.copy();
 	B->setAsNonInteracting();
 	ss << A << " " << *B << " " << A.isTermInteracting() << " " << B->isTermInteracting();
+	delete B;
 	return ss.str();
 }
 
@@ -217,6 +222,7 @@ string C09() {
 	MatrixM* B = A.copy();
 	Sum C = B->getDerivative();
 	ss << C;
+	delete B;
 	return ss.str();
 }
 
@@ -267,8 +273,7 @@ string E05() {
 string E06() {
 	stringstream ss;
 	MatrixB A = MatrixB( "up" );
-	Sum B = A.getDerivative();
-	B = B.getDerivative();
+	Sum B = A.getDerivative().getDerivative();
 	ss << B;
 	return ss.str();
 }
@@ -310,6 +315,7 @@ string J04() {
 	Sum* B = A.copy();
 	B->setAsNonInteracting();
 	ss << A << " " << *B;
+	delete B;
 	return ss.str();
 }
 
@@ -439,6 +445,14 @@ string K09() {
 	return ss.str();
 }
 
+string K10() {
+	stringstream ss;
+	Sum A;
+	A.addTerm( new Product( new GenericTestTerm(0,0) ) );
+	ss << A;
+	return ss.str();
+}
+
 string O01() {
 	stringstream ss;
 	Product A = Product();
@@ -446,6 +460,7 @@ string O01() {
 	SymbolicTerm* B = A.copy();
 	unpackTrivialExpression( B );
 	ss << *B << " " << B->getTermID();
+	delete B;
 	return ss.str();
 }
 
@@ -457,6 +472,7 @@ string O02() {
 	SymbolicTerm* B = A.copy();
 	unpackTrivialExpression( B );
 	ss << *B << " " << B->getTermID();
+	delete B;
 	return ss.str();
 }
 
@@ -467,6 +483,7 @@ string O03() {
 	SymbolicTerm* B = A.copy();
 	unpackTrivialExpression( B );
 	ss << *B << " " << B->getTermID();
+	delete B;
 	return ss.str();
 }
 
@@ -478,6 +495,7 @@ string O04() {
 	SymbolicTerm* B = A.copy();
 	unpackTrivialExpression( B );
 	ss << *B << " " << B->getTermID();
+	delete B;
 	return ss.str();
 }
 
@@ -627,6 +645,8 @@ int main( int argc, char** argv ) {
 	UnitTest( "K08: Product, simplify() II", &K08, " {GT_0^0} {GT_1^0} {GT_2^0} " );
 
 	UnitTest( "K09: Product, simplify() III", &K09, " {0} " );
+
+	UnitTest( "K10: Product, Destructor, Memory Leak Check I", &K10, " {GT_0^0} " );
 
 	/*
 	 * L: Trace
