@@ -7,7 +7,7 @@
  *
  * Primary Unit Testing
  *
- * v. 0.1		02 Feb 2016
+ * v. 0.1		09 Feb 2016
  *
  * Andrew C. Loheac, Joaquin E. Drut
  * Department of Physics and Astronomy
@@ -274,6 +274,7 @@ string E06() {
 	stringstream ss;
 	MatrixB A = MatrixB( "up" );
 	Sum B = A.getDerivative().getDerivative();
+	B.reduceTree();
 	ss << B;
 	return ss.str();
 }
@@ -346,6 +347,23 @@ string J06() {
 	ss << C << "   " << C.getNumberOfTerms() << "    ";
 	C.reduceTree();
 	ss << C << "   " << C.getNumberOfTerms();
+	return ss.str();
+}
+
+string J07() {
+	stringstream ss;
+	Sum A;
+	A.addTerm( new GenericTestTerm(0,0) );
+	Product* B = new Product();
+	B->addTerm( new GenericTestTerm(1,0) );
+	Product* C = new Product();
+	C->addTerm( new GenericTestTerm(2,0) );
+	C->addTerm( new GenericTestTerm(3,0) );
+	B->addTerm( C );
+	A.addTerm( B );
+	ss << A << "    " << A.getNumberOfTerms() << "    ";
+	A.reduceTree();
+	ss << A << "    " << A.getNumberOfTerms();
 	return ss.str();
 }
 
@@ -450,6 +468,21 @@ string K10() {
 	Sum A;
 	A.addTerm( new Product( new GenericTestTerm(0,0) ) );
 	ss << A;
+	return ss.str();
+}
+
+string K11() {
+	stringstream ss;
+	Product A;
+	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( new GenericTestTerm(1,0) );
+	Product* B = new Product();
+	B->addTerm( new GenericTestTerm(2,0) );
+	B->addTerm( new GenericTestTerm(3,0) );
+	A.addTerm( B );
+	ss << A << "    " << A.getNumberOfTerms() << "    ";
+	A.reduceTree();
+	ss << A << "    " << A.getNumberOfTerms();
 	return ss.str();
 }
 
@@ -590,7 +623,7 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "E05: MatrixB, getDerivative()", &E05, " {-1} {B_up} {dM_up / dA} {B_up} " );
 
-	UnitTest( "E06: MatrixB, Second derivative", &E06, "" );
+	UnitTest( "E06: MatrixB, Second derivative", &E06, " {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up}  +  {-1} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up} " );
 
 	/*
 	 * F: Matrix K
@@ -622,7 +655,9 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "J05: Sum, simplify() I", &J05, "M_a + M_b + 0 + M_c M_a + M_b + M_c" );
 
-	UnitTest( "J06: Sum, reduceTree() I", &J06, "" );
+	UnitTest( "J06: Sum, reduceTree() I", &J06, "GT_0^0 + GT_1^0 + GT_2^0 + GT_3^0   2    GT_0^0 + GT_1^0 + GT_2^0 + GT_3^0   4" );
+
+	UnitTest( "J07: Sum, reduceTree() II", &J07, "GT_0^0 +  {GT_1^0} { {GT_2^0} {GT_3^0} }     2    GT_0^0 +  {GT_1^0} {GT_2^0} {GT_3^0}     2" );
 
 	/*
 	 * K: Product
@@ -647,6 +682,8 @@ int main( int argc, char** argv ) {
 	UnitTest( "K09: Product, simplify() III", &K09, " {0} " );
 
 	UnitTest( "K10: Product, Destructor, Memory Leak Check I", &K10, " {GT_0^0} " );
+
+	UnitTest( "K11: Product, reduceTree() I", &K11, " {GT_0^0} {GT_1^0} { {GT_2^0} {GT_3^0} }     3     {GT_0^0} {GT_1^0} {GT_2^0} {GT_3^0}     4" );
 
 	/*
 	 * L: Trace

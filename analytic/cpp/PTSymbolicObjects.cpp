@@ -7,7 +7,7 @@
  *
  * Symbolic Peturbation Theory Expression Objects Source Implementation
  *
- * v. 0.1		02 Feb 2016
+ * v. 0.1		09 Feb 2016
  *
  * Andrew C. Loheac, Joaquin E. Drut
  * Department of Physics and Astronomy
@@ -630,26 +630,32 @@ void Sum::simplify() {
 }
 
 void Sum::reduceTree() {
+	vector<SymbolicTerm*> reducedExpression;
 	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
 		if ( (*iter)->getTermID() == 'S' ) {
 			(*iter)->reduceTree();
 			Sum* iteratingSum = dynamic_cast<Sum*>(*iter); // TODO: Add exception check here.
 			for ( vector<SymbolicTerm*>::iterator iter_term = iteratingSum->getIteratorBegin(); iter_term != iteratingSum->getIteratorEnd(); ++iter_term ) {
 				unpackTrivialExpression( *iter_term );
+				reducedExpression.push_back( *iter_term );
 			}
 
 		} else if ( (*iter)->getTermID() == 'P' or (*iter)->getTermID() == 'T' ) {
 			(*iter)->reduceTree();
 			unpackTrivialExpression( *iter );
+			reducedExpression.push_back( *iter );
 		}  else {
 			unpackTrivialExpression( *iter );
+			reducedExpression.push_back( *iter );
 		}
 	}
+
+	terms = reducedExpression;
 }
 
 
 Sum Sum::getDerivative() {
-	//reduceTree();
+	reduceTree();
 	Sum D;
 	SymbolicTerm* termDerivative;
 	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
@@ -657,7 +663,7 @@ Sum Sum::getDerivative() {
 		D.addTerm( termDerivative );
 	}
 
-	//D.simplify();
+	D.simplify();
 
 	return D;
 }
@@ -786,24 +792,30 @@ void Product::simplify() {
 }
 
 void Product::reduceTree() {
+	vector<SymbolicTerm*> reducedExpression;
 	for ( vector<SymbolicTerm*>::iterator iter =  terms.begin(); iter != terms.end(); ++iter ) {
 		if ( (*iter)->getTermID() == 'P' ) {
 			(*iter)->reduceTree();
 			Product* castProduct = dynamic_cast<Product*>( *iter );
 			for ( vector<SymbolicTerm*>::iterator term_iter = castProduct->getIteratorBegin(); term_iter != castProduct->getIteratorEnd(); ++term_iter ) {
 				unpackTrivialExpression( *term_iter );
+				reducedExpression.push_back( *term_iter );
 			}
 		} else if ( (*iter)->getTermID() == 'S' or (*iter)->getTermID() == 'T' ) {
 			(*iter)->reduceTree();
 			unpackTrivialExpression( *iter );
+			reducedExpression.push_back( *iter );
 		} else {
 			unpackTrivialExpression( *iter );
+			reducedExpression.push_back( *iter );
 		}
 	}
+
+	terms = reducedExpression;
 }
 
 Sum Product::getDerivative() {
-	//reduceTree();
+	reduceTree();
 	Sum D;
 	Product* derivativeTerm;
 	for ( unsigned int i = 0; i < terms.size(); i++ ) {
@@ -812,7 +824,7 @@ Sum Product::getDerivative() {
 		D.addTerm( derivativeTerm );
 	}
 
-	//D.simplify();
+	D.simplify();
 	return D;
 }
 //def getExpandedExpr( self ):

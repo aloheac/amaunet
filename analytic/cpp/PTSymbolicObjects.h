@@ -7,7 +7,7 @@
  *
  * Symbolic Peturbation Theory Expression Objects Header
  *
- * v. 0.1		02 Feb 2016
+ * v. 0.1		09 Feb 2016
  *
  * Andrew C. Loheac, Joaquin E. Drut
  * Department of Physics and Astronomy
