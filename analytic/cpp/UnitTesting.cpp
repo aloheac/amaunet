@@ -279,6 +279,45 @@ string E06() {
 	return ss.str();
 }
 
+string E07() {
+	stringstream ss;
+	MatrixB A = MatrixB( "up" );
+	Sum B = A.getDerivative().getDerivative().getDerivative();
+	B.reduceTree();
+	ss << B;
+	return ss.str();
+}
+
+string F01() {
+	stringstream ss;
+	MatrixK A;
+	ss << A;
+	return ss.str();
+}
+
+string F02() {
+	stringstream ss;
+	MatrixK A( "up" );
+	ss << A;
+	return ss.str();
+}
+
+string F03() {
+	stringstream ss;
+	MatrixK A( "up" );
+	A.setAsNonInteracting();
+	ss << A;
+	return ss.str();
+}
+
+string F04() {
+	stringstream ss;
+	MatrixK A( "up" );
+	A.fourierTransform();
+	ss << A;
+	return ss.str();
+}
+
 string J01() {
 	stringstream ss;
 	Sum A = Sum( new GenericTestTerm(0,0) );
@@ -486,6 +525,98 @@ string K11() {
 	return ss.str();
 }
 
+string K12() {
+	stringstream ss;
+	Product A;
+	A.addTerm( new GenericTestTerm(0,0) );
+	ss << A << "    ";
+	Sum B = A.getExpandedExpr();
+	ss << B;
+	return ss.str();
+}
+
+string K13() {
+	stringstream ss;
+	Sum A;
+	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( new GenericTestTerm(1,0) );
+	Sum B;
+	B.addTerm( new GenericTestTerm(2,0) );
+	B.addTerm( new GenericTestTerm(3,0) );
+	Product C;
+	C.addTerm( A.copy() );
+	C.addTerm( B.copy() );
+	ss << C << "    ";
+	Sum D = C.getExpandedExpr();
+	ss << D;
+	return ss.str();
+}
+
+string K14() {
+	stringstream ss;
+	Sum A;
+	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( new GenericTestTerm(1,0) );
+	Sum B;
+	B.addTerm( new GenericTestTerm(2,0) );
+	B.addTerm( new GenericTestTerm(3,0) );
+	B.addTerm( new GenericTestTerm(4,0) );
+	Product C;
+	C.addTerm( new GenericTestTerm(5,0) );
+	C.addTerm( A.copy() );
+	C.addTerm( B.copy() );
+	ss << C << "    ";
+	Sum D = C.getExpandedExpr();
+	ss << D;
+	return ss.str();
+}
+
+string K15() {
+	stringstream ss;
+	Sum A;
+	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( new GenericTestTerm(1,0) );
+	Sum B;
+	B.addTerm( new GenericTestTerm(2,0) );
+	B.addTerm( new GenericTestTerm(3,0) );
+	B.addTerm( new GenericTestTerm(4,0) );
+	Product C;
+	C.addTerm( A.copy() );
+	C.addTerm( new GenericTestTerm(5,0) );
+	C.addTerm( B.copy() );
+	ss << C << "    ";
+	Sum D = C.getExpandedExpr();
+	D.reduceTree();
+	ss << D;
+	return ss.str();
+}
+
+string K16() {
+	stringstream ss;
+	Sum A;
+	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( new GenericTestTerm(1,0) );
+	Sum B;
+	B.addTerm( new GenericTestTerm(2,0) );
+	B.addTerm( new GenericTestTerm(3,0) );
+	Product C;
+	C.addTerm( new GenericTestTerm(4,0) );
+	C.addTerm( A.copy() );
+	Product D;
+	D.addTerm( new GenericTestTerm(5,0) );
+	D.addTerm( B.copy() );
+	Product E;
+	E.addTerm( C.copy() );
+	E.addTerm( D.copy() );
+	ss << E << "    ";
+	E.reduceTree();
+	ss << E << "    ";
+	Sum F = E.getExpandedExpr();
+	F.reduceTree();
+	ss << F;
+	return ss.str();
+}
+
 string O01() {
 	stringstream ss;
 	Product A = Product();
@@ -522,13 +653,28 @@ string O03() {
 
 string O04() {
 	stringstream ss;
-	Sum A = Sum();
+	Sum A;
 	A.addTerm( new GenericTestTerm(0,0) );
 	A.addTerm( new GenericTestTerm(1,0) );
 	SymbolicTerm* B = A.copy();
 	unpackTrivialExpression( B );
 	ss << *B << " " << B->getTermID();
 	delete B;
+	return ss.str();
+}
+
+string O05() {
+	stringstream ss;
+	Sum A;
+	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( new GenericTestTerm(1,0) );
+	A.addTerm( new GenericTestTerm(2,0) );
+	Product B;
+	B.addTerm( A.copy() );
+	ss << B << "    " << B.getTermID() << "    ";
+	SymbolicTerm* C = B.copy();
+	unpackTrivialExpression( C );
+	ss << *C << "    " << C->getTermID();
 	return ss.str();
 }
 
@@ -567,7 +713,7 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "A03: SymbolicTerm, getTermID()", &A03, "0" );
 
-	/*
+	/* "up"
 	 * B: TermA
 	 */
 
@@ -625,9 +771,19 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "E06: MatrixB, Second derivative", &E06, " {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up}  +  {-1} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up} " );
 
+	UnitTest( "E07: MatirxB, Third derivative", &E07, " {-1} {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up}  +  {-1} {-1} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up}  +  {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up}  +  {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up}  +  {-1} {B_up} {dM_up / dA} {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up}  +  {-1} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up} " );
+
 	/*
-	 * F: Matrix K
+	 * F: MatrixK
 	 */
+
+	UnitTest( "F01: MatrixK, Default Constructor", &F01, "K__( 0, 0 )" );
+
+	UnitTest( "F02: MatrixK, Constructor, flavorLabel", &F02, "K_up_( 0, 0 )" );
+
+	UnitTest( "F03: MatrixK, setAsNonInteracting()", &F03, "" );
+
+	UnitTest( "F04: MatrixK, fourierTransform()", &F04, "D_up_( 0, 0 )" );
 
 	/*
 	 * G: MatrixS
@@ -685,6 +841,16 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "K11: Product, reduceTree() I", &K11, " {GT_0^0} {GT_1^0} { {GT_2^0} {GT_3^0} }     3     {GT_0^0} {GT_1^0} {GT_2^0} {GT_3^0}     4" );
 
+	UnitTest( "K12: Product, getExpandedExpr() I", &K12, " {GT_0^0}      {GT_0^0} " );
+
+	UnitTest( "K13: Product, getExpandedExpr() II", &K13, " {GT_0^0 + GT_1^0} {GT_2^0 + GT_3^0}      {GT_0^0} {GT_2^0}  +  {GT_0^0} {GT_3^0}  +  {GT_1^0} {GT_2^0}  +  {GT_1^0} {GT_3^0} " );
+
+	UnitTest( "K14: Product, getExpandedExpr() III, no reduceTree()", &K14, " {GT_5^0} {GT_0^0 + GT_1^0} {GT_2^0 + GT_3^0 + GT_4^0}      { {GT_5^0} {GT_0^0} } {GT_2^0}  +  { {GT_5^0} {GT_0^0} } {GT_3^0}  +  { {GT_5^0} {GT_0^0} } {GT_4^0}  +  { {GT_5^0} {GT_1^0} } {GT_2^0}  +  { {GT_5^0} {GT_1^0} } {GT_3^0}  +  { {GT_5^0} {GT_1^0} } {GT_4^0} " );
+
+	UnitTest( "K15: Product, getExpandedExpr() IV", &K15, " {GT_0^0 + GT_1^0} {GT_5^0} {GT_2^0 + GT_3^0 + GT_4^0}      {GT_0^0} {GT_5^0} {GT_2^0}  +  {GT_0^0} {GT_5^0} {GT_3^0}  +  {GT_0^0} {GT_5^0} {GT_4^0}  +  {GT_1^0} {GT_5^0} {GT_2^0}  +  {GT_1^0} {GT_5^0} {GT_3^0}  +  {GT_1^0} {GT_5^0} {GT_4^0} " );
+
+	UnitTest( "K16: Product, getExpandedExpr() V, reduceTree()", &K16, " { {GT_4^0} {GT_0^0 + GT_1^0} } { {GT_5^0} {GT_2^0 + GT_3^0} }      {GT_4^0} {GT_0^0 + GT_1^0} {GT_5^0} {GT_2^0 + GT_3^0}      {GT_4^0} {GT_0^0} {GT_5^0} {GT_2^0}  +  {GT_4^0} {GT_0^0} {GT_5^0} {GT_3^0}  +  {GT_4^0} {GT_1^0} {GT_5^0} {GT_2^0}  +  {GT_4^0} {GT_1^0} {GT_5^0} {GT_3^0} " );
+
 	/*
 	 * L: Trace
 	 */
@@ -714,6 +880,8 @@ int main( int argc, char** argv ) {
 	UnitTest( "O03: unpackTrivialExpression(), Sum I", &O03, "GT_0^0 g" );
 
 	UnitTest( "O04: unpackTrivialExpression(), Sum II", &O04, "GT_0^0 + GT_1^0 S" );
+
+	UnitTest( "O05: unpackTrivialExpression(), Single Sum in Product", &O05, " {GT_0^0 + GT_1^0 + GT_2^0}     P    GT_0^0 + GT_1^0 + GT_2^0    S" );
 
 	/*
 	 * P: isZeroTrace()

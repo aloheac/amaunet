@@ -11,7 +11,7 @@
  *
  * Andrew C. Loheac, Joaquin E. Drut
  * Department of Physics and Astronomy
- * University of North Carolina at CHapel Hill
+ * University of North Carolina at Chapel Hill
  * ***********************************************************************
  */
 
@@ -30,7 +30,7 @@
 class Sum;
 class Product;
 class SymbolicTerm;
-void unpackTrivialExpression( SymbolicTerm* & );
+bool unpackTrivialExpression( SymbolicTerm* & );
 
 /*
  * ***********************************************************************
@@ -39,6 +39,9 @@ void unpackTrivialExpression( SymbolicTerm* & );
  */
 
 class SymbolicTerm {
+
+	friend bool unpackTrivialExpression( SymbolicTerm* & );
+
 public:
 
 	SymbolicTerm();
@@ -265,7 +268,9 @@ private:
 
 class Sum : public SymbolicTerm {
 
-	friend void unpackTrivialExpression( SymbolicTerm* & );
+	friend bool unpackTrivialExpression( SymbolicTerm* & );
+
+	friend class Product;
 
 public:
 
@@ -291,7 +296,7 @@ public:
 
 	Sum getDerivative();
 
-	Sum* getExpandedExpr();
+	Sum getExpandedExpr();
 
 	void addTerm( SymbolicTerm* thisTerm );
 
@@ -316,7 +321,9 @@ private:
 
 class Product : public SymbolicTerm {
 
-	friend void unpackTrivialExpression( SymbolicTerm* & );
+	friend bool unpackTrivialExpression( SymbolicTerm* & );
+
+	friend class Sum;
 
 public:
 
@@ -340,7 +347,7 @@ public:
 
 	Sum getDerivative();
 
-	Sum* getExpandedExpr();
+	Sum getExpandedExpr();
 
 	void addTerm( SymbolicTerm* t );
 
@@ -436,7 +443,7 @@ private:
  * ***********************************************************************
  */
 
-void unpackTrivialExpression( SymbolicTerm*& expr );
+bool unpackTrivialExpression( SymbolicTerm*& expr );
 
 bool isZeroTrace( SymbolicTerm* tr );
 

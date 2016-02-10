@@ -35,7 +35,8 @@ SymbolicTerm::SymbolicTerm() {
 	derivativeOrder = 0;
 	isInteracting = true;
 	flavorLabel = "";
-	//indices = new int[ 2 ];
+	indices[ 0 ] = 0;
+	indices[ 1 ] = 0;
 	termID = '0';
 }
 
@@ -382,9 +383,9 @@ const string MatrixK::to_string() const {
 	stringstream ss;
 
 	if ( isFourierTransformed ) {
-		ss << "D_" << flavorLabel << "_" << indices;
+		ss << "D_" << flavorLabel << "_( " << indices[0] << ", " << indices[1] << " )";
 	} else {
-		ss << "K_" << flavorLabel << "_" << indices;
+		ss << "K_" << flavorLabel << "_( " << indices[0] << ", " << indices[1] << " )";
 	}
 
 	return ss.str();
@@ -602,7 +603,7 @@ Sum* Sum::copy() {
 	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
 		cpy->addTerm( (*iter)->copy() );
 	}
-
+	cpy->termID = 'S';
 	return cpy;
 }
 
@@ -668,15 +669,15 @@ Sum Sum::getDerivative() {
 	return D;
 }
 
-Sum* Sum::getExpandedExpr() {
-	Sum* expandedSum = new Sum();
+Sum Sum::getExpandedExpr() {
+	Sum expandedSum;
 	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
 		if ( (*iter)->getTermID() == 'S' ) {
 			Sum* s = dynamic_cast<Sum*>( *iter );
-			expandedSum->addTerm( s->getExpandedExpr() );
+			expandedSum.addTerm( s->getExpandedExpr().copy() );
 		} else if ( (*iter)->getTermID() == 'P' ) {
 			Product* prod = dynamic_cast<Product*>( *iter );
-			expandedSum->addTerm( prod->getExpandedExpr() );
+			expandedSum.addTerm( prod->getExpandedExpr().copy() );
 		}
 	}
 
@@ -765,7 +766,7 @@ Product* Product::copy() {
 	for ( vector<SymbolicTerm*>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
 		cpy->addTerm( (*iter)->copy() );
 	}
-
+	termID = 'P';
 	return cpy;
 }
 
@@ -827,97 +828,125 @@ Sum Product::getDerivative() {
 	D.simplify();
 	return D;
 }
-//def getExpandedExpr( self ):
-//        checkGarbageCollection()
-//        if len( self.terms ) == 0 or len( self.terms ) == 1:
-//            # No expansion to be done; return the original object.
-//            return self
-//
-//        elif len( self.terms ) == 2:
-//            if isinstance( unpackTrivialExpr( self.terms[0] ), Sum ):  # Case 1: First term is a Sum, or both terms are a Sum.
-//                expandedSum = Sum([])
-//                factorA = self.terms[1]
-//                if isinstance( factorA, Product ) and factorA.containsSum():
-//                    factorA = factorA.getExpandedExpr()
-//                for i in range( 0, len( self.terms[0].terms ) ):
-//                    factorB = self.terms[0].terms[i]
-//                    if isinstance( factorB, Product ) and factorB.containsSum():
-//                        factorB = factorB.getExpandedExpr()
-//                    expandedSum.terms.append( Product( [ deepcopy( factorB ), deepcopy( factorA ) ] ).getExpandedExpr() )
-//                return expandedSum
-//
-//            elif isinstance( unpackTrivialExpr( self.terms[1] ), Sum ):  # Case 2: Second term is a Sum.
-//                expandedSum = Sum([])
-//                factorA = self.terms[0]
-//                if isinstance( factorA, Product ) and factorA.containsSum():
-//                    factorA = factorA.getExpandedExpr()
-//                for i in range( 0, len( self.terms[1].terms ) ):
-//                    factorB = self.terms[1].terms[i]
-//                    if isinstance( factorB, Product ) and factorB.containsSum():
-//                        factorB = factorB.getExpandedExpr()
-//                    expandedSum.terms.append( Product( [ deepcopy( factorA ), deepcopy( factorB ) ] ).getExpandedExpr() )
-//                return expandedSum
-//            else:  # Case 3: Neither term is a sum, so no expansion is necessary.
-//                return self
-//
-//        else:  # Recursively expand the product.
-//            return Product( [ Product( self.terms[0:2] ).getExpandedExpr(), Product( self.terms[2:] ).getExpandedExpr() ] ).getExpandedExpr()
-Sum* Product::getExpandedExpr() {
-//	if ( terms.size() == 0 or terms.size() == 1 ) {
-//		vector<SymbolicTerm*> trivialSum = vector<SymbolicTerm*>( this );
-//		return Sum( trivialSum );
-//	} else if ( terms.size() == 2 ) {
-//		unpackTrivialExpression( terms[0] );
-//		if ( terms[0]->getTermID() == 'S') {  // Case I: First term is a Sum, or both terms are a Sum.
-//			Sum expandedSum = Sum();
-//			Sum expandedFactorA;
-//			SymbolicTerm* factorA = terms[1];
-//			Sum* castSum = dynamic_cast<Sum*>( terms[0] );
-//
-//			if ( factorA->getTermID() == 'P' ) {
-//				Product* castFactorA = dynamic_cast<Product*>( factorA );
-//				if ( castFactorA->containsSum() ) {
-//					expandedFactorA = castFactorA->getExpandedExpr();
-//				}
-//			}
-//
-//			for ( vector<SymbolicTerm*>::iterator iter = castSum->getIteratorBegin(); iter != castSum->getIteratorEnd(); ++iter ) {
-//				Sum expandedFactorB;
-//				SymbolicTerm* factorB = (*iter);
-//
-//				if ( factorB->getTermID() == 'P' ) {
-//					Product* castFactorB = dynamic_cast<Product*>( factorB );
-//					if ( castFactorB->containsSum() ) {
-//						expandedFactorB = castFactorB->getExpandedExpr();
-//					}
-//				}
-//
-//				Product* finalFactorA, finalFactorB;
-//				if ( expandedFactorA == 0 ) {  // If expandedFactorA remains null, then factorA did not require expansion.
-//					vector<SymbolicTerm*> trivial = vector<SymbolicTerm*>();
-//					trivial.push_back( factorA);
-//					expandedFactorA = Sum( trivial ).copy();
-//				}
-//
-//				if ( expandedFactorB == 0 ) { // If expandedFactor B remains null, then factorB did not require expansion.
-//					vector<SymbolicTerm*> trivial = vector<SymbolicTerm*>();
-//					trivial.push_back( factorB );
-//					expandedFactorB = Sum( trivial ).copy();
-//				}
-//
-//				// expandedSum.terms.append( Product( [ deepcopy( factorA ), deepcopy( factorB ) ] ).getExpandedExpr() )
-//				vector<SymbolicTerm*> productTermsToExpand = vector<SymbolicTerm*>();
-//				productTermsToExpand.push_back( expandedFactorA );
-//				productTermsToExpand.push_back( expandedFactorB );
-//				Product* productToExpand = new Product( productTermsToExpand );
-//				vector<SymbolicTerm*> trivial = vector<SymbolicTerm*>();
-//				trivial.push_back( )
-//				expandedSum.addTerm(  )
-//			}
-//
-//		}
-//	}
-	return new Sum();
+
+Sum Product::getExpandedExpr() {
+	if ( terms.size() == 0 or terms.size() == 1 ) {
+
+		// No expansion to be done for expressions with zero or one term.
+		// Return a copy of this instance.
+		return Sum( copy() );
+
+	} else if ( terms.size() == 2 ) {
+
+		SymbolicTerm* firstTerm = terms[0]->copy();
+		SymbolicTerm* secondTerm = terms[1]->copy();
+
+		unpackTrivialExpression( firstTerm );
+		unpackTrivialExpression( secondTerm );
+
+		if ( firstTerm->getTermID() == 'S' ) {  // Case I: First term is a Sum, or both terms are a Sum.
+
+			Sum expandedSum;
+			Sum* currentSum = dynamic_cast<Sum*>( firstTerm );
+
+			SymbolicTerm* factorA = secondTerm;
+			SymbolicTerm* factorB;
+			Product *productA, *productB;
+
+			if ( factorA->getTermID() == 'P' ) {
+				productA = dynamic_cast<Product*>( factorA );
+				if ( productA->containsSum() ) {
+					factorA = productA->getExpandedExpr().copy();  // copy() returns Sum*.
+				}
+			}
+
+			for ( vector<SymbolicTerm*>::iterator iter = currentSum->terms.begin(); iter != currentSum->terms.end(); ++iter ) {
+				factorB = *iter;
+				unpackTrivialExpression( factorB );  // Need?
+				if ( factorB->getTermID() == 'P' ) {
+					productB = dynamic_cast<Product*>( factorB );
+					if ( productB->containsSum() ) {
+						factorB = productB->getExpandedExpr().copy();  // copy() returns Sum*.
+						unpackTrivialExpression( factorB );  // Need?
+					}
+				}
+
+				vector<SymbolicTerm*> copiedFactors;
+				copiedFactors.push_back( factorB->copy() );
+				copiedFactors.push_back( factorA->copy() );
+
+				SymbolicTerm* expandedProduct = Product( copiedFactors ).getExpandedExpr().copy();
+				unpackTrivialExpression( expandedProduct );
+				expandedSum.addTerm( expandedProduct );
+			}
+
+			return expandedSum;
+
+		} else if ( secondTerm->getTermID() == 'S' ) {  // Case II: Second term is a sum.
+
+			Sum expandedSum;
+			Sum* currentSum = dynamic_cast<Sum*>( secondTerm );
+
+			SymbolicTerm* factorA = firstTerm;
+			SymbolicTerm* factorB;
+			Product *productA, *productB;
+
+			if ( factorA->getTermID() == 'P' ) {
+				productA = dynamic_cast<Product*>( factorA );
+				if ( productA->containsSum() ) {
+					factorA = productA->getExpandedExpr().copy();  // copy() returns Sum*.
+				}
+			}
+
+			for ( vector<SymbolicTerm*>::iterator iter = currentSum->terms.begin(); iter != currentSum->terms.end(); ++iter ) {
+				factorB = *iter;
+				unpackTrivialExpression( factorB );  // Need?
+				if ( factorB->getTermID() == 'P' ) {
+					productB = dynamic_cast<Product*>( factorB );
+					if ( productB->containsSum() ) {
+						factorB = productB->getExpandedExpr().copy();  // copy() returns Sum*.
+						unpackTrivialExpression( factorB );  // Need?
+					}
+				}
+
+				vector<SymbolicTerm*> copiedFactors;
+				copiedFactors.push_back( factorA->copy() );
+				copiedFactors.push_back( factorB->copy() );
+
+				SymbolicTerm* expandedProduct = Product( copiedFactors ).getExpandedExpr().copy();
+				unpackTrivialExpression( expandedProduct );
+				expandedSum.addTerm( expandedProduct );
+			}
+
+			return expandedSum;
+
+		} else {  // Case III: Neither term is a sum, so no expansion is necessary.
+			return Sum( copy() );
+		}
+
+	} else {  // Recursively expand the product.
+
+		Product headProduct, tailProduct, completeProduct;
+		SymbolicTerm *expandedHeadProduct, *expandedTailProduct;
+
+		headProduct.addTerm( terms[0]->copy() );  // Don't need copy here?
+		headProduct.addTerm( terms[1]->copy() );
+
+		for ( int i = 2; i < terms.size(); i++ ) {
+			tailProduct.addTerm( terms[ i ]->copy() );
+		}
+
+		expandedHeadProduct = headProduct.getExpandedExpr().copy();
+		expandedTailProduct = tailProduct.getExpandedExpr().copy();
+
+		unpackTrivialExpression( expandedHeadProduct );  // Don't need these?
+		unpackTrivialExpression( expandedTailProduct );
+
+		completeProduct.addTerm( expandedHeadProduct );
+		completeProduct.addTerm( expandedTailProduct );
+
+		return completeProduct.getExpandedExpr();
+	}
 }
 
 void Product::addTerm( SymbolicTerm* t ) {
@@ -1012,7 +1041,7 @@ void Trace::rewriteInKSFormalism() {
  * FourierSum
  */
 
-void unpackTrivialExpression( SymbolicTerm*& st ) {
+bool unpackTrivialExpression( SymbolicTerm*& st ) {  // TODO: Separate out into helper.
 	if ( st->getTermID() == 'P' ) {
 		SymbolicTerm* tmp;
 		Product* castProduct = dynamic_cast<Product*>( st );
@@ -1020,6 +1049,12 @@ void unpackTrivialExpression( SymbolicTerm*& st ) {
 			tmp = castProduct->terms[ 0 ]->copy();
 			delete st;
 			st = tmp;
+
+			if ( unpackTrivialExpression( st ) == true ) {
+				unpackTrivialExpression( st );
+			}
+
+			return true;
 		}
 	} else if ( st->getTermID() == 'S' ) {
 		SymbolicTerm* tmp;
@@ -1028,8 +1063,15 @@ void unpackTrivialExpression( SymbolicTerm*& st ) {
 			tmp = castSum->terms[ 0 ]->copy();
 			delete st;
 			st = tmp;
+
+			if ( unpackTrivialExpression( st ) == true ) {
+				unpackTrivialExpression( st );
+			}
+			return true;
 		}
 	}
+
+	return false;
 }
 
 bool isZeroTrace( SymbolicTerm* tr ) {
