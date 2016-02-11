@@ -100,26 +100,29 @@ void SymbolicTerm::reduceTree() { }
 SymbolicTerm* SymbolicTerm::copy() {
 	SymbolicTerm* copy;
 
+	// TODO: Shouldn't need dynamic_cast calls here -- polymorphism should take care of it.
 	if ( termID == 'S' ) {
-		copy = new Sum( dynamic_cast<Sum*>( this ) );
+		copy = dynamic_cast<Sum*>( this )->copy();
 	} else if ( termID == 'P' ) {
-		copy = new Product( dynamic_cast<Product*>( this ) );
+		copy = dynamic_cast<Product*>( this )->copy();
 	} else if ( termID == 'K' ) {
-		copy = new MatrixK( dynamic_cast<MatrixK*>( this ) );
+		copy = dynamic_cast<MatrixK*>( this )->copy();
 	} else if ( termID == 's' ) {
-		copy = new MatrixS( dynamic_cast<MatrixS*>( this ) );
+		copy = dynamic_cast<MatrixS*>( this )->copy();
 	} else if ( termID == 'B' ) {
-		copy = new MatrixB( dynamic_cast<MatrixB*>( this ) );
+		copy = dynamic_cast<MatrixB*>( this )->copy();
 	} else if ( termID == 'A' ) {
-		copy = new TermA( dynamic_cast<TermA*>( this ) );
+		copy = dynamic_cast<TermA*>( this )->copy();
 	} else if ( termID == 'T' ) {
-		copy = new Trace( dynamic_cast<Trace*>( this ) );
+		copy = dynamic_cast<Trace*>( this )->copy();
 	} else if ( termID == 'L' ) {
-		copy = new CoefficientFloat( dynamic_cast<CoefficientFloat*>( this ) );
+		copy = dynamic_cast<CoefficientFloat*>( this )->copy();
 	} else if ( termID == 'R' ) {
-		copy = new CoefficientFraction( dynamic_cast<CoefficientFraction*>( this ) );
+		copy = dynamic_cast<CoefficientFraction*>( this )->copy();
 	} else if ( termID == 'M' ) {
 		copy = dynamic_cast<MatrixM*>( this )->copy();
+	} else if ( termID == 'D' ) {
+		copy = dynamic_cast<DetM*>( this )->copy();
 	} else if ( termID == 'g' ) {
 		copy = dynamic_cast<GenericTestTerm*>( this )->copy();
 	} else {
@@ -437,6 +440,62 @@ MatrixS* MatrixS::copy() {
 	cpy->indices[1] = indices[1];
 	cpy->termID = 'B';
 
+	return cpy;
+}
+
+/*
+ * DetM
+ */
+
+DetM::DetM( MatrixM thisMatrix ) : SymbolicTerm() {
+	termID = 'D';
+	isInverted = false;
+	matrix = thisMatrix;
+}
+
+DetM::DetM( MatrixM thisMatrix, bool inverted ) : SymbolicTerm() {
+	termID = 'D';
+	isInverted = inverted;
+	matrix = thisMatrix;
+}
+
+bool DetM::isDetInverted() {
+	return isInverted;
+}
+
+void DetM::setAsNonInteracting() {
+	isInteracting = false;
+	matrix.setAsNonInteracting();
+}
+
+const std::string DetM::to_string() const {
+	stringstream ss;
+	ss << "Det[ " << matrix.to_string() << " ]";
+	return ss.str();
+}
+
+bool DetM::operator==( const DetM &other ) const {
+	return ( isInverted == other.isInverted and matrix == other.matrix );
+}
+
+Sum DetM::getDerivative() {
+	//return Product( [ DetM( self.M, True, False ), Trace( Product( [ MatrixB( True, self.M.flavorLabel ), self.M.derivative() ] ) ) ] )
+	// TODO: Add exception handling for an inverted or non-interacting determinant.
+	Product* derivative = new Product();
+	derivative->addTerm( new DetM( matrix ) );
+
+	Product* traceExpr = new Product();
+	traceExpr->addTerm( new MatrixB( matrix.getFlavorLabel() ) );
+	traceExpr->addTerm( matrix.getDerivative().copy() );
+
+	Trace* tr = new Trace( traceExpr );
+	derivative->addTerm( tr );
+
+	return Sum( derivative );
+}
+
+DetM* DetM::copy() {
+	DetM* cpy = new DetM( matrix, isInverted );
 	return cpy;
 }
 
@@ -994,43 +1053,44 @@ vector<SymbolicTerm*>::iterator Product::getIteratorEnd() {
  * Trace
  */
 
-Trace::Trace( SymbolicTerm* expr ) : SymbolicTerm() {
-
-}
-
-Trace::Trace( const Trace* ) : SymbolicTerm() {
-
+Trace::Trace( SymbolicTerm* thisExpr ) : SymbolicTerm() {
+	expr = thisExpr;
+	termID = 'T';
 }
 
 Trace::~Trace() {
-
+	delete expr;
 }
 
 const string Trace::to_string() const {
 	stringstream ss;
-	ss << "Trace[";
-	ss << "]";
+	ss << "Trace[ " << expr->to_string() << " ]";
 	return ss.str();
 }
 
-void Trace::simplify() {
+Trace* Trace::copy() {
+	return new Trace( expr->copy() );
+}
 
+void Trace::simplify() {
+	expr->simplify();
 }
 
 void Trace::reduceTree() {
-
+	expr->reduceTree();
 }
 
 Sum Trace::getDerivative(){
-	return Sum(); // TODO
+	return Sum( new Trace( expr->getDerivative().copy() ) );
 }
 
 void Trace::setAsNonInteracting() {
 	isInteracting = false;
+	expr->setAsNonInteracting();
 }
 
 bool Trace::operator==( const Trace &other ) const {
-	return false; // TODO
+	return *expr == other;
 }
 
 void Trace::rewriteInKSFormalism() {

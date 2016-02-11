@@ -318,6 +318,54 @@ string F04() {
 	return ss.str();
 }
 
+string H01() {
+	stringstream ss;
+	MatrixM m( "up" );
+	DetM det( m );
+	ss << det;
+	return ss.str();
+}
+
+string H02() {
+	stringstream ss;
+	MatrixM m( "up" );
+	DetM det( m );
+	SymbolicTerm* cpy = det.copy();
+	det.setAsNonInteracting();
+	ss << det << "    " << *cpy;
+	delete cpy;
+	return ss.str();
+}
+
+string H03() {
+	stringstream ss;
+	MatrixM m( "up" );
+	DetM det( m );
+	Sum derivative = det.getDerivative();
+	ss << derivative;
+	return ss.str();
+}
+
+string H04() {
+	stringstream ss;
+	MatrixM m( "up" );
+	DetM det( m );
+	Sum derivative = det.getDerivative().getDerivative();
+	derivative.reduceTree();
+	ss << derivative;
+	return ss.str();
+}
+
+string H05() {
+	stringstream ss;
+	MatrixM m( "up" );
+	DetM det( m );
+	Sum derivative = det.getDerivative().getDerivative().getDerivative();
+	derivative.reduceTree();
+	ss << derivative;
+	return ss.str();
+}
+
 string J01() {
 	stringstream ss;
 	Sum A = Sum( new GenericTestTerm(0,0) );
@@ -617,6 +665,23 @@ string K16() {
 	return ss.str();
 }
 
+string L01() {
+	stringstream ss;
+	SymbolicTerm* term = new GenericTestTerm(0,0);
+	Trace A( term );
+	ss << A;
+	return ss.str();
+}
+
+string L02() {
+	stringstream ss;
+	SymbolicTerm* term = new GenericTestTerm(0,0);
+	Trace A( term );
+	Sum B = A.getDerivative();
+	ss << B;
+	return ss.str();
+}
+
 string O01() {
 	stringstream ss;
 	Product A = Product();
@@ -678,6 +743,22 @@ string O05() {
 	return ss.str();
 }
 
+string O06() {
+	stringstream ss;
+	Sum A;
+	A.addTerm( new GenericTestTerm(0,0) );
+	Product B;
+	B.addTerm( A.copy() );
+	Sum C;
+	C.addTerm( B.copy() );
+	ss << C << "    ";
+	SymbolicTerm* D = C.copy();
+	unpackTrivialExpression( D );
+	ss << *D;
+	delete D;
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -713,7 +794,7 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "A03: SymbolicTerm, getTermID()", &A03, "0" );
 
-	/* "up"
+	/*
 	 * B: TermA
 	 */
 
@@ -793,6 +874,16 @@ int main( int argc, char** argv ) {
 	 * H: DetM
 	 */
 
+	UnitTest( "H01: DetM, Constructor", &H01, "Det[ M_up ]" );
+
+	UnitTest( "H02: DetM, copy(), setAsNonInteracting()", &H02, "Det[ M0_up ]    Det[ M_up ]" );
+
+	UnitTest( "H03: DetM, getDerivative()", &H03, " {Det[ M_up ]} {Trace[  {B_up} {dM_up / dA}  ]} " );
+
+	UnitTest( "H04: DetM, Second Derivative", &H04, " {Det[ M_up ]} {Trace[  {B_up} {dM_up / dA}  ]} {Trace[  {B_up} {dM_up / dA}  ]}  +  {Det[ M_up ]} {Trace[  {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA}  ]} " );
+
+	UnitTest( "H05: DetM, Third Derivative", &H05, " {Det[ M_up ]} {Trace[  {B_up} {dM_up / dA}  ]} {Trace[  {B_up} {dM_up / dA}  ]} {Trace[  {B_up} {dM_up / dA}  ]}  +  {Det[ M_up ]} {Trace[  {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA}  ]} {Trace[  {B_up} {dM_up / dA}  ]}  +  {Det[ M_up ]} {Trace[  {B_up} {dM_up / dA}  ]} {Trace[  {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA}  ]}  +  {Det[ M_up ]} {Trace[  {B_up} {dM_up / dA}  ]} {Trace[  {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA}  ]}  +  {Det[ M_up ]} {Trace[  {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up} {dM_up / dA}  +  {-1} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA}  ]} " );
+
 	/*
 	 * I: CoefficientFraction
 	 */
@@ -855,6 +946,10 @@ int main( int argc, char** argv ) {
 	 * L: Trace
 	 */
 
+	UnitTest( "L01: Trace, Constructor", &L01, "Trace[ GT_0^0 ]" );
+
+	UnitTest( "L02: Trace, getDerivative() I", &L02, "Trace[ GT_0^1 ]" );
+
 	/*
 	 * M: Delta
 	 */
@@ -882,6 +977,8 @@ int main( int argc, char** argv ) {
 	UnitTest( "O04: unpackTrivialExpression(), Sum II", &O04, "GT_0^0 + GT_1^0 S" );
 
 	UnitTest( "O05: unpackTrivialExpression(), Single Sum in Product", &O05, " {GT_0^0 + GT_1^0 + GT_2^0}     P    GT_0^0 + GT_1^0 + GT_2^0    S" );
+
+	UnitTest( "O06: unpackTrivialExpression(), Nested Expressions", &O06, " {GT_0^0}     GT_0^0" );
 
 	/*
 	 * P: isZeroTrace()

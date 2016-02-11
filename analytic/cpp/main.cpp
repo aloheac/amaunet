@@ -15,6 +15,7 @@
  */
 
 #include <iostream>
+#include <sstream>
 #include "PTSymbolicObjects.h"
 
 using namespace std;

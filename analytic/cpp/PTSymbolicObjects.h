@@ -60,7 +60,7 @@ public:
 
 	virtual const std::string to_string() const;
 
-	void setAsNonInteracting();
+	virtual void setAsNonInteracting();
 
 	bool isTermInteracting();
 
@@ -188,11 +188,11 @@ public:
 
 	DetM( MatrixM matrix, bool inverted );
 
-	DetM( const DetM* m );
-
 	bool isDetInverted();
 
-	const std::string to_string();
+	void setAsNonInteracting();
+
+	const std::string to_string() const;
 
 	bool operator==( const DetM &other ) const;
 
@@ -203,6 +203,8 @@ public:
 private:
 
 	bool isInverted;
+
+	MatrixM matrix;
 
 };
 
@@ -378,11 +380,11 @@ public:
 
 	Trace( SymbolicTerm* expr );
 
-	Trace( const Trace* );
-
 	~Trace();
 
 	const std::string to_string() const;
+
+	Trace* copy();
 
 	void simplify();
 
