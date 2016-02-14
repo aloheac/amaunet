@@ -318,6 +318,13 @@ string F04() {
 	return ss.str();
 }
 
+string G01() {
+	stringstream ss;
+	MatrixS A;
+	ss << A;
+	return ss.str();
+}
+
 string H01() {
 	stringstream ss;
 	MatrixM m( "up" );
@@ -682,6 +689,20 @@ string L02() {
 	return ss.str();
 }
 
+string M01() {
+	stringstream ss;
+	Delta d( 0, 1 );
+	ss << d;
+	return ss.str();
+}
+
+string M02() {
+	stringstream ss;
+	Delta d( 0, 1, true );
+	ss << d;
+	return ss.str();
+}
+
 string O01() {
 	stringstream ss;
 	Product A = Product();
@@ -756,6 +777,48 @@ string O06() {
 	unpackTrivialExpression( D );
 	ss << *D;
 	delete D;
+	return ss.str();
+}
+
+string P01() {
+	stringstream ss;
+	Sum A;
+	Trace B( A.copy() );
+	ss << isZeroTrace( B.copy() );
+	return ss.str();
+}
+
+string P02() {
+	stringstream ss;
+	Sum A;
+	A.addTerm( new GenericTestTerm(0,0) );
+	Trace B( A.copy() );
+	ss << isZeroTrace( B.copy() );
+	return ss.str();
+}
+
+string P03() {
+	stringstream ss;
+	Product A;
+	Trace B( A.copy() );
+	ss << isZeroTrace( B.copy() );
+	return ss.str();
+}
+
+string P04() {
+	stringstream ss;
+	Product A;
+	A.addTerm( new GenericTestTerm(0,0) );
+	Trace B( A.copy() );
+	ss << isZeroTrace( B.copy() );
+	return ss.str();
+}
+
+string P05() {
+	stringstream ss;
+	GenericTestTerm* A = new GenericTestTerm(0,0);
+	ss << isZeroTrace( A );
+	delete A;
 	return ss.str();
 }
 
@@ -852,7 +915,7 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "E06: MatrixB, Second derivative", &E06, " {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up}  +  {-1} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up} " );
 
-	UnitTest( "E07: MatirxB, Third derivative", &E07, " {-1} {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up}  +  {-1} {-1} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up}  +  {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up}  +  {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up}  +  {-1} {B_up} {dM_up / dA} {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up}  +  {-1} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up} " );
+	UnitTest( "E07: MatrixB, Third derivative", &E07, " {-1} {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up}  +  {-1} {-1} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up}  +  {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up}  +  {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up}  +  {-1} {B_up} {dM_up / dA} {-1} {-1} {B_up} {dM_up / dA} {B_up} {dM_up / dA} {B_up}  +  {-1} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {-1} {B_up} {dM_up / dA} {B_up} " );
 
 	/*
 	 * F: MatrixK
@@ -869,6 +932,8 @@ int main( int argc, char** argv ) {
 	/*
 	 * G: MatrixS
 	 */
+
+	UnitTest( "G01: MatrixS, Default Constructor", &G01, "S_(0, 0)" );
 
 	/*
 	 * H: DetM
@@ -954,6 +1019,10 @@ int main( int argc, char** argv ) {
 	 * M: Delta
 	 */
 
+	UnitTest( "M01: Delta, Constructor", &M01, "Delta( 0, 1 )" );
+
+	UnitTest( "M02: Delta, Constructor, isDeltaBar()", &M02, "DeltaBar( 0, 1 )" );
+
 	/*
 	 * N: FourierSum
 	 */
@@ -983,6 +1052,16 @@ int main( int argc, char** argv ) {
 	/*
 	 * P: isZeroTrace()
 	 */
+
+	UnitTest( "P01: isZeroTrace(), Empty Sum", &P01, "1" );
+
+	UnitTest( "P02: isZeroTrace(), Non-empty Sum", &P02, "0" );
+
+	UnitTest( "P03: isZeroTrace(), Empty Product", &P03, "1" );
+
+	UnitTest( "P04: isZeroTrace(), Non-empty Product", &P04, "0" );
+
+	UnitTest( "P05: isZeroTrace(), Non-Trace", &P05, "0" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

@@ -418,15 +418,9 @@ MatrixS::MatrixS() : SymbolicTerm() {
 	termID = 's';
 }
 
-MatrixS::MatrixS( MatrixS* s ) {
-	indices[0] = s->indices[0];
-	indices[1] = s->indices[1];
-	termID = 's';
-}
-
 const string MatrixS::to_string() const {
 	stringstream ss;
-	ss << "S_" << indices;
+	ss << "S_(" << indices[0] << ", " << indices[1] << ")";
 
 	return ss.str();
 }
@@ -1098,6 +1092,38 @@ void Trace::rewriteInKSFormalism() {
 }
 
 /*
+ * Delta
+ */
+
+Delta::Delta( int a, int b ) {
+	indices[0] = a;
+	indices[1] = b;
+	isBar = false;
+}
+
+Delta::Delta( int a, int b, bool type ) {
+	indices[0] = a;
+	indices[1] = b;
+	isBar = type;
+}
+
+const std::string Delta::to_string() const {
+	stringstream ss;
+	ss << "Delta";
+	if ( isBar ) ss << "Bar";
+	ss << "( " << indices[0] << ", " << indices[1] << " )";
+	return ss.str();
+}
+
+bool Delta::operator==( const Delta &other ) const {
+	return isBar == other.isBar and indices[0] == other.indices[0] and indices[1] == other.indices[1];
+}
+
+bool Delta::isDeltaBar() {
+	return isBar;
+}
+
+/*
  * FourierSum
  */
 
@@ -1110,7 +1136,7 @@ bool unpackTrivialExpression( SymbolicTerm*& st ) {  // TODO: Separate out into 
 			delete st;
 			st = tmp;
 
-			if ( unpackTrivialExpression( st ) == true ) {
+			if ( unpackTrivialExpression( st ) ) {
 				unpackTrivialExpression( st );
 			}
 
@@ -1124,7 +1150,7 @@ bool unpackTrivialExpression( SymbolicTerm*& st ) {  // TODO: Separate out into 
 			delete st;
 			st = tmp;
 
-			if ( unpackTrivialExpression( st ) == true ) {
+			if ( unpackTrivialExpression( st ) ) {
 				unpackTrivialExpression( st );
 			}
 			return true;
@@ -1135,7 +1161,23 @@ bool unpackTrivialExpression( SymbolicTerm*& st ) {  // TODO: Separate out into 
 }
 
 bool isZeroTrace( SymbolicTerm* tr ) {
-	return false; // TODO
+	if ( tr->getTermID() == 'T' ) {
+		Trace* castTrace = dynamic_cast<Trace*>( tr );
+		if ( castTrace->expr->getTermID() == 'S' ) {
+			Sum* castExpr = dynamic_cast<Sum*>( castTrace->expr );
+			if ( castExpr->getNumberOfTerms() == 0 ) return true;
+		} else if ( castTrace->expr->getTermID() == 'P' ) {
+			Product* castExpr = dynamic_cast<Product*>( castTrace->expr );
+			if ( castExpr->getNumberOfTerms() == 0 ) return true;
+		}
+
+		string trimmedRepresentation = tr->to_string();  // To be trimmed on next statement.
+		boost::trim( trimmedRepresentation );
+
+		if ( trimmedRepresentation == "0" or trimmedRepresentation == "{0}" ) return true;
+	}
+
+	return false;
 }
 
 std::ostream& operator<<( std::ostream& os, const TermA &obj ) {

@@ -173,8 +173,6 @@ public:
 
 	MatrixS();
 
-	MatrixS( MatrixS* s );
-
 	const std::string to_string() const;
 
 	MatrixS* copy();
@@ -376,6 +374,9 @@ public:
 };
 
 class Trace : public SymbolicTerm {
+
+	friend bool isZeroTrace( SymbolicTerm* );
+
 public:
 
 	Trace( SymbolicTerm* expr );
@@ -410,11 +411,15 @@ public:
 
 	Delta( int a, int b, bool type );
 
-	Delta( const Delta* d );
-
 	const std::string to_string() const;
 
 	bool operator==( const Delta &other ) const;
+
+	bool isDeltaBar();
+
+private:
+
+	bool isBar;
 
 };
 
