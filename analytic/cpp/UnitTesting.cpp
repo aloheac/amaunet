@@ -11,7 +11,7 @@
  *
  * Andrew C. Loheac, Joaquin E. Drut
  * Department of Physics and Astronomy
- * University of North Carolina at CHapel Hill
+ * University of North Carolina at Chapel Hill
  * ***********************************************************************
  */
 
@@ -70,19 +70,19 @@ string i02() {
 string i03() {
 	stringstream ss;
 	GenericTestTerm A = GenericTestTerm( 1, 0 );
-	GenericTestTerm* B = A.copy();
+	GenericTestTermPtr B( static_pointer_cast<GenericTestTerm>( A.copy() ) );
 	ss << *B << " " << A;
-	delete B;
+	//delete B;
 	return ss.str();
 }
 
 string i04() {
 	stringstream ss;
 	GenericTestTerm A = GenericTestTerm( 1, 0 );
-	GenericTestTerm* B = A.copy();
+	GenericTestTermPtr B( static_pointer_cast<GenericTestTerm>( A.copy() ) );
 	Sum C = A.getDerivative();
 	ss << *B << " " << C;
-	delete B;
+	//delete B;
 	return ss.str();
 }
 
@@ -132,9 +132,9 @@ string B02() {
 string B03() {
 	stringstream ss;
 	TermA A = TermA();
-	TermA* B = A.copy();
+	TermAPtr B( static_pointer_cast<TermA>( A.copy() ) );
 	ss << *B;
-	delete B;
+	//delete B;
 	return ss.str();
 }
 
@@ -148,9 +148,9 @@ string B04() {
 string B05() {
 	stringstream ss;
 	TermA A = TermA();
-	TermA* B = A.copy();
+	TermAPtr B( static_pointer_cast<TermA>( A.copy() ) );
 	ss << B->getTermID();
-	delete B;
+	//delete B;
 	return ss.str();
 }
 
@@ -209,20 +209,20 @@ string C07() {
 string C08() {
 	stringstream ss;
 	MatrixM A = MatrixM( "up" );
-	MatrixM* B = A.copy();
+	MatrixMPtr B( static_pointer_cast<MatrixM>( A.copy() ) );
 	B->setAsNonInteracting();
 	ss << A << " " << *B << " " << A.isTermInteracting() << " " << B->isTermInteracting();
-	delete B;
+	//delete B;
 	return ss.str();
 }
 
 string C09() {
 	stringstream ss;
 	MatrixM A = MatrixM( "up" );
-	MatrixM* B = A.copy();
+	MatrixMPtr B( static_pointer_cast<MatrixM>( A.copy() ) );
 	Sum C = B->getDerivative();
 	ss << C;
-	delete B;
+	//delete B;
 	return ss.str();
 }
 
@@ -337,10 +337,10 @@ string H02() {
 	stringstream ss;
 	MatrixM m( "up" );
 	DetM det( m );
-	SymbolicTerm* cpy = det.copy();
+	SymbolicTermPtr cpy( det.copy() );
 	det.setAsNonInteracting();
 	ss << det << "    " << *cpy;
-	delete cpy;
+	//delete cpy;
 	return ss.str();
 }
 
@@ -375,7 +375,7 @@ string H05() {
 
 string J01() {
 	stringstream ss;
-	Sum A = Sum( new GenericTestTerm(0,0) );
+	Sum A = Sum( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
 	ss << A;
 	return ss.str();
 }
@@ -383,9 +383,9 @@ string J01() {
 string J02() {
 	stringstream ss;
 	Sum A = Sum();
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
-	A.addTerm( new GenericTestTerm(2,0) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
 	ss << A;
 	return ss.str();
 }
@@ -393,9 +393,9 @@ string J02() {
 string J03() {
 	stringstream ss;
 	Sum A = Sum();
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
-	A.addTerm( new GenericTestTerm(2,0) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
 	A = A.getDerivative();
 	ss << A;
 	return ss.str();
@@ -404,23 +404,23 @@ string J03() {
 string J04() {
 	stringstream ss;
 	Sum A = Sum();
-	A.addTerm( new MatrixM( "a" ) );
-	A.addTerm( new MatrixM( "b" ) );
-	A.addTerm( new MatrixM( "c" ) );
-	Sum* B = A.copy();
+	A.addTerm( MatrixMPtr( new MatrixM( "a" ) ) );
+	A.addTerm( MatrixMPtr( new MatrixM( "b" ) ) );
+	A.addTerm( MatrixMPtr( new MatrixM( "c" ) ) );
+	SumPtr B( dynamic_pointer_cast<Sum>( A.copy() ) );
 	B->setAsNonInteracting();
 	ss << A << " " << *B;
-	delete B;
+	//delete B;
 	return ss.str();
 }
 
 string J05() {
 	stringstream ss;
 	Sum A = Sum();
-	A.addTerm( new MatrixM( "a" ) );
-	A.addTerm( new MatrixM( "b" ) );
-	A.addTerm( new CoefficientFloat( 0.0 ) );
-	A.addTerm( new MatrixM( "c" ) );
+	A.addTerm( MatrixMPtr( new MatrixM( "a" ) ) );
+	A.addTerm( MatrixMPtr( new MatrixM( "b" ) ) );
+	A.addTerm( CoefficientFloatPtr( new CoefficientFloat( 0.0 ) ) );
+	A.addTerm( MatrixMPtr( new MatrixM( "c" ) ) );
 	ss << A << " ";
 	A.simplify();
 	ss << A;
@@ -430,14 +430,14 @@ string J05() {
 string J06() {
 	stringstream ss;
 	Sum A = Sum();
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
 	Sum B = Sum();
-	B.addTerm( new GenericTestTerm(2,0) );
-	B.addTerm( new GenericTestTerm(3,0) );
+	B.addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
+	B.addTerm( GenericTestTermPtr( new GenericTestTerm(3,0) ) );
 	Sum C = Sum();
-	C.addTerm( A.copy() );
-	C.addTerm( B.copy() );
+	C.addTerm( SymbolicTermPtr( A.copy() ) );
+	C.addTerm( SymbolicTermPtr( B.copy() ) );
 	ss << C << "   " << C.getNumberOfTerms() << "    ";
 	C.reduceTree();
 	ss << C << "   " << C.getNumberOfTerms();
@@ -447,12 +447,12 @@ string J06() {
 string J07() {
 	stringstream ss;
 	Sum A;
-	A.addTerm( new GenericTestTerm(0,0) );
-	Product* B = new Product();
-	B->addTerm( new GenericTestTerm(1,0) );
-	Product* C = new Product();
-	C->addTerm( new GenericTestTerm(2,0) );
-	C->addTerm( new GenericTestTerm(3,0) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	ProductPtr B( new Product() );
+	B->addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
+	ProductPtr C( new Product() );
+	C->addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
+	C->addTerm( GenericTestTermPtr( new GenericTestTerm(3,0) ) );
 	B->addTerm( C );
 	A.addTerm( B );
 	ss << A << "    " << A.getNumberOfTerms() << "    ";
@@ -463,7 +463,7 @@ string J07() {
 
 string K01() {
 	stringstream ss;
-	Product A = Product( new GenericTestTerm(0,0) );
+	Product A = Product( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
 	ss << A;
 	return ss.str();
 }
@@ -471,9 +471,9 @@ string K01() {
 string K02() {
 	stringstream ss;
 	Product A = Product();
-	A.addTerm( new GenericTestTerm(1,0) );
-	A.addTerm( new GenericTestTerm(2,0) );
-	A.addTerm( new GenericTestTerm(3,0) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(3,0) ) );
 	ss << A;
 	return ss.str();
 }
@@ -481,9 +481,9 @@ string K02() {
 string K03() {
 	stringstream ss;
 	Product A = Product();
-	A.addTerm( new MatrixM() );
-	A.addTerm( new MatrixM() );
-	A.addTerm( new MatrixB() );
+	A.addTerm( MatrixMPtr( new MatrixM() ) );
+	A.addTerm( MatrixMPtr( new MatrixM() ) );
+	A.addTerm( MatrixBPtr( new MatrixB() ) );
 	A.setAsNonInteracting();
 	ss << A;
 	return ss.str();
@@ -492,9 +492,9 @@ string K03() {
 string K04() {
 	stringstream ss;
 	Product A = Product();
-	A.addTerm( new MatrixM() );
-	A.addTerm( new Sum() );
-	A.addTerm( new MatrixB() );
+	A.addTerm( MatrixMPtr( new MatrixM() ) );
+	A.addTerm( SumPtr( new Sum() ) );
+	A.addTerm( MatrixBPtr( new MatrixB() ) );
 	ss << A.containsSum();
 	return ss.str();
 }
@@ -502,9 +502,9 @@ string K04() {
 string K05() {
 	stringstream ss;
 	Product A = Product();
-	A.addTerm( new MatrixM() );
-	A.addTerm( new TermA() );
-	A.addTerm( new MatrixB() );
+	A.addTerm( MatrixMPtr( new MatrixM() ) );
+	A.addTerm( TermAPtr( new TermA() ) );
+	A.addTerm( MatrixBPtr( new MatrixB() ) );
 	ss << A.containsSum();
 	return ss.str();
 }
@@ -512,9 +512,9 @@ string K05() {
 string K06() {
 	stringstream ss;
 	Product A = Product();
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
-	A.addTerm( new GenericTestTerm(2,0) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
 	Sum B = A.getDerivative();
 	ss << B;
 	return ss.str();
@@ -523,10 +523,10 @@ string K06() {
 string K07() {
 	stringstream ss;
 	Product A = Product();
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
-	A.addTerm( new CoefficientFloat( 0.0 ) );
-	A.addTerm( new GenericTestTerm(2,0) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
+	A.addTerm( CoefficientFloatPtr( new CoefficientFloat( 0.0 ) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
 	A.simplify();
 	ss << A;
 	return ss.str();
@@ -535,10 +535,10 @@ string K07() {
 string K08() {
 	stringstream ss;
 	Product A = Product();
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
-	A.addTerm( new CoefficientFloat( 1.0 ) );
-	A.addTerm( new GenericTestTerm(2,0) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
+	A.addTerm( CoefficientFloatPtr( new CoefficientFloat( 1.0 ) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
 	A.simplify();
 	ss << A;
 	return ss.str();
@@ -547,11 +547,11 @@ string K08() {
 string K09() {
 	stringstream ss;
 	Product A = Product();
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
-	A.addTerm( new CoefficientFloat( 1.0 ) );
-	A.addTerm( new GenericTestTerm(2,0) );
-	A.addTerm( new CoefficientFloat( 0.0 ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
+	A.addTerm( CoefficientFloatPtr( new CoefficientFloat( 1.0 ) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
+	A.addTerm( CoefficientFloatPtr( new CoefficientFloat( 0.0 ) ) );
 	A.simplify();
 	ss << A;
 	return ss.str();
@@ -560,7 +560,7 @@ string K09() {
 string K10() {
 	stringstream ss;
 	Sum A;
-	A.addTerm( new Product( new GenericTestTerm(0,0) ) );
+	A.addTerm( ProductPtr( new Product( GenericTestTermPtr( new GenericTestTerm(0,0) ) ) ) );
 	ss << A;
 	return ss.str();
 }
@@ -568,11 +568,11 @@ string K10() {
 string K11() {
 	stringstream ss;
 	Product A;
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
-	Product* B = new Product();
-	B->addTerm( new GenericTestTerm(2,0) );
-	B->addTerm( new GenericTestTerm(3,0) );
+	A.addTerm( GenericTestTermPtr(  new GenericTestTerm(0,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
+	ProductPtr B = ProductPtr( new Product() );
+	B->addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
+	B->addTerm( GenericTestTermPtr( new GenericTestTerm(3,0) ) );
 	A.addTerm( B );
 	ss << A << "    " << A.getNumberOfTerms() << "    ";
 	A.reduceTree();
@@ -583,7 +583,7 @@ string K11() {
 string K12() {
 	stringstream ss;
 	Product A;
-	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
 	ss << A << "    ";
 	Sum B = A.getExpandedExpr();
 	ss << B;
@@ -593,11 +593,11 @@ string K12() {
 string K13() {
 	stringstream ss;
 	Sum A;
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
 	Sum B;
-	B.addTerm( new GenericTestTerm(2,0) );
-	B.addTerm( new GenericTestTerm(3,0) );
+	B.addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
+	B.addTerm( GenericTestTermPtr( new GenericTestTerm(3,0) ) );
 	Product C;
 	C.addTerm( A.copy() );
 	C.addTerm( B.copy() );
@@ -610,14 +610,14 @@ string K13() {
 string K14() {
 	stringstream ss;
 	Sum A;
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
 	Sum B;
-	B.addTerm( new GenericTestTerm(2,0) );
-	B.addTerm( new GenericTestTerm(3,0) );
-	B.addTerm( new GenericTestTerm(4,0) );
+	B.addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
+	B.addTerm( GenericTestTermPtr( new GenericTestTerm(3,0) ) );
+	B.addTerm( GenericTestTermPtr( new GenericTestTerm(4,0) ) );
 	Product C;
-	C.addTerm( new GenericTestTerm(5,0) );
+	C.addTerm( GenericTestTermPtr( new GenericTestTerm(5,0) ) );
 	C.addTerm( A.copy() );
 	C.addTerm( B.copy() );
 	ss << C << "    ";
@@ -629,15 +629,15 @@ string K14() {
 string K15() {
 	stringstream ss;
 	Sum A;
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
 	Sum B;
-	B.addTerm( new GenericTestTerm(2,0) );
-	B.addTerm( new GenericTestTerm(3,0) );
-	B.addTerm( new GenericTestTerm(4,0) );
+	B.addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
+	B.addTerm( GenericTestTermPtr( new GenericTestTerm(3,0) ) );
+	B.addTerm( GenericTestTermPtr( new GenericTestTerm(4,0) ) );
 	Product C;
 	C.addTerm( A.copy() );
-	C.addTerm( new GenericTestTerm(5,0) );
+	C.addTerm( GenericTestTermPtr( new GenericTestTerm(5,0) ) );
 	C.addTerm( B.copy() );
 	ss << C << "    ";
 	Sum D = C.getExpandedExpr();
@@ -649,16 +649,16 @@ string K15() {
 string K16() {
 	stringstream ss;
 	Sum A;
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(1,0) ) );
 	Sum B;
-	B.addTerm( new GenericTestTerm(2,0) );
-	B.addTerm( new GenericTestTerm(3,0) );
+	B.addTerm( GenericTestTermPtr( new GenericTestTerm(2,0) ) );
+	B.addTerm( GenericTestTermPtr( new GenericTestTerm(3,0) ) );
 	Product C;
-	C.addTerm( new GenericTestTerm(4,0) );
+	C.addTerm( GenericTestTermPtr( new GenericTestTerm(4,0) ) );
 	C.addTerm( A.copy() );
 	Product D;
-	D.addTerm( new GenericTestTerm(5,0) );
+	D.addTerm( GenericTestTermPtr( new GenericTestTerm(5,0) ) );
 	D.addTerm( B.copy() );
 	Product E;
 	E.addTerm( C.copy() );
@@ -674,7 +674,7 @@ string K16() {
 
 string L01() {
 	stringstream ss;
-	SymbolicTerm* term = new GenericTestTerm(0,0);
+	SymbolicTermPtr term = GenericTestTermPtr( new GenericTestTerm(0,0) );
 	Trace A( term );
 	ss << A;
 	return ss.str();
@@ -682,7 +682,7 @@ string L01() {
 
 string L02() {
 	stringstream ss;
-	SymbolicTerm* term = new GenericTestTerm(0,0);
+	SymbolicTermPtr term = GenericTestTermPtr( new GenericTestTerm(0,0) );
 	Trace A( term );
 	Sum B = A.getDerivative();
 	ss << B;
@@ -706,59 +706,59 @@ string M02() {
 string O01() {
 	stringstream ss;
 	Product A = Product();
-	A.addTerm( new GenericTestTerm(0,0) );
-	SymbolicTerm* B = A.copy();
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
+	SymbolicTermPtr B( A.copy() );
 	unpackTrivialExpression( B );
 	ss << *B << " " << B->getTermID();
-	delete B;
+	//delete B;
 	return ss.str();
 }
 
 string O02() {
 	stringstream ss;
 	Product A = Product();
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
-	SymbolicTerm* B = A.copy();
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(1,0) ) );
+	SymbolicTermPtr B( A.copy() );
 	unpackTrivialExpression( B );
 	ss << *B << " " << B->getTermID();
-	delete B;
+	//delete B;
 	return ss.str();
 }
 
 string O03() {
 	stringstream ss;
 	Sum A = Sum();
-	A.addTerm( new GenericTestTerm(0,0) );
-	SymbolicTerm* B = A.copy();
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
+	SymbolicTermPtr B( A.copy() );
 	unpackTrivialExpression( B );
 	ss << *B << " " << B->getTermID();
-	delete B;
+	//delete B;
 	return ss.str();
 }
 
 string O04() {
 	stringstream ss;
 	Sum A;
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
-	SymbolicTerm* B = A.copy();
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(1,0) ) );
+	SymbolicTermPtr B( A.copy() );
 	unpackTrivialExpression( B );
 	ss << *B << " " << B->getTermID();
-	delete B;
+	//delete B;
 	return ss.str();
 }
 
 string O05() {
 	stringstream ss;
 	Sum A;
-	A.addTerm( new GenericTestTerm(0,0) );
-	A.addTerm( new GenericTestTerm(1,0) );
-	A.addTerm( new GenericTestTerm(2,0) );
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(1,0) ) );
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(2,0) ) );
 	Product B;
 	B.addTerm( A.copy() );
 	ss << B << "    " << B.getTermID() << "    ";
-	SymbolicTerm* C = B.copy();
+	SymbolicTermPtr C( B.copy() );
 	unpackTrivialExpression( C );
 	ss << *C << "    " << C->getTermID();
 	return ss.str();
@@ -767,16 +767,16 @@ string O05() {
 string O06() {
 	stringstream ss;
 	Sum A;
-	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
 	Product B;
 	B.addTerm( A.copy() );
 	Sum C;
 	C.addTerm( B.copy() );
 	ss << C << "    ";
-	SymbolicTerm* D = C.copy();
+	SymbolicTermPtr D( C.copy() );
 	unpackTrivialExpression( D );
 	ss << *D;
-	delete D;
+	//delete D;
 	return ss.str();
 }
 
@@ -791,7 +791,7 @@ string P01() {
 string P02() {
 	stringstream ss;
 	Sum A;
-	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
 	Trace B( A.copy() );
 	ss << isZeroTrace( B.copy() );
 	return ss.str();
@@ -808,7 +808,7 @@ string P03() {
 string P04() {
 	stringstream ss;
 	Product A;
-	A.addTerm( new GenericTestTerm(0,0) );
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
 	Trace B( A.copy() );
 	ss << isZeroTrace( B.copy() );
 	return ss.str();
@@ -816,9 +816,9 @@ string P04() {
 
 string P05() {
 	stringstream ss;
-	GenericTestTerm* A = new GenericTestTerm(0,0);
+	GenericTestTermPtr A = GenericTestTermPtr( new GenericTestTerm(0,0) );
 	ss << isZeroTrace( A );
-	delete A;
+	//delete A;
 	return ss.str();
 }
 

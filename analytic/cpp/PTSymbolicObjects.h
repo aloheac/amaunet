@@ -20,7 +20,7 @@
 
 #include <string>
 #include <vector>
-
+#include <memory>
 /*
  * ***********************************************************************
  * FORWARD DECLARATIONS
@@ -29,8 +29,40 @@
 
 class Sum;
 class Product;
+class Trace;
 class SymbolicTerm;
+class GenericTestTerm;
+class MatrixM;
+class MatrixB;
+class MatrixK;
+class MatrixS;
+class DetM;
+class TermA;
+class CoefficientFloat;
+class CoefficientFraction;
+class Delta;
 bool unpackTrivialExpression( SymbolicTerm* & );
+
+/*
+ * ***********************************************************************
+ * TYPEDEF DECLARATIONS
+ * ***********************************************************************
+ */
+
+typedef std::shared_ptr<Sum> SumPtr;
+typedef std::shared_ptr<Product> ProductPtr;
+typedef std::shared_ptr<Trace> TracePtr;
+typedef std::shared_ptr<SymbolicTerm> SymbolicTermPtr;
+typedef std::shared_ptr<GenericTestTerm> GenericTestTermPtr;
+typedef std::shared_ptr<MatrixM> MatrixMPtr;
+typedef std::shared_ptr<MatrixB> MatrixBPtr;
+typedef std::shared_ptr<MatrixK> MatrixKPtr;
+typedef std::shared_ptr<MatrixS> MatrixSPtr;
+typedef std::shared_ptr<DetM> DetMPtr;
+typedef std::shared_ptr<TermA> TermAPtr;
+typedef std::shared_ptr<Delta> DeltaPtr;
+typedef std::shared_ptr<CoefficientFloat> CoefficientFloatPtr;
+typedef std::shared_ptr<CoefficientFraction> CoefficientFractionPtr;
 
 /*
  * ***********************************************************************
@@ -45,8 +77,6 @@ class SymbolicTerm {
 public:
 
 	SymbolicTerm();
-
-	SymbolicTerm( const SymbolicTerm* st );
 
 	virtual ~SymbolicTerm();
 
@@ -72,7 +102,7 @@ public:
 
 	char getTermID();
 
-	virtual SymbolicTerm* copy();
+	virtual SymbolicTermPtr copy();
 
 protected:
 
@@ -102,7 +132,7 @@ public:
 
 	Sum getDerivative();
 
-	GenericTestTerm* copy();
+	SymbolicTermPtr copy();
 
 	int id;
 };
@@ -117,15 +147,13 @@ public:
 
 	MatrixM( char* flavorLabel );
 
-	MatrixM( const MatrixM* m );
-
 	bool operator==( const MatrixM &other ) const;
 
 	Sum getDerivative();
 
 	const std::string to_string() const;
 
-	MatrixM* copy();
+	SymbolicTermPtr copy();
 };
 
 class MatrixB : public SymbolicTerm {
@@ -135,15 +163,13 @@ public:
 
 	MatrixB( char* flavorLabel );
 
-	MatrixB( MatrixB* b );
-
 	bool operator==( const MatrixB &other ) const;
 
 	Sum getDerivative();
 
 	const std::string to_string() const;
 
-	MatrixB* copy();
+	SymbolicTermPtr copy();
 };
 
 class MatrixK : public SymbolicTerm {
@@ -153,13 +179,11 @@ public:
 
 	MatrixK( char* flavorLabel );
 
-	MatrixK( const MatrixK* k );
-
 	bool operator==( const MatrixK &other ) const;
 
 	const std::string to_string() const;
 
-	MatrixK* copy();
+	SymbolicTermPtr copy();
 
 	void fourierTransform();
 
@@ -175,7 +199,7 @@ public:
 
 	const std::string to_string() const;
 
-	MatrixS* copy();
+	SymbolicTermPtr copy();
 
 };
 
@@ -196,7 +220,7 @@ public:
 
 	Sum getDerivative();
 
-	DetM* copy();
+	SymbolicTermPtr copy();
 
 private:
 
@@ -217,7 +241,7 @@ public:
 
 	bool operator==( const TermA &other ) const;
 
-	TermA* copy();
+	SymbolicTermPtr copy();
 };
 
 class CoefficientFloat : public SymbolicTerm {
@@ -229,7 +253,7 @@ public:
 
 	const std::string to_string() const;
 
-	CoefficientFloat* copy();
+	SymbolicTermPtr copy();
 
 	Sum getDerivative();
 
@@ -249,7 +273,7 @@ public:
 
 	const std::string to_string() const;
 
-	CoefficientFraction* copy();
+	SymbolicTermPtr copy();
 
 	Sum getDerivative();
 
@@ -268,7 +292,7 @@ private:
 
 class Sum : public SymbolicTerm {
 
-	friend bool unpackTrivialExpression( SymbolicTerm* & );
+	friend bool unpackTrivialExpression( SymbolicTermPtr & );
 
 	friend class Product;
 
@@ -276,9 +300,9 @@ public:
 
 	Sum();
 
-	Sum( std::vector<SymbolicTerm*> thisTerms );
+	Sum( std::vector<SymbolicTermPtr> thisTerms );
 
-	Sum( SymbolicTerm* term );
+	Sum( SymbolicTermPtr term );
 
 	Sum( const Sum &s );
 
@@ -288,7 +312,7 @@ public:
 
 	const std::string to_string() const;
 
-	Sum* copy();
+	SymbolicTermPtr copy();
 
 	void simplify();
 
@@ -298,7 +322,7 @@ public:
 
 	Sum getExpandedExpr();
 
-	void addTerm( SymbolicTerm* thisTerm );
+	void addTerm( SymbolicTermPtr thisTerm );
 
 	int getNumberOfTerms();
 
@@ -306,22 +330,22 @@ public:
 
 	bool operator==( const Sum &other ) const;
 
-	std::vector<SymbolicTerm*>::const_iterator getIteratorBegin() const;
+	std::vector<SymbolicTermPtr>::const_iterator getIteratorBegin() const;
 
-	std::vector<SymbolicTerm*>::const_iterator getIteratorEnd() const;
+	std::vector<SymbolicTermPtr>::const_iterator getIteratorEnd() const;
 
-	std::vector<SymbolicTerm*>::iterator getIteratorBegin();
+	std::vector<SymbolicTermPtr>::iterator getIteratorBegin();
 
-	std::vector<SymbolicTerm*>::iterator getIteratorEnd();
+	std::vector<SymbolicTermPtr>::iterator getIteratorEnd();
 
 private:
 
-	std::vector<SymbolicTerm*> terms;
+	std::vector<SymbolicTermPtr> terms;
 };
 
 class Product : public SymbolicTerm {
 
-	friend bool unpackTrivialExpression( SymbolicTerm* & );
+	friend bool unpackTrivialExpression( SymbolicTermPtr & );
 
 	friend class Sum;
 
@@ -329,9 +353,9 @@ public:
 
 	Product();
 
-	Product( std::vector<SymbolicTerm*> t );
+	Product( std::vector<SymbolicTermPtr> t );
 
-	Product( SymbolicTerm* term );
+	Product( SymbolicTermPtr term );
 
 	~Product();
 
@@ -339,7 +363,7 @@ public:
 
 	const std::string to_string() const;
 
-	Product* copy();
+	SymbolicTermPtr copy();
 
 	void simplify();
 
@@ -349,7 +373,7 @@ public:
 
 	Sum getExpandedExpr();
 
-	void addTerm( SymbolicTerm* t );
+	void addTerm( SymbolicTermPtr t );
 
 	int getNumberOfTerms();
 
@@ -359,33 +383,33 @@ public:
 
 	bool containsSum();
 
-	std::vector<SymbolicTerm*>::const_iterator getIteratorBegin() const;
+	std::vector<SymbolicTermPtr>::const_iterator getIteratorBegin() const;
 
-	std::vector<SymbolicTerm*>::const_iterator getIteratorEnd() const;
+	std::vector<SymbolicTermPtr>::const_iterator getIteratorEnd() const;
 
-	std::vector<SymbolicTerm*>::iterator getIteratorBegin();
+	std::vector<SymbolicTermPtr>::iterator getIteratorBegin();
 
-	std::vector<SymbolicTerm*>::iterator getIteratorEnd();
+	std::vector<SymbolicTermPtr>::iterator getIteratorEnd();
 
 //private:
 
-	std::vector<SymbolicTerm*> terms;
+	std::vector<SymbolicTermPtr> terms;
 
 };
 
 class Trace : public SymbolicTerm {
 
-	friend bool isZeroTrace( SymbolicTerm* );
+	friend bool isZeroTrace( SymbolicTermPtr );
 
 public:
 
-	Trace( SymbolicTerm* expr );
+	Trace( SymbolicTermPtr expr );
 
 	~Trace();
 
 	const std::string to_string() const;
 
-	Trace* copy();
+	SymbolicTermPtr copy();
 
 	void simplify();
 
@@ -401,7 +425,7 @@ public:
 
 private:
 
-	SymbolicTerm* expr;
+	SymbolicTermPtr expr;
 };
 
 class Delta : public SymbolicTerm {
@@ -450,9 +474,9 @@ private:
  * ***********************************************************************
  */
 
-bool unpackTrivialExpression( SymbolicTerm*& expr );
+bool unpackTrivialExpression( SymbolicTermPtr& expr );
 
-bool isZeroTrace( SymbolicTerm* tr );
+bool isZeroTrace( SymbolicTermPtr tr );
 
 int getProductAOrder( Product &prod );
 
