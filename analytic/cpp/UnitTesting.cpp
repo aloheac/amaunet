@@ -831,6 +831,55 @@ string P05() {
 	return ss.str();
 }
 
+string Q01() {
+	stringstream ss;
+	SymbolicTermPtr A( new Trace( SymbolicTermPtr( new MatrixM( "up" ) ) ) );
+	ss << distributeTrace( A );
+	return ss.str();
+}
+
+string Q02() {
+	stringstream ss;
+	Product A;
+	A.addTerm( SymbolicTermPtr( new CoefficientFloat( -1.0 ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	SymbolicTermPtr B( new Trace( A.copy() ) );
+	ss << distributeTrace( B );
+	return ss.str();
+}
+
+string Q03() {
+	stringstream ss;
+	Sum A;
+	A.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "dn" ) ) );
+	Product B;
+	B.addTerm( SymbolicTermPtr( new CoefficientFloat( -1.0 ) ) );
+	B.addTerm( A.copy() );
+	SymbolicTermPtr C( new Trace( B.copy() ) );
+	ss << distributeTrace( C );
+	return ss.str();
+}
+
+string Q04() {
+	stringstream ss;
+	Product A;
+	A.addTerm( SymbolicTermPtr( new CoefficientFloat( 3.0 ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	Product B;
+	B.addTerm( SymbolicTermPtr( new CoefficientFloat( 5.0 ) ) );
+	B.addTerm( SymbolicTermPtr( new MatrixM( "dn" ) ) );
+	Sum C;
+	C.addTerm( A.copy() );
+	C.addTerm( B.copy() );
+	Product D;
+	D.addTerm( SymbolicTermPtr( new CoefficientFloat( -1.0 ) ) );
+	D.addTerm( C.copy() );
+	SymbolicTermPtr E( new Trace( D.copy() ) );
+	ss << *E << "    " << distributeTrace( E );
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -1073,6 +1122,18 @@ int main( int argc, char** argv ) {
 	UnitTest( "P04: isZeroTrace(), Non-empty Product", &P04, "0" );
 
 	UnitTest( "P05: isZeroTrace(), Non-Trace", &P05, "0" );
+
+	/*
+	 * Q: distributeTrace()
+	 */
+
+	UnitTest( "Q01: distributeTrace(), Trivial", &Q01, "Trace[ M_up ]" );
+
+	UnitTest( "Q02: distributeTrace(), Simplification I", &Q02, " {-1} {Trace[ M_up ]} " );
+
+	UnitTest( "Q03: distributeTrace(), Simplification II", &Q03, " {-1} {Trace[ M_up ]}  +  {-1} {Trace[ M_dn ]} " );
+
+	UnitTest( "Q04: distributeTrace(), Simplification III", &Q04, "Trace[  {-1} { {3} {M_up}  +  {5} {M_dn} }  ]     {-1} {3} {Trace[ M_up ]}  +  {-1} {5} {Trace[ M_dn ]} " );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

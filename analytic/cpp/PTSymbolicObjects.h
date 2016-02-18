@@ -401,6 +401,8 @@ class Trace : public SymbolicTerm {
 
 	friend bool isZeroTrace( SymbolicTermPtr );
 
+	friend Sum distributeTrace( SymbolicTermPtr tr );
+
 public:
 
 	Trace( SymbolicTermPtr expr );
@@ -488,7 +490,7 @@ int getDualProductAOrder( Product &prodA, Product &prodB );
  * ***********************************************************************
  */
 
-Sum distributeTrace( Trace tr );
+Sum distributeTrace( SymbolicTermPtr tr );
 
 Sum distributeAllTraces( Sum expr );
 

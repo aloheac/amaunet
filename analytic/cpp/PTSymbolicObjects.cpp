@@ -1147,6 +1147,74 @@ bool isZeroTrace( SymbolicTermPtr tr ) {
 	return false;
 }
 
+Sum distributeTrace( SymbolicTermPtr tr ) {
+	if ( tr->getTermID() != 'T' ) {
+		cout << "***ERROR: An object other than a trace was passed to distributeTrace()." << endl;
+		return Sum();  // TODO: Throw exception.
+	}
+
+	// The passed SymbolicTermPtr is a known instance of Trace; cast it.
+	TracePtr castTrace = static_pointer_cast<Trace>( tr );
+
+	// Simple case: a single product inside a trace has been passed in.
+	if ( castTrace->expr->getTermID() == 'P' ) {
+		// Consider relatively more complicated cases, where the argument to the trace is an expression like
+		// a ( b c + d e ); we must expand the product and reduce the representation.
+
+		// Argument to the trace is a known instance of a Product; cast it.
+		ProductPtr castExpr = static_pointer_cast<Product>( castTrace->expr );
+
+		SymbolicTermPtr expandedArgument( castExpr->copy() );  // Set scope; expression will be expanded next if necessary.
+		if ( castExpr->containsSum() ) {
+			expandedArgument = castExpr->getExpandedExpr().copy();
+			expandedArgument->reduceTree();
+		}
+
+		// If the expansion resulted in the product turning into a sum, evaluate it appropriately through a recursive
+		// call.
+		if ( expandedArgument->getTermID() == 'S' ) {
+			return distributeTrace( Trace( expandedArgument ).copy() );
+		} else if ( expandedArgument->getTermID() == 'P' ){  // Otherwise, if the expression is a simple, single product, proceed.
+			Product simplifiedProduct;
+			vector<SymbolicTermPtr> matrixTerms;
+			ProductPtr castExpandedArgument = static_pointer_cast<Product>( expandedArgument );
+			for ( vector<SymbolicTermPtr>::iterator iter = castExpandedArgument->getIteratorBegin(); iter != castExpandedArgument->getIteratorEnd(); ++iter ) {
+				if ( (*iter)->getTermID() == 'L' or (*iter)->getTermID() == 'R') {
+					simplifiedProduct.addTerm( (*iter)->copy() );
+				} else if ( (*iter)->getTermID() == 'B' or (*iter)->getTermID() == 'M' ) {
+					matrixTerms.push_back( (*iter)->copy() );
+				}
+			}
+
+			SymbolicTermPtr productOfMatrixTerms = static_pointer_cast<SymbolicTerm>( Product( matrixTerms ).copy() );
+			unpackTrivialExpression( productOfMatrixTerms );
+			simplifiedProduct.addTerm( Trace( productOfMatrixTerms ).copy() );
+			return Sum( simplifiedProduct.copy() );
+
+		} else {  // Expanded argument is somehow not a Sum or Product; invalid expression!
+			cout << "***ERROR: Something bad happened in distributeTraces()." << endl;
+			return Sum();
+		}
+
+	// Typical case: a sum of terms inside a trace has been passed in to be evaluated.
+	} else if ( castTrace->expr->getTermID() == 'S' ){
+		Sum distributedSum;
+		SumPtr castExpr = static_pointer_cast<Sum>( castTrace->expr );
+
+		for ( vector<SymbolicTermPtr>::iterator iter = castExpr->getIteratorBegin(); iter != castExpr->getIteratorEnd(); ++iter ) {
+			distributedSum.addTerm( distributeTrace( Trace( (*iter)->copy() ).copy() ).copy() );  // TODO: Expensive!
+		}
+
+		return distributedSum;
+	} else {  // Something trivial has been passed in; just return it.
+		return Sum( tr );  // May need to call unpackTrivialExpression on the returned object.
+	}
+}
+
+/*
+ * INPUT REDIRECTION OPERATOR OVERLOADS
+ */
+
 std::ostream& operator<<( std::ostream& os, const TermA &obj ) {
 	os << obj.to_string();
 	return os;
