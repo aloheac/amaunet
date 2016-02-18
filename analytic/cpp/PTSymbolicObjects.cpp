@@ -73,7 +73,7 @@ bool SymbolicTerm::isTermInteracting() {
 	return isInteracting;
 }
 
-char* SymbolicTerm::getFlavorLabel() {
+const char* SymbolicTerm::getFlavorLabel() {
 	return flavorLabel;
 }
 
@@ -93,40 +93,15 @@ char SymbolicTerm::getTermID() {
 void SymbolicTerm::reduceTree() { }
 
 SymbolicTermPtr SymbolicTerm::copy() {
-//	SymbolicTermPtr copy;
-//
-//	// TODO: Shouldn't need dynamic_cast calls here -- polymorphism should take care of it.
-//	if ( termID == 'S' ) {
-//		copy = dynamic_pointer_cast<Sum>( this )->copy();
-//	} else if ( termID == 'P' ) {
-//		copy = dynamic_cast<Product*>( this )->copy();
-//	} else if ( termID == 'K' ) {
-//		copy = dynamic_cast<MatrixK*>( this )->copy();
-//	} else if ( termID == 's' ) {
-//		copy = dynamic_cast<MatrixS*>( this )->copy();
-//	} else if ( termID == 'B' ) {
-//		copy = dynamic_cast<MatrixB*>( this )->copy();
-//	} else if ( termID == 'A' ) {
-//		copy = dynamic_cast<TermA*>( this )->copy();
-//	} else if ( termID == 'T' ) {
-//		copy = dynamic_cast<Trace*>( this )->copy();
-//	} else if ( termID == 'L' ) {
-//		copy = dynamic_cast<CoefficientFloat*>( this )->copy();
-//	} else if ( termID == 'R' ) {
-//		copy = dynamic_cast<CoefficientFraction*>( this )->copy();
-//	} else if ( termID == 'M' ) {
-//		copy = dynamic_cast<MatrixM*>( this )->copy();
-//	} else if ( termID == 'D' ) {
-//		copy = dynamic_cast<DetM*>( this )->copy();
-//	} else if ( termID == 'g' ) {
-//		copy = dynamic_cast<GenericTestTerm*>( this )->copy();
-//	} else {
-//		cout << "***ERROR: Invalid SymbolicTerm* copy requested for term ID '" << termID << "'." << endl;
-//	}
-//
-//	return copy;
+	SymbolicTermPtr cpy( new SymbolicTerm() );
+	cpy->derivativeOrder = derivativeOrder;
+	cpy->isInteracting = isInteracting;
+	cpy->flavorLabel = flavorLabel;
+	cpy->indices[ 0 ] = indices[ 0 ];
+	cpy->indices[ 1 ] = indices[ 1 ];
+	termID = '0';
 
-	return shared_ptr<SymbolicTerm>( this );
+	return cpy;
 }
 
 /*
@@ -177,7 +152,7 @@ MatrixM::MatrixM() : SymbolicTerm() {
 	termID = 'M';
 };
 
-MatrixM::MatrixM( char* thisFlavorLabel ) : SymbolicTerm() {
+MatrixM::MatrixM( const char* thisFlavorLabel ) : SymbolicTerm() {
 	termID = 'M';
 	flavorLabel = thisFlavorLabel;
 }
@@ -265,7 +240,7 @@ MatrixB::MatrixB() : SymbolicTerm() {
 	termID = 'B';
 }
 
-MatrixB::MatrixB( char* thisFlavorLabel )  : SymbolicTerm() {
+MatrixB::MatrixB( const char* thisFlavorLabel )  : SymbolicTerm() {
 	flavorLabel = thisFlavorLabel;
 	termID = 'B';
 }
@@ -356,7 +331,7 @@ MatrixK::MatrixK() : SymbolicTerm() {
 	termID = 'K';
 }
 
-MatrixK::MatrixK( char* thisFlavorLabel ) : SymbolicTerm() {
+MatrixK::MatrixK( const char* thisFlavorLabel ) : SymbolicTerm() {
 	isFourierTransformed = false;
 	flavorLabel = thisFlavorLabel;
 	termID = 'K';
@@ -457,7 +432,6 @@ bool DetM::operator==( const DetM &other ) const {
 }
 
 Sum DetM::getDerivative() {
-	//return Product( [ DetM( self.M, True, False ), Trace( Product( [ MatrixB( True, self.M.flavorLabel ), self.M.derivative() ] ) ) ] )
 	// TODO: Add exception handling for an inverted or non-interacting determinant.
 	ProductPtr derivative( new Product() );
 	derivative->addTerm( SymbolicTermPtr( new DetM( matrix ) ) );
@@ -498,7 +472,7 @@ SymbolicTermPtr TermA::copy() {
 }
 
 bool TermA::operator==( const TermA &other ) const {
-	return termID == other.termID;  // Really should always be true if other is valid.
+	return termID == other.termID;  // Really should always be true if other is a valid TermA.
 }
 
 /*
@@ -727,7 +701,7 @@ void Sum::addTerm( SymbolicTermPtr t ) {
 }
 
 int Sum::getNumberOfTerms() {
-	return terms.size();
+	return (int)terms.size();
 }
 
 void Sum::setAsNonInteracting() {
@@ -745,6 +719,14 @@ vector<SymbolicTermPtr>::iterator Sum::getIteratorBegin() {
 }
 
 vector<SymbolicTermPtr>::iterator Sum::getIteratorEnd() {
+	return terms.end();
+}
+
+vector<SymbolicTermPtr>::const_iterator Sum::getIteratorBegin() const {
+	return terms.begin();
+}
+
+vector<SymbolicTermPtr>::const_iterator Sum::getIteratorEnd() const {
 	return terms.end();
 }
 
@@ -992,7 +974,7 @@ void Product::addTerm( SymbolicTermPtr t ) {
 }
 
 int Product::getNumberOfTerms() {
-	return terms.size();
+	return (int)terms.size();
 }
 
 void Product::setAsNonInteracting() {

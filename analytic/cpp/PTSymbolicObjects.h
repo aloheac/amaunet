@@ -41,7 +41,7 @@ class TermA;
 class CoefficientFloat;
 class CoefficientFraction;
 class Delta;
-bool unpackTrivialExpression( SymbolicTerm* & );
+bool unpackTrivialExpression( std::shared_ptr<SymbolicTerm> & );
 
 /*
  * ***********************************************************************
@@ -72,7 +72,7 @@ typedef std::shared_ptr<CoefficientFraction> CoefficientFractionPtr;
 
 class SymbolicTerm {
 
-	friend bool unpackTrivialExpression( SymbolicTerm* & );
+	friend bool unpackTrivialExpression( SymbolicTermPtr & );
 
 public:
 
@@ -94,7 +94,7 @@ public:
 
 	bool isTermInteracting();
 
-	char* getFlavorLabel();
+	const char* getFlavorLabel();
 
 	int* getIndices();
 
@@ -110,7 +110,7 @@ protected:
 
 	bool isInteracting;
 
-	char* flavorLabel;
+	const char* flavorLabel;
 
 	int indices[ 2 ];
 
@@ -145,7 +145,7 @@ public:
 
 	MatrixM();
 
-	MatrixM( char* flavorLabel );
+	MatrixM( const char* flavorLabel );
 
 	bool operator==( const MatrixM &other ) const;
 
@@ -161,7 +161,7 @@ public:
 
 	MatrixB();
 
-	MatrixB( char* flavorLabel );
+	MatrixB( const char* flavorLabel );
 
 	bool operator==( const MatrixB &other ) const;
 
@@ -177,7 +177,7 @@ public:
 
 	MatrixK();
 
-	MatrixK( char* flavorLabel );
+	MatrixK( const char* flavorLabel );
 
 	bool operator==( const MatrixK &other ) const;
 

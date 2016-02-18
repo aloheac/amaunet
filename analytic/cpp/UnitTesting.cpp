@@ -114,6 +114,15 @@ string A03() {
 	return ss.str();
 }
 
+string A04() {
+	stringstream ss;
+	SymbolicTerm A;
+	SymbolicTermPtr B = A.copy();
+	A.setAsNonInteracting();
+	ss << *B << "    " << B->isTermInteracting();
+	return ss.str();
+}
+
 string B01() {
 	stringstream ss;
 	TermA A = TermA();
@@ -856,6 +865,8 @@ int main( int argc, char** argv ) {
 	UnitTest( "A02: SymbolicTerm, getDerivative()", &A02, "0" );
 
 	UnitTest( "A03: SymbolicTerm, getTermID()", &A03, "0" );
+
+	UnitTest( "A04: SymbolicTerm, copy()", &A04, "<invalid_term>    1" );
 
 	/*
 	 * B: TermA
