@@ -470,6 +470,77 @@ string J07() {
 	return ss.str();
 }
 
+string J08() {
+	stringstream ss;
+	Sum A;
+	Product B;
+	B.addTerm( SymbolicTermPtr( new CoefficientFloat( -1.0 ) ) );
+	Product C;
+	C.addTerm( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
+	C.addTerm( SymbolicTermPtr( new GenericTestTerm(1,0) ) );
+	B.addTerm( C.copy() );
+	B.addTerm( SymbolicTermPtr( new GenericTestTerm(2,0) ) );
+	A.addTerm( B.copy() );
+	ss << A << "    " << A.getNumberOfTerms() << "    ";
+	A.reduceTree();
+	ss << A << "    " << A.getNumberOfTerms();
+	return ss.str();
+}
+
+string J09() {
+	stringstream ss;
+	Sum A;
+	Product B;
+	Product C;
+	C.addTerm( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
+	C.addTerm( SymbolicTermPtr( new GenericTestTerm(1,0) ) );
+	B.addTerm( C.copy() );
+	A.addTerm( B.copy() );
+	ss << A << "    " << A.getNumberOfTerms() << "    ";
+	A.reduceTree();
+	ss << A << "    " << A.getNumberOfTerms();
+	return ss.str();
+}
+
+string J10() {
+	stringstream ss;
+	Sum A;
+	Product B;
+	Product C;
+	Product D;
+	D.addTerm( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
+	D.addTerm( SymbolicTermPtr( new GenericTestTerm(1,0) ) );
+	C.addTerm( D.copy() );
+	B.addTerm( C.copy() );
+	B.addTerm( SymbolicTermPtr( new GenericTestTerm(2,0) ) );
+	A.addTerm( B.copy() );
+	ss << A << "    " << A.getNumberOfTerms() << "    ";
+	A.reduceTree();
+	ss << A << "    " << A.getNumberOfTerms();
+	return ss.str();
+}
+
+string J11() {
+	stringstream ss;
+	Sum A;
+	Product B;
+	B.addTerm( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
+	B.addTerm( SymbolicTermPtr( new GenericTestTerm(1,0) ) );
+	Product C;
+	C.addTerm( SymbolicTermPtr( new CoefficientFloat( 3.0 ) ) );
+	C.addTerm( B.copy() );
+	Product D;
+	D.addTerm( SymbolicTermPtr( new CoefficientFloat( 5.0 ) ) );
+	D.addTerm( C.copy() );
+	Product E;
+	E.addTerm( D.copy() );
+	A.addTerm( E.copy() );
+	ss << A << "    " << A.getNumberOfTerms() << "    ";
+	A.reduceTree();
+	ss << A << "    " << A.getNumberOfTerms();
+	return ss.str();
+}
+
 string K01() {
 	stringstream ss;
 	Product A = Product( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
@@ -880,6 +951,115 @@ string Q04() {
 	return ss.str();
 }
 
+string R01() {
+	stringstream ss;
+	Sum A;
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( SymbolicTermPtr( new GenericTestTerm(1,0) ) );
+	Product B;
+	B.addTerm( SymbolicTermPtr( new TermA() ) );
+	B.addTerm( SymbolicTermPtr( new Trace( A.copy() ) ) );
+	SymbolicTermPtr C = B.copy();
+	ss << *C << "    " << distributeAllTraces( C );
+	return ss.str();
+}
+
+string R02() {
+	stringstream ss;
+	Product A;
+	A.addTerm( SymbolicTermPtr( new CoefficientFloat( 3.0 ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	Product B;
+	B.addTerm( SymbolicTermPtr( new CoefficientFloat( 5.0 ) ) );
+	B.addTerm( SymbolicTermPtr( new MatrixM( "dn" ) ) );
+	Trace C( A.copy() );
+	Trace D( B.copy() );
+	Product E;
+	E.addTerm( SymbolicTermPtr( new CoefficientFloat( -1.0 ) ) );
+	E.addTerm( C.copy() );
+	E.addTerm( D.copy() );
+	SymbolicTermPtr F = E.copy();
+	Sum G = distributeAllTraces( F );
+	ss << *F << "    " << G;
+	return ss.str();
+}
+
+string R03() {
+	stringstream ss;
+	Product A;
+	A.addTerm( SymbolicTermPtr( new CoefficientFloat( 3.0 ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	Product B;
+	B.addTerm( SymbolicTermPtr( new CoefficientFloat( 5.0 ) ) );
+	B.addTerm( SymbolicTermPtr( new MatrixM( "dn" ) ) );
+	Trace C( A.copy() );
+	Trace D( B.copy() );
+	Sum E;
+	E.addTerm( C.copy() );
+	E.addTerm( D.copy() );
+	SymbolicTermPtr F = E.copy();
+	Sum G = distributeAllTraces( F );
+	ss << *F << "    " << G;
+	return ss.str();
+}
+
+string R04() {
+	stringstream ss;
+	Product A;
+	A.addTerm( SymbolicTermPtr( new CoefficientFloat( 3.0 ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	Product B;
+	B.addTerm( SymbolicTermPtr( new CoefficientFloat( 5.0 ) ) );
+	B.addTerm( SymbolicTermPtr( new MatrixM( "dn" ) ) );
+	Trace C( A.copy() );
+	Trace D( B.copy() );
+	Product E;
+	E.addTerm( SymbolicTermPtr( new TermA() ) );
+	E.addTerm( C.copy() );
+	Product F;
+	F.addTerm( SymbolicTermPtr( new TermA() ) );
+	F.addTerm( D.copy() );
+	Sum G;
+	G.addTerm( E.copy() );
+	G.addTerm( F.copy() );
+	SymbolicTermPtr H = G.copy();
+	Sum I = distributeAllTraces( H );
+	ss << *H << "    " << I;
+	return ss.str();
+}
+
+string R05() {
+	stringstream ss;
+	Product A;
+	A.addTerm( SymbolicTermPtr( new TermA() ) );
+	Product B;
+	B.addTerm( SymbolicTermPtr( new CoefficientFloat( 3.0 ) ) );
+	B.addTerm( SymbolicTermPtr( new MatrixB( "up" ) ) );
+	B.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new Trace( B.copy() ) ) );
+	Product C;
+	C.addTerm( SymbolicTermPtr( new TermA() ) );
+	Product D;
+	D.addTerm( SymbolicTermPtr( new CoefficientFloat( 5.0 ) ) );
+	D.addTerm( SymbolicTermPtr( new MatrixB( "md" ) ) );
+	D.addTerm( SymbolicTermPtr( new MatrixM( "md" ) ) );
+	C.addTerm( SymbolicTermPtr( new Trace( D.copy() ) ) );
+	Product E;
+	E.addTerm( SymbolicTermPtr( new TermA() ) );
+	Product F;
+	F.addTerm( SymbolicTermPtr( new CoefficientFloat( 7.0 ) ) );
+	F.addTerm( SymbolicTermPtr( new MatrixB( "dn" ) ) );
+	F.addTerm( SymbolicTermPtr( new MatrixM( "dn" ) ) );
+	E.addTerm( SymbolicTermPtr( new Trace( F.copy() ) ) );
+	Sum G;
+	G.addTerm( A.copy() );
+	G.addTerm( C.copy() );
+	G.addTerm( E.copy() );
+	SymbolicTermPtr H = G.copy();
+	ss << *H << "    " << distributeAllTraces( H );
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -1031,6 +1211,14 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "J07: Sum, reduceTree() II", &J07, "GT_0^0 +  {GT_1^0} { {GT_2^0} {GT_3^0} }     2    GT_0^0 +  {GT_1^0} {GT_2^0} {GT_3^0}     2" );
 
+	UnitTest( "J08: Sum, reduceTree() III", &J08, " {-1} { {GT_0^0} {GT_1^0} } {GT_2^0}     1     {-1} {GT_0^0} {GT_1^0} {GT_2^0}     1" );
+
+	UnitTest( "J09: Sum, reduceTree() IV", &J09, " { {GT_0^0} {GT_1^0} }     1     {GT_0^0} {GT_1^0}     1" );
+
+	UnitTest( "J10: Sum, reduceTree() V", &J10, " { { {GT_0^0} {GT_1^0} } } {GT_2^0}     1     {GT_0^0} {GT_1^0} {GT_2^0}     1" );
+
+	UnitTest( "J11: Sum, reduceTree() VI", &J11, " { {5} { {3} { {GT_0^0} {GT_1^0} } } }     1     {5} {3} {GT_0^0} {GT_1^0}     1" );
+
 	/*
 	 * K: Product
 	 */
@@ -1134,6 +1322,20 @@ int main( int argc, char** argv ) {
 	UnitTest( "Q03: distributeTrace(), Simplification II", &Q03, " {-1} {Trace[ M_up ]}  +  {-1} {Trace[ M_dn ]} " );
 
 	UnitTest( "Q04: distributeTrace(), Simplification III", &Q04, "Trace[  {-1} { {3} {M_up}  +  {5} {M_dn} }  ]     {-1} {3} {Trace[ M_up ]}  +  {-1} {5} {Trace[ M_dn ]} " );
+
+	/*
+	 * R: distributeAllTraces()
+	 */
+
+	UnitTest( "R01: distributeAllTraces(), Distribution I", &R01, " {A} {Trace[ GT_0^0 + GT_1^0 ]}      {A} {Trace[ GT_0^0 ]}  +  {A} {Trace[ GT_1^0 ]} " );
+
+	UnitTest( "R02: distributeAllTraces(), Distribution II", &R02, " {-1} {Trace[  {3} {M_up}  ]} {Trace[  {5} {M_dn}  ]}      {-1} {3} {Trace[ M_up ]} {5} {Trace[ M_dn ]} " );
+
+	UnitTest( "R03: distributeAllTraces(), Distribution III", &R03, "Trace[  {3} {M_up}  ] + Trace[  {5} {M_dn}  ]     {3} {Trace[ M_up ]}  +  {5} {Trace[ M_dn ]} " );
+
+	UnitTest( "R04: distributeAllTraces(), Distribution IV", &R04, " {A} {Trace[  {3} {M_up}  ]}  +  {A} {Trace[  {5} {M_dn}  ]}      {A} {3} {Trace[ M_up ]}  +  {A} {5} {Trace[ M_dn ]} " );
+
+	UnitTest( "R05: distributeAllTraces(), Distribution V", &R05, " {A} {Trace[  {3} {B_up} {M_up}  ]}  +  {A} {Trace[  {5} {B_md} {M_md}  ]}  +  {A} {Trace[  {7} {B_dn} {M_dn}  ]}      {A} {3} {Trace[  {B_up} {M_up}  ]}  +  {A} {5} {Trace[  {B_md} {M_md}  ]}  +  {A} {7} {Trace[  {B_dn} {M_dn}  ]} " );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

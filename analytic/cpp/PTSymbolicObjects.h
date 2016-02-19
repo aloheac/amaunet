@@ -492,7 +492,7 @@ int getDualProductAOrder( Product &prodA, Product &prodB );
 
 Sum distributeTrace( SymbolicTermPtr tr );
 
-Sum distributeAllTraces( Sum expr );
+Sum distributeAllTraces( SymbolicTermPtr expr );
 
 Sum truncateAOrder( Sum expr, int highestOrder );
 

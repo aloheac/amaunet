@@ -645,6 +645,7 @@ void Sum::simplify() {
 void Sum::reduceTree() {
 	vector<SymbolicTermPtr> reducedExpression;
 	for ( vector<SymbolicTermPtr>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
+		unpackTrivialExpression( *iter );
 		if ( (*iter)->getTermID() == 'S' ) {
 			(*iter)->reduceTree();
 			SumPtr iteratingSum = dynamic_pointer_cast<Sum>(*iter); // TODO: Add exception check here.
@@ -815,6 +816,7 @@ void Product::simplify() {
 void Product::reduceTree() {
 	vector<SymbolicTermPtr> reducedExpression;
 	for ( vector<SymbolicTermPtr>::iterator iter =  terms.begin(); iter != terms.end(); ++iter ) {
+		unpackTrivialExpression( *iter );
 		if ( (*iter)->getTermID() == 'P' ) {
 			(*iter)->reduceTree();
 			ProductPtr castProduct = dynamic_pointer_cast<Product>( *iter );
@@ -1120,6 +1122,7 @@ bool unpackTrivialExpression( SymbolicTermPtr& st ) {  // TODO: Separate out int
 			if ( unpackTrivialExpression( st ) ) {
 				unpackTrivialExpression( st );
 			}
+
 			return true;
 		}
 	}
@@ -1174,6 +1177,7 @@ Sum distributeTrace( SymbolicTermPtr tr ) {
 		// call.
 		if ( expandedArgument->getTermID() == 'S' ) {
 			return distributeTrace( Trace( expandedArgument ).copy() );
+
 		} else if ( expandedArgument->getTermID() == 'P' ){  // Otherwise, if the expression is a simple, single product, proceed.
 			Product simplifiedProduct;
 			vector<SymbolicTermPtr> matrixTerms;
@@ -1204,11 +1208,57 @@ Sum distributeTrace( SymbolicTermPtr tr ) {
 		for ( vector<SymbolicTermPtr>::iterator iter = castExpr->getIteratorBegin(); iter != castExpr->getIteratorEnd(); ++iter ) {
 			distributedSum.addTerm( distributeTrace( Trace( (*iter)->copy() ).copy() ).copy() );  // TODO: Expensive!
 		}
-
+		distributedSum.reduceTree();
 		return distributedSum;
 	} else {  // Something trivial has been passed in; just return it.
 		return Sum( tr );  // May need to call unpackTrivialExpression on the returned object.
 	}
+}
+
+Sum distributeAllTraces( SymbolicTermPtr expr ) {
+	// First, before doing anything, check if the expression can be distributed as a while. However, only do so if
+	// necessary since an expansion is computationally intensive.
+	if ( expr->getTermID() == 'P' ) {
+		ProductPtr castProduct = static_pointer_cast<Product>( expr );
+		if ( castProduct->containsSum() ) {
+			expr = static_pointer_cast<SymbolicTerm>( castProduct->getExpandedExpr().copy() );
+		}
+	}
+
+	// Reduce the expression tree.
+	expr->reduceTree();
+
+	SumPtr distributedExpr( new Sum() );
+	if ( expr->getTermID() == 'S' ) {
+		SumPtr castSum = static_pointer_cast<Sum>( expr );
+		for ( vector<SymbolicTermPtr>::iterator iter = castSum->getIteratorBegin(); iter != castSum->getIteratorEnd(); ++iter ) {  // Loop over terms.
+			distributedExpr->addTerm( distributeAllTraces( *iter ).copy() );
+		}
+	} else if ( expr->getTermID() == 'P' ) {
+		ProductPtr castProduct = static_pointer_cast<Product>( expr );
+		Product distributedProduct;
+		for ( vector<SymbolicTermPtr>::iterator iter = castProduct->getIteratorBegin(); iter != castProduct->getIteratorEnd(); ++iter  ) {
+			if ( (*iter)->getTermID() == 'T' ) {
+				distributedProduct.addTerm( distributeTrace( *iter ).copy() );
+			} else {
+				distributedProduct.addTerm( *iter );
+			}
+		}
+
+		SymbolicTermPtr expandedAndDistributedProduct;
+		if ( distributedProduct.containsSum() ) {
+			expandedAndDistributedProduct = SymbolicTermPtr( distributedProduct.getExpandedExpr().copy() );
+		} else {
+			expandedAndDistributedProduct = SymbolicTermPtr( distributedProduct.copy() );
+		}
+
+		distributedExpr->addTerm( expandedAndDistributedProduct );
+	} else if ( expr->getTermID() == 'T' ) {
+		distributedExpr->addTerm( distributeTrace( expr ).copy() ); // need expr.copy() as argument?
+	}
+
+	distributedExpr->reduceTree();
+	return *distributedExpr;
 }
 
 /*

@@ -54,11 +54,11 @@ int main( int argc, char** argv ) {
 	cout << "\tSplit sums by line:\t\t\t" << SPLIT_SUMS_BY_LINE << endl;
 	cout << endl;
 
-	if ( EXPANSION_ORDER_IN_A > 8 ) {
-		cout << "***ERROR: The highest perturbation theory order currently implemented is 8th order in A." << endl;
+	if ( EXPANSION_ORDER_IN_A > 10 ) {
+		cout << "***ERROR: The highest perturbation theory order currently implemented is 10th order in A." << endl;
 		exit( -1 );
 	}
-	Sum D1, D2, D3, D4, D5, D6, D7, D8;
+	Sum D1, D2, D3, D4, D5, D6, D7, D8, D9, D10;
 	DetM detUp("up");
 
 	if (EXPANSION_ORDER_IN_A >= 2) {
@@ -66,10 +66,12 @@ int main( int argc, char** argv ) {
 		D1 = detUp.getDerivative();
 		D1 = D1.getExpandedExpr();
 		D1.reduceTree();
+		D1 = distributeAllTraces( D1.copy() );
 		cout << "Computing second derivative of the determinant..." << endl;
 		D2 = D1.getDerivative();
 		D2 = D2.getExpandedExpr();
 		D2.reduceTree();
+		D2 = distributeAllTraces( D2.copy() );
 	}
 
 	if ( EXPANSION_ORDER_IN_A >= 4 ) {
@@ -77,10 +79,12 @@ int main( int argc, char** argv ) {
 		D3 = D2.getDerivative();
 		D3 = D3.getExpandedExpr();
 		D3.reduceTree();
+		D3 = distributeAllTraces( SymbolicTermPtr( D3.copy() ) );
 		cout << "Computing fourth derivative of the determinant..." << endl;
 		D4 = D3.getDerivative();
 		D4 = D4.getExpandedExpr();
 		D4.reduceTree();
+		D4 = distributeAllTraces( SymbolicTermPtr( D4.copy() ) );
 	}
 
 	if ( EXPANSION_ORDER_IN_A >= 6 ) {
@@ -88,10 +92,12 @@ int main( int argc, char** argv ) {
 		D5 = D4.getDerivative();
 		D5 = D5.getExpandedExpr();
 		D5.reduceTree();
+		D5 = distributeAllTraces( SymbolicTermPtr( D5.copy() ) );
 		cout << "Computing sixth derivative of the determinant..." << endl;
 		D6 = D5.getDerivative();
 		D6 = D6.getExpandedExpr();
 		D6.reduceTree();
+		D6 = distributeAllTraces( SymbolicTermPtr( D6.copy() ) );
 	}
 
 	if ( EXPANSION_ORDER_IN_A >= 8 ) {
@@ -99,9 +105,24 @@ int main( int argc, char** argv ) {
 		D7 = D6.getDerivative();
 		D7 = D7.getExpandedExpr();
 		D7.reduceTree();
+		D7 = distributeAllTraces( SymbolicTermPtr( D7.copy() ) );
 		cout << "Computing eighth derivative of the determinant..." << endl;
 		D8 = D7.getDerivative();
 		D8 = D8.getExpandedExpr();
 		D8.reduceTree();
+		D8 = distributeAllTraces( SymbolicTermPtr( D8.copy() ) );
+	}
+
+	if ( EXPANSION_ORDER_IN_A >= 10 ) {
+		cout << "Computing ninth derivative of the determinant..." << endl;
+		D9 = D8.getDerivative();
+		D9 = D9.getExpandedExpr();
+		D9.reduceTree();
+		D9 = distributeAllTraces( SymbolicTermPtr( D9.copy() ) );
+		cout << "Computing tenth derivative of the determinant..." << endl;
+		D10 = D9.getDerivative();
+		D10 = D10.getExpandedExpr();
+		D10.reduceTree();
+		D10 = distributeAllTraces( SymbolicTermPtr( D10.copy() ) );
 	}
 }
