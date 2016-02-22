@@ -769,6 +769,34 @@ string L02() {
 	return ss.str();
 }
 
+string L03() {
+	stringstream ss;
+	Product A;
+	A.addTerm( SymbolicTermPtr( new MatrixB( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	SymbolicTermPtr B = A.copy();
+	Trace C( B );
+	ss << C << "    ";
+	C.rewriteInKSFormalism();
+	ss << C;
+	return ss.str();
+}
+
+string L04() {
+	stringstream ss;
+	Product A;
+	A.addTerm( SymbolicTermPtr( new MatrixB( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixB( "dn" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "dn" ) ) );
+	SymbolicTermPtr B = A.copy();
+	Trace C( B );
+	ss << C << "    ";
+	C.rewriteInKSFormalism();
+	ss << C;
+	return ss.str();
+}
+
 string M01() {
 	stringstream ss;
 	Delta d( 0, 1 );
@@ -1060,6 +1088,60 @@ string R05() {
 	return ss.str();
 }
 
+string S01() {
+	stringstream ss;
+	Product A;
+	A.addTerm( SymbolicTermPtr( new MatrixB( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixB( "dn" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "dn" ) ) );
+	SymbolicTermPtr B = A.copy();
+	Trace C( B );
+	Sum D;
+	D.addTerm( C.copy() );
+	ss << D << "    ";
+	SymbolicTermPtr E = D.copy();
+	rewriteSumInKSFormalism( E );
+	ss << *E;
+	return ss.str();
+}
+
+string S02() {
+	stringstream ss;
+	Product A;
+	A.addTerm( SymbolicTermPtr( new MatrixB( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixB( "dn" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "dn" ) ) );
+	SymbolicTermPtr B = A.copy();
+	Trace C( B );
+	Sum D;
+	D.addTerm( C.copy() );
+	Product E;
+	E.addTerm( SymbolicTermPtr( new MatrixB( "a" ) ) );
+	E.addTerm( SymbolicTermPtr( new MatrixM( "a" ) ) );
+	E.addTerm( SymbolicTermPtr( new MatrixB( "a" ) ) );
+	E.addTerm( SymbolicTermPtr( new MatrixM( "a" ) ) );
+	SymbolicTermPtr F = E.copy();
+	Trace G( F );
+	D.addTerm( G.copy() );
+	Product H;
+	H.addTerm( SymbolicTermPtr( new MatrixB( "c" ) ) );
+	H.addTerm( SymbolicTermPtr( new MatrixM( "d" ) ) );
+	H.addTerm( SymbolicTermPtr( new MatrixB( "e" ) ) );
+	H.addTerm( SymbolicTermPtr( new MatrixM( "f" ) ) );
+	H.addTerm( SymbolicTermPtr( new MatrixB( "g" ) ) );
+	H.addTerm( SymbolicTermPtr( new MatrixM( "h" ) ) );
+	SymbolicTermPtr I = H.copy();
+	Trace J( I );
+	D.addTerm( J.copy() );
+	ss << D << "    ";
+	SymbolicTermPtr K = D.copy();
+	rewriteSumInKSFormalism( K );
+	ss << *K;
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -1263,6 +1345,10 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "L02: Trace, getDerivative() I", &L02, "Trace[ GT_0^1 ]" );
 
+	UnitTest( "L03: Trace, rewriteInKSFormalism() I", &L03, "Trace[  {B_up} {M_up}  ]    Trace[  {K_up_( 0, 0 )} {S_(0, 0)}  ]" );
+
+	UnitTest( "L04: Trace, rewriteInKSFormalism() II", &L04, "Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]    Trace[  {K_up_( 0, 0 )} {S_(0, 0)} {K_dn_( 0, 0 )} {S_(0, 0)}  ]" );
+
 	/*
 	 * M: Delta
 	 */
@@ -1336,6 +1422,14 @@ int main( int argc, char** argv ) {
 	UnitTest( "R04: distributeAllTraces(), Distribution IV", &R04, " {A} {Trace[  {3} {M_up}  ]}  +  {A} {Trace[  {5} {M_dn}  ]}      {A} {3} {Trace[ M_up ]}  +  {A} {5} {Trace[ M_dn ]} " );
 
 	UnitTest( "R05: distributeAllTraces(), Distribution V", &R05, " {A} {Trace[  {3} {B_up} {M_up}  ]}  +  {A} {Trace[  {5} {B_md} {M_md}  ]}  +  {A} {Trace[  {7} {B_dn} {M_dn}  ]}      {A} {3} {Trace[  {B_up} {M_up}  ]}  +  {A} {5} {Trace[  {B_md} {M_md}  ]}  +  {A} {7} {Trace[  {B_dn} {M_dn}  ]} " );
+
+	/*
+	 * S: rewriteSumInKSFormalism()
+	 */
+
+	UnitTest( "S01: rewriteSumInKSFormalism() I", &S01, "Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]    Trace[  {K_up_( 0, 0 )} {S_(0, 0)} {K_dn_( 0, 0 )} {S_(0, 0)}  ]" );
+
+	UnitTest( "S02: rewriteSumInKSFormalism() II", &S02, "Trace[  {B_up} {M_up} {B_dn} {M_dn}  ] + Trace[  {B_a} {M_a} {B_a} {M_a}  ] + Trace[  {B_c} {M_d} {B_e} {M_f} {B_g} {M_h}  ]    Trace[  {K_up_( 0, 0 )} {S_(0, 0)} {K_dn_( 0, 0 )} {S_(0, 0)}  ] + Trace[  {K_a_( 0, 0 )} {S_(0, 0)} {K_a_( 0, 0 )} {S_(0, 0)}  ] + Trace[  {K_c_( 0, 0 )} {S_(0, 0)} {K_e_( 0, 0 )} {S_(0, 0)} {K_g_( 0, 0 )} {S_(0, 0)}  ]" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

@@ -498,7 +498,7 @@ Sum truncateAOrder( Sum expr, int highestOrder );
 
 Sum truncateOddOrders( Sum expr );
 
-Sum rewriteSumInKSFormalism( Sum expr );
+void rewriteSumInKSFormalism( SymbolicTermPtr expr );
 
 Sum indexExpression( Sum expr );
 

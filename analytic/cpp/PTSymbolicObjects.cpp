@@ -1056,8 +1056,25 @@ bool Trace::operator==( const Trace &other ) const {
 	return *expr == other;
 }
 
-void Trace::rewriteInKSFormalism() {
+void Trace::rewriteInKSFormalism() {  // TODO: Verify first derivative is taken for MatrixM exactly.
+	if ( not expr->getTermID() == 'P' ) {
+		cout << "***ERROR: Argument of a Trace must be a single Product before rewriting in KS formalism. Distribute trace operators first." << endl;
+	}
 
+	ProductPtr castExpr = static_pointer_cast<Product>( expr );
+	ProductPtr newExpr( new Product() );
+	for ( vector<SymbolicTermPtr>::iterator iter = castExpr->getIteratorBegin(); iter != castExpr->getIteratorEnd(); ++iter ) {
+		if ( (*iter)->getTermID() == 'B' ) {
+			newExpr->addTerm( SymbolicTermPtr( new MatrixK( (*iter)->getFlavorLabel() ) ) );
+		} else if( (*iter)->getTermID() == 'M' ) {
+			newExpr->addTerm( SymbolicTermPtr( new MatrixS() ) );
+		} else {
+			cout << "***ERROR: Unexpected term encountered in Trace argument when rewriting in KS formalism." << endl;
+		}
+	}
+
+	expr.reset();  // Delete current expression.
+	expr = newExpr;
 }
 
 /*
@@ -1259,6 +1276,30 @@ Sum distributeAllTraces( SymbolicTermPtr expr ) {
 
 	distributedExpr->reduceTree();
 	return *distributedExpr;
+}
+
+void rewriteSumInKSFormalism( SymbolicTermPtr expr ) {
+	if ( expr->getTermID() != 'S' ) {
+		// TODO: Throw exception.
+		cout << "***ERROR: Expression passed to rewriteSumInKSFormalism() must be an instance of a Sum." << endl;
+		return;
+	}
+
+	SumPtr castExpr = static_pointer_cast<Sum>( expr );
+	for ( vector<SymbolicTermPtr>::iterator iter = castExpr->getIteratorBegin(); iter != castExpr->getIteratorEnd(); ++iter ) {
+		if ( (*iter)->getTermID() == 'P' ) {
+			ProductPtr castTerm = static_pointer_cast<Product>( *iter );
+			for ( vector<SymbolicTermPtr>::iterator factor = castTerm->getIteratorBegin(); factor != castExpr->getIteratorEnd(); ++factor ) {
+				if ( (*factor)->getTermID() == 'T' ) {
+					TracePtr castTrace = static_pointer_cast<Trace>( *factor );
+					castTrace->rewriteInKSFormalism();
+				}
+			}
+		} else if ( (*iter)->getTermID() == 'T' ) {
+			TracePtr castTrace = static_pointer_cast<Trace>( *iter );
+			castTrace->rewriteInKSFormalism();
+		}
+	}
 }
 
 /*
