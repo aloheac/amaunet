@@ -106,7 +106,7 @@ public:
 
 	int* getIndices();
 
-	void setIndices( int* newIndices );
+	void setIndices( int i, int j );
 
 	TermTypes getTermID();
 
@@ -357,6 +357,8 @@ class Product : public SymbolicTerm {
 
 	friend class Sum;
 
+	friend void indexExpression( SymbolicTermPtr expr );
+
 public:
 
 	Product();
@@ -399,7 +401,7 @@ public:
 
 	std::vector<SymbolicTermPtr>::iterator getIteratorEnd();
 
-//private:
+private:
 
 	std::vector<SymbolicTermPtr> terms;
 
@@ -410,6 +412,8 @@ class Trace : public SymbolicTerm {
 	friend bool isZeroTrace( SymbolicTermPtr );
 
 	friend Sum distributeTrace( SymbolicTermPtr tr );
+
+	friend void indexExpression( SymbolicTermPtr expr );
 
 public:
 
@@ -508,7 +512,7 @@ Sum truncateOddOrders( Sum expr );
 
 void rewriteSumInKSFormalism( SymbolicTermPtr expr );
 
-Sum indexExpression( Sum expr );
+void indexExpression( SymbolicTermPtr expr );
 
 /*
  * ***********************************************************************

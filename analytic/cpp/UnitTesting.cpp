@@ -1142,6 +1142,59 @@ string S02() {
 	return ss.str();
 }
 
+string T01() {
+	stringstream ss;
+	Product A;
+	A.addTerm( SymbolicTermPtr( new MatrixB( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixB( "dn" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "dn" ) ) );
+	Trace B( A.copy() );
+	Product E;
+	E.addTerm( B.copy() );
+	Sum C( E.copy() );
+	ss << C << "    ";
+	SymbolicTermPtr D = C.copy();
+	rewriteSumInKSFormalism( D );
+	indexExpression( D );
+	ss << *D;
+	return ss.str();
+}
+
+string T02() {
+	stringstream ss;
+	Product A;
+	A.addTerm( SymbolicTermPtr( new MatrixB( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixB( "dn" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "dn" ) ) );
+	Trace B( A.copy() );
+	Product E;
+	E.addTerm( B.copy() );
+
+	Product F;
+	F.addTerm( SymbolicTermPtr( new MatrixB( "up" ) ) );
+	F.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	F.addTerm( SymbolicTermPtr( new MatrixB( "dn" ) ) );
+	F.addTerm( SymbolicTermPtr( new MatrixM( "dn" ) ) );
+	F.addTerm( SymbolicTermPtr( new MatrixB( "md" ) ) );
+	F.addTerm( SymbolicTermPtr( new MatrixM( "md" ) ) );
+	Trace G( F.copy() );
+	Product H;
+	H.addTerm( G.copy() );
+
+	Sum C;
+	C.addTerm( E.copy() );
+	C.addTerm( H.copy() );
+
+	ss << C << "    ";
+	SymbolicTermPtr D = C.copy();
+	rewriteSumInKSFormalism( D );
+	indexExpression( D );
+	ss << *D;
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -1430,6 +1483,14 @@ int main( int argc, char** argv ) {
 	UnitTest( "S01: rewriteSumInKSFormalism() I", &S01, "Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]    Trace[  {K_up_( 0, 0 )} {S_(0, 0)} {K_dn_( 0, 0 )} {S_(0, 0)}  ]" );
 
 	UnitTest( "S02: rewriteSumInKSFormalism() II", &S02, "Trace[  {B_up} {M_up} {B_dn} {M_dn}  ] + Trace[  {B_a} {M_a} {B_a} {M_a}  ] + Trace[  {B_c} {M_d} {B_e} {M_f} {B_g} {M_h}  ]    Trace[  {K_up_( 0, 0 )} {S_(0, 0)} {K_dn_( 0, 0 )} {S_(0, 0)}  ] + Trace[  {K_a_( 0, 0 )} {S_(0, 0)} {K_a_( 0, 0 )} {S_(0, 0)}  ] + Trace[  {K_c_( 0, 0 )} {S_(0, 0)} {K_e_( 0, 0 )} {S_(0, 0)} {K_g_( 0, 0 )} {S_(0, 0)}  ]" );
+
+	/*
+	 * T: indexExpression()
+	 */
+
+	UnitTest( "T01: indexExpression() I", &T01, " {Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]}      {Trace[  {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 0)}  ]} " );
+
+	UnitTest( "T02: indexExpression() II", &T02, " {Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]}  +  {Trace[  {B_up} {M_up} {B_dn} {M_dn} {B_md} {M_md}  ]}      {Trace[  {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 0)}  ]}  +  {Trace[  {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 4)} {K_md_( 4, 5 )} {S_(5, 0)}  ]} " );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

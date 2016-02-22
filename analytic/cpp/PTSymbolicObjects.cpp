@@ -41,6 +41,7 @@ enum class TermTypes : char {
 	SUM = 'S',
 	PRODUCT = 'P',
 	TRACE = 'T',
+	DELTA = 'd'
 };
 
 /*
@@ -103,9 +104,9 @@ int* SymbolicTerm::getIndices() {
 	return indices;
 }
 
-void SymbolicTerm::setIndices( int* newIndices ) {
-	indices[0] = newIndices[0];
-	indices[1] = newIndices[1];
+void SymbolicTerm::setIndices( int i, int j ) {
+	indices[0] = i;
+	indices[1] = j;
 }
 
 TermTypes SymbolicTerm::getTermID() {
@@ -1107,12 +1108,14 @@ Delta::Delta( int a, int b ) {
 	indices[0] = a;
 	indices[1] = b;
 	isBar = false;
+	termID = TermTypes::DELTA;
 }
 
 Delta::Delta( int a, int b, bool type ) {
 	indices[0] = a;
 	indices[1] = b;
 	isBar = type;
+	termID = TermTypes::DELTA;
 }
 
 const std::string Delta::to_string() const {
@@ -1311,7 +1314,7 @@ void rewriteSumInKSFormalism( SymbolicTermPtr expr ) {
 	for ( vector<SymbolicTermPtr>::iterator iter = castExpr->getIteratorBegin(); iter != castExpr->getIteratorEnd(); ++iter ) {
 		if ( (*iter)->getTermID() == TermTypes::PRODUCT ) {
 			ProductPtr castTerm = static_pointer_cast<Product>( *iter );
-			for ( vector<SymbolicTermPtr>::iterator factor = castTerm->getIteratorBegin(); factor != castExpr->getIteratorEnd(); ++factor ) {
+			for ( vector<SymbolicTermPtr>::iterator factor = castTerm->getIteratorBegin(); factor != castTerm->getIteratorEnd(); ++factor ) {
 				if ( (*factor)->getTermID() == TermTypes::TRACE) {
 					TracePtr castTrace = static_pointer_cast<Trace>( *factor );
 					castTrace->rewriteInKSFormalism();
@@ -1320,6 +1323,41 @@ void rewriteSumInKSFormalism( SymbolicTermPtr expr ) {
 		} else if ( (*iter)->getTermID() == TermTypes::TRACE ) {
 			TracePtr castTrace = static_pointer_cast<Trace>( *iter );
 			castTrace->rewriteInKSFormalism();
+		}
+	}
+}
+
+void indexExpression( SymbolicTermPtr expr ) {
+	if ( expr->getTermID() != TermTypes::SUM ) {
+		cout << "***ERROR: indexExpression() expects a Sum as the passed expression." << endl;
+		return;
+	}
+
+	SumPtr castExpr = static_pointer_cast<Sum>( expr );
+	for ( vector<SymbolicTermPtr>::iterator term = castExpr->getIteratorBegin(); term != castExpr->getIteratorEnd(); ++term ) {
+		if ( (*term)->getTermID() == TermTypes::PRODUCT ) {
+			ProductPtr castTerm = static_pointer_cast<Product>( *term );
+			unsigned int nextIndex = 0;
+
+			for ( vector<SymbolicTermPtr>::iterator factor = castTerm->getIteratorBegin(); factor != castTerm->getIteratorEnd(); ++factor ) {
+				if ( (*factor)->getTermID() == TermTypes::TRACE ) {
+					TracePtr castTrace = static_pointer_cast<Trace>( *factor );
+
+					if ( castTrace->expr->getTermID() != TermTypes::PRODUCT ) {  // TODO: Consider case where a single matrix is the argument to the Trace.
+						cout << "***ERROR: Expression passed to indexExpression() contains a badly formed trace. Be sure to distribute all traces first." << endl;
+						return;
+					}
+
+					ProductPtr castTraceExpr = static_pointer_cast<Product>( castTrace->expr );
+
+					for ( int i = 0; i < castTraceExpr->getNumberOfTerms() - 1; i++ ) {
+						castTraceExpr->terms[ i ]->setIndices( nextIndex + i, nextIndex + i + 1 );
+					}
+					castTraceExpr->terms[ castTraceExpr->getNumberOfTerms() - 1 ]->setIndices( nextIndex + castTraceExpr->getNumberOfTerms() - 1, nextIndex);
+					nextIndex += castTraceExpr->getNumberOfTerms() + 1;
+				}
+			}
+
 		}
 	}
 }
