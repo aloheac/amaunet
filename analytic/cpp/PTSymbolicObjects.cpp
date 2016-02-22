@@ -23,6 +23,28 @@ using namespace std;
 
 /*
  * ***********************************************************************
+ * ENUMERATED TYPES
+ * ***********************************************************************
+ */
+
+enum class TermTypes : char {
+	INVALID_TERM = '0',
+	GENERIC_TEST_TERM = 'g',
+	MATRIX_M = 'M',
+	MATRIX_B = 'B',
+	MATRIX_K = 'K',
+	MATRIX_S = 's',
+	DET_M = 'D',
+	TERM_A = 'A',
+	COEFFICIENT_FLOAT = 'L',
+	COEFFICIENT_FRACTION = 'R',
+	SUM = 'S',
+	PRODUCT = 'P',
+	TRACE = 'T',
+};
+
+/*
+ * ***********************************************************************
  * EXPRESSION BASE CLASSES : IMPLEMENTATIONS
  * ***********************************************************************
  */
@@ -37,7 +59,7 @@ SymbolicTerm::SymbolicTerm() {
 	flavorLabel = "";
 	indices[ 0 ] = 0;
 	indices[ 1 ] = 0;
-	termID = '0';
+	termID = TermTypes::INVALID_TERM ;
 }
 
 SymbolicTerm::~SymbolicTerm() { }
@@ -86,7 +108,7 @@ void SymbolicTerm::setIndices( int* newIndices ) {
 	indices[1] = newIndices[1];
 }
 
-char SymbolicTerm::getTermID() {
+TermTypes SymbolicTerm::getTermID() {
 	return termID;
 }
 
@@ -99,7 +121,7 @@ SymbolicTermPtr SymbolicTerm::copy() {
 	cpy->flavorLabel = flavorLabel;
 	cpy->indices[ 0 ] = indices[ 0 ];
 	cpy->indices[ 1 ] = indices[ 1 ];
-	termID = '0';
+	termID = TermTypes::INVALID_TERM ;
 
 	return cpy;
 }
@@ -117,7 +139,7 @@ SymbolicTermPtr SymbolicTerm::copy() {
 GenericTestTerm::GenericTestTerm( int thisId, int thisDerivativeOrder ) : SymbolicTerm() {
 	id = thisId;
 	derivativeOrder = thisDerivativeOrder;
-	termID = 'g';
+	termID = TermTypes::GENERIC_TEST_TERM ;
 }
 
 const string GenericTestTerm::to_string() const {
@@ -134,7 +156,7 @@ SymbolicTermPtr GenericTestTerm::copy() {
 	GenericTestTermPtr cpy( new GenericTestTerm( 0, 0 ) );
 	cpy->id = id;
 	cpy->derivativeOrder = derivativeOrder;
-	cpy->termID = 'g';
+	cpy->termID = TermTypes::GENERIC_TEST_TERM;
 
 	return SymbolicTermPtr( static_pointer_cast<SymbolicTerm>( cpy ) );
 }
@@ -149,11 +171,11 @@ std::ostream& operator<<( std::ostream& os, const GenericTestTerm &st ) {
  */
 
 MatrixM::MatrixM() : SymbolicTerm() {
-	termID = 'M';
+	termID = TermTypes::MATRIX_M;
 };
 
 MatrixM::MatrixM( const char* thisFlavorLabel ) : SymbolicTerm() {
-	termID = 'M';
+	termID = TermTypes::MATRIX_M;
 	flavorLabel = thisFlavorLabel;
 }
 
@@ -161,7 +183,7 @@ bool MatrixM::operator==( const MatrixM &other ) const {
 	return ( derivativeOrder == other.derivativeOrder ) and
 				( isInteracting == other.isInteracting ) and
 				( flavorLabel == other.flavorLabel ) and
-				other.termID == 'M';
+				other.termID == TermTypes::MATRIX_M;
 }
 
 Sum MatrixM::getDerivative() {
@@ -227,7 +249,7 @@ SymbolicTermPtr MatrixM::copy() {
 	cpy->isInteracting = isInteracting;
 	cpy->indices[0] = indices[0];
 	cpy->indices[1] = indices[1];
-	cpy->termID = 'M';
+	cpy->termID = TermTypes::MATRIX_M;;
 
 	return static_pointer_cast<SymbolicTerm>( cpy );
 }
@@ -237,19 +259,19 @@ SymbolicTermPtr MatrixM::copy() {
  */
 
 MatrixB::MatrixB() : SymbolicTerm() {
-	termID = 'B';
+	termID = TermTypes::MATRIX_B;
 }
 
 MatrixB::MatrixB( const char* thisFlavorLabel )  : SymbolicTerm() {
 	flavorLabel = thisFlavorLabel;
-	termID = 'B';
+	termID = TermTypes::MATRIX_B;
 }
 
 bool MatrixB::operator==( const MatrixB &other ) const {
 	return ( derivativeOrder == other.derivativeOrder ) and
 			( isInteracting == other.isInteracting ) and
 			( flavorLabel == other.flavorLabel ) and
-			( other.termID == 'B' );
+			( other.termID == TermTypes::MATRIX_B );
 }
 
 Sum MatrixB::getDerivative() {
@@ -317,7 +339,7 @@ SymbolicTermPtr MatrixB::copy() {
 	cpy->isInteracting = isInteracting;
 	cpy->indices[0] = indices[0];
 	cpy->indices[1] = indices[1];
-	cpy->termID = 'B';
+	cpy->termID = TermTypes::MATRIX_B;
 
 	return static_pointer_cast<SymbolicTerm>( cpy );
 }
@@ -328,13 +350,13 @@ SymbolicTermPtr MatrixB::copy() {
 
 MatrixK::MatrixK() : SymbolicTerm() {
 	isFourierTransformed = false;
-	termID = 'K';
+	termID = TermTypes::MATRIX_K;
 }
 
 MatrixK::MatrixK( const char* thisFlavorLabel ) : SymbolicTerm() {
 	isFourierTransformed = false;
 	flavorLabel = thisFlavorLabel;
-	termID = 'K';
+	termID = TermTypes::MATRIX_K;
 }
 
 bool MatrixK::operator==( const MatrixK &other ) const {
@@ -360,7 +382,7 @@ SymbolicTermPtr MatrixK::copy() {
 	cpy->isInteracting = isInteracting;
 	cpy->indices[0] = indices[0];
 	cpy->indices[1] = indices[1];
-	cpy->termID = 'K';
+	cpy->termID = TermTypes::MATRIX_K;
 
 	return static_pointer_cast<SymbolicTerm>( cpy );
 }
@@ -374,7 +396,7 @@ void MatrixK::fourierTransform() {
  */
 
 MatrixS::MatrixS() : SymbolicTerm() {
-	termID = 's';
+	termID = TermTypes::MATRIX_S;
 }
 
 const string MatrixS::to_string() const {
@@ -391,7 +413,7 @@ SymbolicTermPtr MatrixS::copy() {
 	cpy->isInteracting = isInteracting;
 	cpy->indices[0] = indices[0];
 	cpy->indices[1] = indices[1];
-	cpy->termID = 'B';
+	cpy->termID = TermTypes::MATRIX_S;
 
 	return static_pointer_cast<SymbolicTerm>( cpy );
 }
@@ -401,13 +423,13 @@ SymbolicTermPtr MatrixS::copy() {
  */
 
 DetM::DetM( MatrixM thisMatrix ) : SymbolicTerm() {
-	termID = 'D';
+	termID = TermTypes::DET_M;
 	isInverted = false;
 	matrix = thisMatrix;
 }
 
 DetM::DetM( MatrixM thisMatrix, bool inverted ) : SymbolicTerm() {
-	termID = 'D';
+	termID = TermTypes::DET_M;
 	isInverted = inverted;
 	matrix = thisMatrix;
 }
@@ -456,11 +478,11 @@ SymbolicTermPtr DetM::copy() {
  */
 
 TermA::TermA() : SymbolicTerm() {
-	termID = 'A';
+	termID = TermTypes::TERM_A;
 }
 
 TermA::TermA( const TermA* A ) : SymbolicTerm() {
-	termID = 'A';
+	termID = TermTypes::TERM_A;
 }
 
 const std::string TermA::to_string() const {
@@ -481,12 +503,12 @@ bool TermA::operator==( const TermA &other ) const {
 
 CoefficientFloat::CoefficientFloat( double val ) : SymbolicTerm() {
 	value = val;
-	termID = 'L';
+	termID = TermTypes::COEFFICIENT_FLOAT;
 }
 
 CoefficientFloat::CoefficientFloat( const CoefficientFloat* f ) : SymbolicTerm() {
 	value = f-> value;
-	termID = 'L';
+	termID = TermTypes::COEFFICIENT_FLOAT;
 }
 
 const string CoefficientFloat::to_string() const {
@@ -515,13 +537,13 @@ double CoefficientFloat::eval() {
 CoefficientFraction::CoefficientFraction( int n, int d ) : SymbolicTerm() {
 	num = n;
 	den = d;
-	termID = 'R';
+	termID = TermTypes::COEFFICIENT_FRACTION;
 }
 
 CoefficientFraction::CoefficientFraction( CoefficientFraction* f ) : SymbolicTerm() {
 	num = f->num;
 	den = f->den;
-	termID = 'R';
+	termID = TermTypes::COEFFICIENT_FRACTION;
 }
 
 const string CoefficientFraction::to_string() const {
@@ -555,23 +577,23 @@ double CoefficientFraction::eval() {
 
 Sum::Sum() {
 	terms = vector<SymbolicTermPtr>();
-	termID = 'S';
+	termID = TermTypes::SUM;
 }
 
 Sum::Sum( std::vector<SymbolicTermPtr> thisTerms ) {
 	terms = thisTerms;
-	termID = 'S';
+	termID = TermTypes::SUM;
 }
 
 Sum::Sum( SymbolicTermPtr term ) {
 	terms = vector<SymbolicTermPtr>();
-	termID = 'S';
+	termID = TermTypes::SUM;
 	terms.push_back( term );
 }
 
 Sum::Sum( const Sum &s ) {
 	terms = vector<SymbolicTermPtr>();
-	termID = 'S';
+	termID = TermTypes::SUM;
 	for ( vector<SymbolicTermPtr>::const_iterator iter = s.terms.begin(); iter != s.terms.end(); ++iter ) {
 			addTerm( (*iter)->copy() );
 	}
@@ -585,7 +607,7 @@ Sum::~Sum() {
 
 Sum& Sum::operator=( const Sum &rhs ) {
 	terms = vector<SymbolicTermPtr>();
-	termID = 'S';
+	termID = TermTypes::SUM;
 	for ( vector<SymbolicTermPtr>::const_iterator iter = rhs.terms.begin(); iter != rhs.terms.end(); ++iter ) {
 			addTerm( (*iter)->copy() );
 	}
@@ -614,7 +636,7 @@ SymbolicTermPtr Sum::copy() {
 	for ( vector<SymbolicTermPtr>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
 		cpy->addTerm( (*iter)->copy() );
 	}
-	cpy->termID = 'S';
+	cpy->termID = TermTypes::SUM;
 
 	return static_pointer_cast<SymbolicTerm>( cpy );
 }
@@ -646,7 +668,7 @@ void Sum::reduceTree() {
 	vector<SymbolicTermPtr> reducedExpression;
 	for ( vector<SymbolicTermPtr>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
 		unpackTrivialExpression( *iter );
-		if ( (*iter)->getTermID() == 'S' ) {
+		if ( (*iter)->getTermID() == TermTypes::SUM ) {
 			(*iter)->reduceTree();
 			SumPtr iteratingSum = dynamic_pointer_cast<Sum>(*iter); // TODO: Add exception check here.
 			for ( vector<SymbolicTermPtr>::iterator iter_term = iteratingSum->getIteratorBegin(); iter_term != iteratingSum->getIteratorEnd(); ++iter_term ) {
@@ -654,7 +676,7 @@ void Sum::reduceTree() {
 				reducedExpression.push_back( *iter_term );
 			}
 
-		} else if ( (*iter)->getTermID() == 'P' or (*iter)->getTermID() == 'T' ) {
+		} else if ( (*iter)->getTermID() == TermTypes::PRODUCT or (*iter)->getTermID() == TermTypes::TRACE ) {
 			(*iter)->reduceTree();
 			unpackTrivialExpression( *iter );
 			reducedExpression.push_back( *iter );
@@ -685,10 +707,10 @@ Sum Sum::getDerivative() {
 Sum Sum::getExpandedExpr() {
 	Sum expandedSum;
 	for ( vector<SymbolicTermPtr>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
-		if ( (*iter)->getTermID() == 'S' ) {
+		if ( (*iter)->getTermID() == TermTypes::SUM ) {
 			SumPtr s = dynamic_pointer_cast<Sum>( *iter );
 			expandedSum.addTerm( s->getExpandedExpr().copy() );
-		} else if ( (*iter)->getTermID() == 'P' ) {
+		} else if ( (*iter)->getTermID() == TermTypes::PRODUCT ) {
 			ProductPtr prod = dynamic_pointer_cast<Product>( *iter );
 			expandedSum.addTerm( prod->getExpandedExpr().copy() );
 		}
@@ -737,18 +759,18 @@ vector<SymbolicTermPtr>::const_iterator Sum::getIteratorEnd() const {
 
 Product::Product() : SymbolicTerm() {
 	terms = vector<SymbolicTermPtr>();
-	termID = 'P';
+	termID = TermTypes::PRODUCT;
 }
 
 Product::Product( vector<SymbolicTermPtr> t ) : SymbolicTerm() {
 	terms = t;
-	termID = 'P';
+	termID = TermTypes::PRODUCT;
 }
 
 Product::Product( SymbolicTermPtr term ) : SymbolicTerm() {
 	terms = vector<SymbolicTermPtr>();
 	terms.push_back( term );
-	termID = 'P';
+	termID = TermTypes::PRODUCT;
 
 }
 
@@ -760,7 +782,7 @@ Product::~Product() {
 
 Product& Product::operator=( const Product &rhs ) {
 	terms = vector<SymbolicTermPtr>();
-	termID = 'P';
+	termID = TermTypes::PRODUCT;
 	for ( vector<SymbolicTermPtr>::const_iterator iter = rhs.terms.begin(); iter != rhs.terms.end(); ++iter ) {
 		addTerm( (*iter)->copy() );
 	}
@@ -787,7 +809,7 @@ SymbolicTermPtr Product::copy() {
 	for ( vector<SymbolicTermPtr>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
 		cpy->addTerm( (*iter)->copy() );
 	}
-	termID = 'P';
+	termID = TermTypes::PRODUCT;
 	return static_pointer_cast<SymbolicTerm>( cpy );
 }
 
@@ -817,14 +839,14 @@ void Product::reduceTree() {
 	vector<SymbolicTermPtr> reducedExpression;
 	for ( vector<SymbolicTermPtr>::iterator iter =  terms.begin(); iter != terms.end(); ++iter ) {
 		unpackTrivialExpression( *iter );
-		if ( (*iter)->getTermID() == 'P' ) {
+		if ( (*iter)->getTermID() == TermTypes::PRODUCT ) {
 			(*iter)->reduceTree();
 			ProductPtr castProduct = dynamic_pointer_cast<Product>( *iter );
 			for ( vector<SymbolicTermPtr>::iterator term_iter = castProduct->getIteratorBegin(); term_iter != castProduct->getIteratorEnd(); ++term_iter ) {
 				unpackTrivialExpression( *term_iter );
 				reducedExpression.push_back( *term_iter );
 			}
-		} else if ( (*iter)->getTermID() == 'S' or (*iter)->getTermID() == 'T' ) {
+		} else if ( (*iter)->getTermID() == TermTypes::SUM or (*iter)->getTermID() == TermTypes::TRACE ) {
 			(*iter)->reduceTree();
 			unpackTrivialExpression( *iter );
 			reducedExpression.push_back( *iter );
@@ -866,7 +888,7 @@ Sum Product::getExpandedExpr() {
 		unpackTrivialExpression( firstTerm );
 		unpackTrivialExpression( secondTerm );
 
-		if ( firstTerm->getTermID() == 'S' ) {  // Case I: First term is a Sum, or both terms are a Sum.
+		if ( firstTerm->getTermID() == TermTypes::SUM ) {  // Case I: First term is a Sum, or both terms are a Sum.
 
 			Sum expandedSum;
 			SumPtr currentSum = dynamic_pointer_cast<Sum>( firstTerm );
@@ -875,7 +897,7 @@ Sum Product::getExpandedExpr() {
 			SymbolicTermPtr factorB;
 			ProductPtr productA, productB;
 
-			if ( factorA->getTermID() == 'P' ) {
+			if ( factorA->getTermID() == TermTypes::PRODUCT ) {
 				productA = dynamic_pointer_cast<Product>( factorA );
 				if ( productA->containsSum() ) {
 					factorA = productA->getExpandedExpr().copy();  // copy() returns Sum*.
@@ -885,7 +907,7 @@ Sum Product::getExpandedExpr() {
 			for ( vector<SymbolicTermPtr>::iterator iter = currentSum->terms.begin(); iter != currentSum->terms.end(); ++iter ) {
 				factorB = *iter;
 				unpackTrivialExpression( factorB );  // Need?
-				if ( factorB->getTermID() == 'P' ) {
+				if ( factorB->getTermID() == TermTypes::PRODUCT ) {
 					productB = dynamic_pointer_cast<Product>( factorB );
 					if ( productB->containsSum() ) {
 						factorB = productB->getExpandedExpr().copy();  // copy() returns Sum*.
@@ -904,7 +926,7 @@ Sum Product::getExpandedExpr() {
 
 			return expandedSum;
 
-		} else if ( secondTerm->getTermID() == 'S' ) {  // Case II: Second term is a sum.
+		} else if ( secondTerm->getTermID() == TermTypes::SUM ) {  // Case II: Second term is a sum.
 
 			Sum expandedSum;
 			SumPtr currentSum = dynamic_pointer_cast<Sum>( secondTerm );
@@ -913,7 +935,7 @@ Sum Product::getExpandedExpr() {
 			SymbolicTermPtr factorB;
 			ProductPtr productA, productB;
 
-			if ( factorA->getTermID() == 'P' ) {
+			if ( factorA->getTermID() == TermTypes::PRODUCT ) {
 				productA = dynamic_pointer_cast<Product>( factorA );
 				if ( productA->containsSum() ) {
 					factorA = productA->getExpandedExpr().copy();  // copy() returns Sum*.
@@ -923,7 +945,7 @@ Sum Product::getExpandedExpr() {
 			for ( vector<SymbolicTermPtr>::iterator iter = currentSum->terms.begin(); iter != currentSum->terms.end(); ++iter ) {
 				factorB = *iter;
 				unpackTrivialExpression( factorB );  // Need?
-				if ( factorB->getTermID() == 'P' ) {
+				if ( factorB->getTermID() == TermTypes::PRODUCT ) {
 					productB = dynamic_pointer_cast<Product>( factorB );
 					if ( productB->containsSum() ) {
 						factorB = productB->getExpandedExpr().copy();  // copy() returns Sum*.
@@ -991,7 +1013,7 @@ bool Product::operator==( const Sum &other ) const {
 
 bool Product::containsSum() {
 	for ( vector<SymbolicTermPtr>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
-		if ( (*iter)->getTermID() == 'S' ) return true;
+		if ( (*iter)->getTermID() == TermTypes::SUM ) return true;
 	}
 	return false;
 }
@@ -1018,7 +1040,7 @@ vector<SymbolicTermPtr>::iterator Product::getIteratorEnd() {
 
 Trace::Trace( SymbolicTermPtr thisExpr ) : SymbolicTerm() {
 	expr = thisExpr;
-	termID = 'T';
+	termID = TermTypes::TRACE;
 }
 
 Trace::~Trace() {
@@ -1057,16 +1079,16 @@ bool Trace::operator==( const Trace &other ) const {
 }
 
 void Trace::rewriteInKSFormalism() {  // TODO: Verify first derivative is taken for MatrixM exactly.
-	if ( not expr->getTermID() == 'P' ) {
+	if ( expr->getTermID() != TermTypes::PRODUCT ) {
 		cout << "***ERROR: Argument of a Trace must be a single Product before rewriting in KS formalism. Distribute trace operators first." << endl;
 	}
 
 	ProductPtr castExpr = static_pointer_cast<Product>( expr );
 	ProductPtr newExpr( new Product() );
 	for ( vector<SymbolicTermPtr>::iterator iter = castExpr->getIteratorBegin(); iter != castExpr->getIteratorEnd(); ++iter ) {
-		if ( (*iter)->getTermID() == 'B' ) {
+		if ( (*iter)->getTermID() == TermTypes::MATRIX_B ) {
 			newExpr->addTerm( SymbolicTermPtr( new MatrixK( (*iter)->getFlavorLabel() ) ) );
-		} else if( (*iter)->getTermID() == 'M' ) {
+		} else if( (*iter)->getTermID() == TermTypes::MATRIX_M ) {
 			newExpr->addTerm( SymbolicTermPtr( new MatrixS() ) );
 		} else {
 			cout << "***ERROR: Unexpected term encountered in Trace argument when rewriting in KS formalism." << endl;
@@ -1114,7 +1136,7 @@ bool Delta::isDeltaBar() {
  */
 
 bool unpackTrivialExpression( SymbolicTermPtr& st ) {  // TODO: Separate out into helper.
-	if ( st->getTermID() == 'P' ) {
+	if ( st->getTermID() == TermTypes::PRODUCT ) {
 		SymbolicTermPtr tmp;
 		ProductPtr castProduct = dynamic_pointer_cast<Product>( st );
 		if ( castProduct->terms.size() == 1 ) {
@@ -1128,7 +1150,7 @@ bool unpackTrivialExpression( SymbolicTermPtr& st ) {  // TODO: Separate out int
 
 			return true;
 		}
-	} else if ( st->getTermID() == 'S' ) {
+	} else if ( st->getTermID() == TermTypes::SUM ) {
 		SymbolicTermPtr tmp;
 		SumPtr castSum = dynamic_pointer_cast<Sum>( st );
 		if ( castSum->terms.size() == 1) {
@@ -1148,12 +1170,12 @@ bool unpackTrivialExpression( SymbolicTermPtr& st ) {  // TODO: Separate out int
 }
 
 bool isZeroTrace( SymbolicTermPtr tr ) {
-	if ( tr->getTermID() == 'T' ) {
+	if ( tr->getTermID() == TermTypes::TRACE ) {
 		TracePtr castTrace = dynamic_pointer_cast<Trace>( tr );
-		if ( castTrace->expr->getTermID() == 'S' ) {
+		if ( castTrace->expr->getTermID() == TermTypes::SUM ) {
 			SumPtr castExpr = dynamic_pointer_cast<Sum>( castTrace->expr );
 			if ( castExpr->getNumberOfTerms() == 0 ) return true;
-		} else if ( castTrace->expr->getTermID() == 'P' ) {
+		} else if ( castTrace->expr->getTermID() == TermTypes::PRODUCT ) {
 			ProductPtr castExpr = dynamic_pointer_cast<Product>( castTrace->expr );
 			if ( castExpr->getNumberOfTerms() == 0 ) return true;
 		}
@@ -1168,7 +1190,7 @@ bool isZeroTrace( SymbolicTermPtr tr ) {
 }
 
 Sum distributeTrace( SymbolicTermPtr tr ) {
-	if ( tr->getTermID() != 'T' ) {
+	if ( tr->getTermID() != TermTypes::TRACE ) {
 		cout << "***ERROR: An object other than a trace was passed to distributeTrace()." << endl;
 		return Sum();  // TODO: Throw exception.
 	}
@@ -1177,7 +1199,7 @@ Sum distributeTrace( SymbolicTermPtr tr ) {
 	TracePtr castTrace = static_pointer_cast<Trace>( tr );
 
 	// Simple case: a single product inside a trace has been passed in.
-	if ( castTrace->expr->getTermID() == 'P' ) {
+	if ( castTrace->expr->getTermID() == TermTypes::PRODUCT ) {
 		// Consider relatively more complicated cases, where the argument to the trace is an expression like
 		// a ( b c + d e ); we must expand the product and reduce the representation.
 
@@ -1192,17 +1214,17 @@ Sum distributeTrace( SymbolicTermPtr tr ) {
 
 		// If the expansion resulted in the product turning into a sum, evaluate it appropriately through a recursive
 		// call.
-		if ( expandedArgument->getTermID() == 'S' ) {
+		if ( expandedArgument->getTermID() == TermTypes::SUM ) {
 			return distributeTrace( Trace( expandedArgument ).copy() );
 
-		} else if ( expandedArgument->getTermID() == 'P' ){  // Otherwise, if the expression is a simple, single product, proceed.
+		} else if ( expandedArgument->getTermID() == TermTypes::PRODUCT ){  // Otherwise, if the expression is a simple, single product, proceed.
 			Product simplifiedProduct;
 			vector<SymbolicTermPtr> matrixTerms;
 			ProductPtr castExpandedArgument = static_pointer_cast<Product>( expandedArgument );
 			for ( vector<SymbolicTermPtr>::iterator iter = castExpandedArgument->getIteratorBegin(); iter != castExpandedArgument->getIteratorEnd(); ++iter ) {
-				if ( (*iter)->getTermID() == 'L' or (*iter)->getTermID() == 'R') {
+				if ( (*iter)->getTermID() == TermTypes::COEFFICIENT_FLOAT or (*iter)->getTermID() == TermTypes::COEFFICIENT_FRACTION) {
 					simplifiedProduct.addTerm( (*iter)->copy() );
-				} else if ( (*iter)->getTermID() == 'B' or (*iter)->getTermID() == 'M' ) {
+				} else if ( (*iter)->getTermID() == TermTypes::MATRIX_B or (*iter)->getTermID() == TermTypes::MATRIX_M ) {
 					matrixTerms.push_back( (*iter)->copy() );
 				}
 			}
@@ -1218,7 +1240,7 @@ Sum distributeTrace( SymbolicTermPtr tr ) {
 		}
 
 	// Typical case: a sum of terms inside a trace has been passed in to be evaluated.
-	} else if ( castTrace->expr->getTermID() == 'S' ){
+	} else if ( castTrace->expr->getTermID() == TermTypes::SUM ){
 		Sum distributedSum;
 		SumPtr castExpr = static_pointer_cast<Sum>( castTrace->expr );
 
@@ -1235,7 +1257,7 @@ Sum distributeTrace( SymbolicTermPtr tr ) {
 Sum distributeAllTraces( SymbolicTermPtr expr ) {
 	// First, before doing anything, check if the expression can be distributed as a while. However, only do so if
 	// necessary since an expansion is computationally intensive.
-	if ( expr->getTermID() == 'P' ) {
+	if ( expr->getTermID() == TermTypes::PRODUCT ) {
 		ProductPtr castProduct = static_pointer_cast<Product>( expr );
 		if ( castProduct->containsSum() ) {
 			expr = static_pointer_cast<SymbolicTerm>( castProduct->getExpandedExpr().copy() );
@@ -1246,16 +1268,16 @@ Sum distributeAllTraces( SymbolicTermPtr expr ) {
 	expr->reduceTree();
 
 	SumPtr distributedExpr( new Sum() );
-	if ( expr->getTermID() == 'S' ) {
+	if ( expr->getTermID() == TermTypes::SUM ) {
 		SumPtr castSum = static_pointer_cast<Sum>( expr );
 		for ( vector<SymbolicTermPtr>::iterator iter = castSum->getIteratorBegin(); iter != castSum->getIteratorEnd(); ++iter ) {  // Loop over terms.
 			distributedExpr->addTerm( distributeAllTraces( *iter ).copy() );
 		}
-	} else if ( expr->getTermID() == 'P' ) {
+	} else if ( expr->getTermID() == TermTypes::PRODUCT ) {
 		ProductPtr castProduct = static_pointer_cast<Product>( expr );
 		Product distributedProduct;
 		for ( vector<SymbolicTermPtr>::iterator iter = castProduct->getIteratorBegin(); iter != castProduct->getIteratorEnd(); ++iter  ) {
-			if ( (*iter)->getTermID() == 'T' ) {
+			if ( (*iter)->getTermID() == TermTypes::TRACE ) {
 				distributedProduct.addTerm( distributeTrace( *iter ).copy() );
 			} else {
 				distributedProduct.addTerm( *iter );
@@ -1270,7 +1292,7 @@ Sum distributeAllTraces( SymbolicTermPtr expr ) {
 		}
 
 		distributedExpr->addTerm( expandedAndDistributedProduct );
-	} else if ( expr->getTermID() == 'T' ) {
+	} else if ( expr->getTermID() == TermTypes::TRACE ) {
 		distributedExpr->addTerm( distributeTrace( expr ).copy() ); // need expr.copy() as argument?
 	}
 
@@ -1279,7 +1301,7 @@ Sum distributeAllTraces( SymbolicTermPtr expr ) {
 }
 
 void rewriteSumInKSFormalism( SymbolicTermPtr expr ) {
-	if ( expr->getTermID() != 'S' ) {
+	if ( expr->getTermID() != TermTypes::SUM ) {
 		// TODO: Throw exception.
 		cout << "***ERROR: Expression passed to rewriteSumInKSFormalism() must be an instance of a Sum." << endl;
 		return;
@@ -1287,15 +1309,15 @@ void rewriteSumInKSFormalism( SymbolicTermPtr expr ) {
 
 	SumPtr castExpr = static_pointer_cast<Sum>( expr );
 	for ( vector<SymbolicTermPtr>::iterator iter = castExpr->getIteratorBegin(); iter != castExpr->getIteratorEnd(); ++iter ) {
-		if ( (*iter)->getTermID() == 'P' ) {
+		if ( (*iter)->getTermID() == TermTypes::PRODUCT ) {
 			ProductPtr castTerm = static_pointer_cast<Product>( *iter );
 			for ( vector<SymbolicTermPtr>::iterator factor = castTerm->getIteratorBegin(); factor != castExpr->getIteratorEnd(); ++factor ) {
-				if ( (*factor)->getTermID() == 'T' ) {
+				if ( (*factor)->getTermID() == TermTypes::TRACE) {
 					TracePtr castTrace = static_pointer_cast<Trace>( *factor );
 					castTrace->rewriteInKSFormalism();
 				}
 			}
-		} else if ( (*iter)->getTermID() == 'T' ) {
+		} else if ( (*iter)->getTermID() == TermTypes::TRACE ) {
 			TracePtr castTrace = static_pointer_cast<Trace>( *iter );
 			castTrace->rewriteInKSFormalism();
 		}
@@ -1303,7 +1325,9 @@ void rewriteSumInKSFormalism( SymbolicTermPtr expr ) {
 }
 
 /*
+ * ***********************************************************************
  * INPUT REDIRECTION OPERATOR OVERLOADS
+ * ***********************************************************************
  */
 
 std::ostream& operator<<( std::ostream& os, const TermA &obj ) {
@@ -1313,5 +1337,10 @@ std::ostream& operator<<( std::ostream& os, const TermA &obj ) {
 
 std::ostream& operator<<( std::ostream& os, const MatrixM &obj ) {
 	os << obj.to_string();
+	return os;
+}
+
+std::ostream& operator<<( std::ostream& os, const TermTypes &obj ) {
+	os << static_cast<char>( obj );
 	return os;
 }

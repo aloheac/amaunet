@@ -66,6 +66,14 @@ typedef std::shared_ptr<CoefficientFraction> CoefficientFractionPtr;
 
 /*
  * ***********************************************************************
+ * ENUMERATED TYPES
+ * ***********************************************************************
+ */
+
+enum class TermTypes : char;
+
+/*
+ * ***********************************************************************
  * EXPRESSION AND TERM BASE CLASSES
  * ***********************************************************************
  */
@@ -100,7 +108,7 @@ public:
 
 	void setIndices( int* newIndices );
 
-	char getTermID();
+	TermTypes getTermID();
 
 	virtual SymbolicTermPtr copy();
 
@@ -114,7 +122,7 @@ protected:
 
 	int indices[ 2 ];
 
-	char termID;
+	TermTypes termID;
 };
 
 /*
@@ -513,5 +521,7 @@ std::ostream& operator<<( std::ostream& os, const SymbolicTerm &obj );
 std::ostream& operator<<( std::ostream& os, const TermA &obj );
 
 std::ostream& operator<<( std::ostream& os, const MatrixM &obj );
+
+std::ostream& operator<<( std::ostream& os, const TermTypes &obj );
 
 #endif /* PTSYMBOLICOBJECTS_H_ */
