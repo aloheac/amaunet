@@ -46,7 +46,7 @@ int main( int argc, char** argv ) {
 	cout << VERSION_STRING << "\t\t" << BUILD_DATE << "\t\t" << COMMIT_ID << endl << endl;
 
 	// Load global system parameters.
-	int EXPANSION_ORDER_IN_A = 6;
+	int EXPANSION_ORDER_IN_A = 4;
 	int SPLIT_SUMS_BY_LINE = 1;
 
 	cout << "Loaded parameters:" << endl;
@@ -125,4 +125,54 @@ int main( int argc, char** argv ) {
 		D10.reduceTree();
 		D10 = distributeAllTraces( SymbolicTermPtr( D10.copy() ) );
 	}
+
+	cout << "Computing expansion of the partition function..." << endl;
+
+	SumPtr Zup( new Sum() );
+	if ( EXPANSION_ORDER_IN_A >= 2 ) {
+		Zup->addTerm( detUp.copy() );
+		Zup->addTerm( D1.copy() );
+
+		Product P2;
+		P2.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 2 ) ) );
+		P2.addTerm( D2.copy() );
+		Zup->addTerm( P2.copy() );
+	}
+
+	if ( EXPANSION_ORDER_IN_A >= 4 ) {
+		Product P4;
+		P4.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 24 ) ) );
+		P4.addTerm( D4.copy() );
+		Zup->addTerm( P4.copy() );
+	}
+
+	if ( EXPANSION_ORDER_IN_A >= 6 ) {
+		Product P6;
+		P6.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 270 ) ) );
+		P6.addTerm( D6.copy() );
+		Zup->addTerm( P6.copy() );
+	}
+
+	if ( EXPANSION_ORDER_IN_A >= 8 ) {
+		Product P8;
+		P8.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 40320 ) ) );
+		P8.addTerm( D8.copy() );
+		Zup->addTerm( P8.copy() );
+	}
+
+	if ( EXPANSION_ORDER_IN_A >= 10 ) {
+		Product P10;
+		P10.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 3628800 ) ) );
+		P10.addTerm( D10.copy() );
+		Zup->addTerm( P10.copy() );
+	}
+
+	cout << "Expanding full determinant..." << endl;
+	SumPtr Z( new Sum() );
+	Z->addTerm( Zup->copy() );
+	Z->addTerm( Zup->copy() );
+	Z = static_pointer_cast<Sum>( Z->getExpandedExpr().copy() );
+
+	cout << *Z << endl;
+
 }
