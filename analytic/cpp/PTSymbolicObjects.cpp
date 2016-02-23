@@ -14,10 +14,11 @@
  * University of North Carolina at Chapel Hill
  */
 
-#include "PTSymbolicObjects.h"
 #include <sstream>
 #include <cstring>
 #include <boost/algorithm/string/trim.hpp>
+#include "PTSymbolicObjects.h"
+#include "PathIntegration.h"
 
 using namespace std;
 
@@ -534,6 +535,12 @@ double CoefficientFloat::eval() {
 /*
  * CoefficientFraction;
  */
+
+CoefficientFraction::CoefficientFraction() : SymbolicTerm() {
+	num = 0;
+	den = 1;
+	termID = TermTypes::COEFFICIENT_FRACTION;
+}
 
 CoefficientFraction::CoefficientFraction( int n, int d ) : SymbolicTerm() {
 	num = n;

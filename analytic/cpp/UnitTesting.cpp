@@ -16,9 +16,10 @@
  */
 
 #include <iostream>
-#include "PTSymbolicObjects.h"
 #include <sstream>
 #include <string>
+#include "PTSymbolicObjects.h"
+#include "PathIntegration.h"
 
 using namespace std;
 
@@ -90,6 +91,14 @@ string i05() {
 	stringstream ss;
 	GenericTestTerm A = GenericTestTerm( 0, 0 );
 	ss << A.getTermID();
+	return ss.str();
+}
+
+string i06() {
+	stringstream ss;
+	initializeStaticReferences();
+	ss << "1: " << Amaunet::SINE_PATH_INTEGRALS[ 1 ] << "    2: " << Amaunet::SINE_PATH_INTEGRALS[ 2 ]
+		<< "    3: " << Amaunet::SINE_PATH_INTEGRALS[ 3 ] << "    4: " << Amaunet::SINE_PATH_INTEGRALS[ 4 ];
 	return ss.str();
 }
 
@@ -1218,7 +1227,9 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "i04: GenericTestTerm, copy() II", &i04, "GT_1^0 GT_1^1" );
 
-	UnitTest ("i05: GenericTestTerm, getTermID()", &i05, "g" );
+	UnitTest( "i05: GenericTestTerm, getTermID()", &i05, "g" );
+
+	UnitTest( "i06: initializeStaticReferences(), SINE_PATH_INTEGRALS", &i06, "1: 0 / 1    2: 1 / 2    3: 0 / 1    4: 3 / 8" );
 
 	/*
 	 * SymbolicTerm

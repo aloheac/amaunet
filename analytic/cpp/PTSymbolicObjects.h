@@ -275,6 +275,8 @@ private:
 class CoefficientFraction : public SymbolicTerm {
 public:
 
+	CoefficientFraction();
+
 	CoefficientFraction( int n, int d );
 
 	CoefficientFraction( CoefficientFraction* f );

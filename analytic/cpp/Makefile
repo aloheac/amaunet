@@ -17,8 +17,8 @@ CFLAGS=-g -std=c++11
 
 all: amaunet
 
-amaunet: main.o PTSymbolicObjects.o
-	$(CC) $(CFLAGS) main.o PTSymbolicObjects.o -o amaunet
+amaunet: main.o PTSymbolicObjects.o PathIntegration.o
+	$(CC) $(CFLAGS) main.o PTSymbolicObjects.o PathIntegration.o -o amaunet
 	
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
@@ -26,13 +26,16 @@ main.o: main.cpp
 PTSymbolicObjects.o: PTSymbolicObjects.cpp
 	$(CC) $(CFLAGS) -c PTSymbolicObjects.cpp
 	
+PathIntegration.o: PathIntegration.cpp
+	$(CC) $(CFLAGS) -c PathIntegration.cpp
+	
 ut: unittst
 
-unittst: UnitTesting.o PTSymbolicObjects.o
-	$(CC) $(CFLAGS) UnitTesting.o PTSymbolicObjects.o -o unittst
+unittst: UnitTesting.o PTSymbolicObjects.o PathIntegration.o
+	$(CC) $(CFLAGS) UnitTesting.o PTSymbolicObjects.o PathIntegration.o -o unittst
 	
 UnitTesting.o: UnitTesting.cpp
 	$(CC) $(CFLAGS) -c UnitTesting.cpp
 
 clean:
-	rm *o amaunet
+	rm *o amaunet unittst

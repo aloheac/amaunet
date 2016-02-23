@@ -17,6 +17,7 @@
 #include <iostream>
 #include <cstdlib>
 #include "PTSymbolicObjects.h"
+#include "PathIntegration.h"
 
 using namespace std;
 
