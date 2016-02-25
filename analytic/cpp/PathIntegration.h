@@ -23,11 +23,85 @@
 #include <vector>
 #include "PTSymbolicObjects.h"
 
+/*
+ * ***********************************************************************
+ * CLASS AND STRUCT DEFINITIONS
+ * ***********************************************************************
+ */
+
+struct IndexContraction{
+
+    IndexContraction();
+
+    IndexContraction( int a, int b );
+
+    int i;
+
+    int j;
+
+};
+
+class DeltaContractionSet {
+
+public:
+
+    DeltaContractionSet();
+
+    void addContraction( IndexContraction newContraction );
+
+    unsigned int getNumContractions();
+
+    std::string to_string() const ;
+
+private:
+
+    std::vector<IndexContraction> contractions;
+
+};
+
+struct TotalSignature {
+
+    DeltaContractionSet deltas;
+
+    DeltaContractionSet deltaBars;
+
+};
+
+class DeltaSignature {
+
+public:
+
+    DeltaSignature();
+
+    void addContractionSet( DeltaContractionSet contractionSet );
+
+    std::string to_string() const;
+
+private:
+
+    std::vector<DeltaContractionSet> signatureContractions;
+
+};
+
+/*
+ * ***********************************************************************
+ * STATIC VARIABLES
+ * ***********************************************************************
+ */
+
 namespace Amaunet {
     extern std::map<int, CoefficientFraction> SINE_PATH_INTEGRALS;
 }
 
+/*
+ * ***********************************************************************
+ * FUNCTION DECLARATIONS
+ * ***********************************************************************
+ */
+
 void initializeStaticReferences();
+
+TotalSignature getDeltaSignature( std::vector<int> contraction );
 
 std::vector<int*> getIndexPermutations( std::vector<int*> signature, int n );
 
@@ -36,5 +110,15 @@ std::vector<int*> calculateAllContractions( int n );
 Sum generateCoordinateSpacePathIntegral( int n );
 
 Sum pathIntegrateExpression( SymbolicTermPtr expr );
+
+/*
+ * ***********************************************************************
+ * INPUT REDIRECTION OPERATOR OVERLOADS
+ * ***********************************************************************
+ */
+
+std::ostream& operator<<( std::ostream& os, const DeltaContractionSet &obj );
+
+std::ostream& operator<<( std::ostream& os, const DeltaSignature &obj );
 
 #endif //AMAUNETC_PATHINTEGRATION_H

@@ -1204,6 +1204,197 @@ string T02() {
 	return ss.str();
 }
 
+string U01() {
+	stringstream ss;
+	IndexContraction A;
+	A.i = 3;
+	A.j = 7;
+	ss << A.i << "    " << A.j;
+	return ss.str();
+}
+
+string V01() {
+	stringstream ss;
+	DeltaContractionSet A;
+	IndexContraction B( 1, 2 );
+	IndexContraction C( 3, 5 );
+	IndexContraction D( 7, 11 );
+	A.addContraction( B );
+	A.addContraction( C );
+	A.addContraction( D );
+	ss << A.to_string();
+	return ss.str();
+}
+
+string V02() {
+	stringstream ss;
+	DeltaContractionSet A;
+	IndexContraction B( 1, 2 );
+	IndexContraction C( 3, 5 );
+	IndexContraction D( 7, 11 );
+	A.addContraction( B );
+	A.addContraction( C );
+	A.addContraction( D );
+	ss << A;
+	return ss.str();
+}
+
+string X01() {
+	stringstream ss;
+	DeltaSignature A;
+	DeltaContractionSet B;
+	IndexContraction C( 1, 2 );
+	IndexContraction D( 3, 5 );
+	IndexContraction E( 7, 11 );
+	B.addContraction( C );
+	B.addContraction( D );
+	B.addContraction( E );
+	A.addContractionSet( B );
+	DeltaContractionSet F;
+	IndexContraction G( 13, 17 );
+	IndexContraction H( 19, 31 );
+	F.addContraction( G );
+	F.addContraction( H );
+	A.addContractionSet( F );
+	DeltaContractionSet I;
+	A.addContractionSet( I );
+	ss << A.to_string();
+	return ss.str();
+}
+
+string X02() {
+	stringstream ss;
+	DeltaSignature A;
+	DeltaContractionSet B;
+	IndexContraction C( 1, 2 );
+	IndexContraction D( 3, 5 );
+	IndexContraction E( 7, 11 );
+	B.addContraction( C );
+	B.addContraction( D );
+	B.addContraction( E );
+	A.addContractionSet( B );
+	DeltaContractionSet F;
+	IndexContraction G( 13, 17 );
+	IndexContraction H( 19, 31 );
+	F.addContraction( G );
+	F.addContraction( H );
+	A.addContractionSet( F );
+	DeltaContractionSet I;
+	A.addContractionSet( I );
+	ss << A;
+	return ss.str();
+}
+
+string Y01() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << B.deltas << "    " << B.deltaBars;
+	return ss.str();
+}
+
+string Y02() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 4 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << B.deltas << "    " << B.deltaBars;
+	return ss.str();
+}
+
+string Y03() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 2 );
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << B.deltas << "    " << B.deltaBars;
+	return ss.str();
+}
+
+string Y04() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 6 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << B.deltas << "    " << B.deltaBars;
+	return ss.str();
+}
+
+string Y05() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 4 );
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << B.deltas << "    " << B.deltaBars;
+	return ss.str();
+}
+
+string Y06() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 2 );
+	A.push_back( 2 );
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << B.deltas << "    " << B.deltaBars;
+	return ss.str();
+}
+
+string Y07() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 8 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << B.deltas << "    " << B.deltaBars;
+	return ss.str();
+}
+
+string Y08() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 6 );
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << B.deltas << "    " << B.deltaBars;
+	return ss.str();
+}
+
+string Y09() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 4 );
+	A.push_back( 4 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << B.deltas << "    " << B.deltaBars;
+	return ss.str();
+}
+
+string Y10() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 4 );
+	A.push_back( 2 );
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << B.deltas << "    " << B.deltaBars;
+	return ss.str();
+}
+
+string Y11() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 2 );
+	A.push_back( 2 );
+	A.push_back( 2 );
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << B.deltas << "    " << B.deltaBars;
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -1502,6 +1693,54 @@ int main( int argc, char** argv ) {
 	UnitTest( "T01: indexExpression() I", &T01, " {Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]}      {Trace[  {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 0)}  ]} " );
 
 	UnitTest( "T02: indexExpression() II", &T02, " {Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]}  +  {Trace[  {B_up} {M_up} {B_dn} {M_dn} {B_md} {M_md}  ]}      {Trace[  {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 0)}  ]}  +  {Trace[  {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 4)} {K_md_( 4, 5 )} {S_(5, 0)}  ]} " );
+
+	/*
+	 * U: IndexContraction
+	 */
+
+	UnitTest( "U01: IndexContraction, Struct Construction", &U01, "3    7" );
+
+	/*
+	 * V: DeltaContractionSet
+	 */
+
+	UnitTest( "V01: DeltaContractionSet, Constructor, to_string()", &V01, "[ ( 1, 2 )  ( 3, 5 )  ( 7, 11 ) ]" );
+
+	UnitTest( "V02: DeltaContractionSet, operator<< Overload", &V02, "[ ( 1, 2 )  ( 3, 5 )  ( 7, 11 ) ]" );
+
+	/*
+	 * X: DeltaSignature
+	 */
+
+	UnitTest( "X01: DeltaSignature, Constructor, to_string()", &X01, "[ [ ( 1, 2 )  ( 3, 5 )  ( 7, 11 ) ]  [ ( 13, 17 )  ( 19, 31 ) ]  [] ]" );
+
+	UnitTest( "X02: DeltaSignature, operator<< Overload", &X02, "[ [ ( 1, 2 )  ( 3, 5 )  ( 7, 11 ) ]  [ ( 13, 17 )  ( 19, 31 ) ]  [] ]" );
+
+	/*
+	 * Y: getDeltaSignature
+	 */
+
+	UnitTest( "Y01: getDeltaSignature() I, (2)", &Y01, "[ ( 0, 1 ) ]    []" );
+
+	UnitTest( "Y02: getDeltaSignature() II, (4)", &Y02, "[ ( 0, 1 )  ( 1, 2 )  ( 2, 3 ) ]    []" );
+
+	UnitTest( "Y03: getDeltaSignature() III, (2,2)", &Y03, "[ ( 0, 1 )  ( 2, 3 ) ]    [ ( 1, 2 ) ]" );
+
+	UnitTest( "Y04: getDeltaSignature() IV, (6)", &Y04, "[ ( 0, 1 )  ( 1, 2 )  ( 2, 3 )  ( 3, 4 )  ( 4, 5 ) ]    []" );
+
+	UnitTest( "Y05: getDeltaSignature() V, (4,2)", &Y05, "[ ( 0, 1 )  ( 1, 2 )  ( 2, 3 )  ( 4, 5 ) ]    [ ( 3, 4 ) ]" );
+
+	UnitTest( "Y06: getDeltaSignature() VI, (2,2,2)", &Y06, "[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]    [ ( 1, 2 )  ( 3, 4 ) ]" );
+
+	UnitTest( "Y07: getDeltaSignature() VII, (8)", &Y07, "[ ( 0, 1 )  ( 1, 2 )  ( 2, 3 )  ( 3, 4 )  ( 4, 5 )  ( 5, 6 )  ( 6, 7 ) ]    []" );
+
+	UnitTest( "Y08: getDeltaSignature() VIII, (6,2)", &Y08, "[ ( 0, 1 )  ( 1, 2 )  ( 2, 3 )  ( 3, 4 )  ( 4, 5 )  ( 6, 7 ) ]    [ ( 5, 6 ) ]" );
+
+	UnitTest( "Y09: getDeltaSignature() IX, (4,4)", &Y09, "[ ( 0, 1 )  ( 1, 2 )  ( 2, 3 )  ( 4, 5 )  ( 5, 6 )  ( 6, 7 ) ]    [ ( 3, 4 ) ]" );
+
+	UnitTest( "Y10: getDeltaSignature() X, (4,2,2)", &Y10, "[ ( 0, 1 )  ( 1, 2 )  ( 2, 3 )  ( 4, 5 )  ( 6, 7 ) ]    [ ( 3, 4 )  ( 5, 6 ) ]" );
+
+	UnitTest( "Y11: getDeltaSignature() XI, (2,2,2,2)", &Y11, "[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 )  ( 6, 7 ) ]    [ ( 1, 2 )  ( 3, 4 )  ( 5, 6 ) ]" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;
