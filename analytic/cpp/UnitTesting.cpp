@@ -1395,6 +1395,142 @@ string Y11() {
 	return ss.str();
 }
 
+string Z01() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	ss << combinations( A, 1 );
+	return ss.str();
+}
+
+string Z02() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	A.push_back( 3 );
+	ss << combinations( A, 1 );
+	return ss.str();
+}
+
+string Z03() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	A.push_back( 3 );
+	A.push_back( 4 );
+	A.push_back( 5 );
+	ss << combinations( A, 2 ) << "    " << combinations( A, 2 ).size();
+	return ss.str();
+}
+
+string Z04() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	A.push_back( 3 );
+	A.push_back( 4 );
+	A.push_back( 5 );
+	ss << combinations( A, 3 ) << "    " << combinations( A, 3 ).size();
+	return ss.str();
+}
+
+string Z05() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	A.push_back( 3 );
+	A.push_back( 4 );
+	A.push_back( 5 );
+	ss << combinations( A, 4 ) << "    " << combinations( A, 4 ).size();
+	return ss.str();
+}
+
+string Z06() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	A.push_back( 3 );
+	A.push_back( 4 );
+	A.push_back( 5 );
+	ss << combinations( A, 5 ) << "    " << combinations( A, 5 ).size();
+	return ss.str();
+}
+
+string Z07() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	A.push_back( 3 );
+	A.push_back( 4 );
+	A.push_back( 5 );
+	A.push_back( 6 );
+	A.push_back( 7 );
+	ss << combinations( A, 1 ) << "    " << combinations( A, 1 ).size();
+	return ss.str();
+}
+
+string Z08() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	A.push_back( 3 );
+	A.push_back( 4 );
+	A.push_back( 5 );
+	A.push_back( 6 );
+	A.push_back( 7 );
+	ss << combinations( A, 2 ) << "    " << combinations( A, 2 ).size();
+	return ss.str();
+}
+
+string Z09() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	A.push_back( 3 );
+	A.push_back( 4 );
+	A.push_back( 5 );
+	A.push_back( 6 );
+	A.push_back( 7 );
+	ss << combinations( A, 3 ) << "    " << combinations( A, 3 ).size();
+	return ss.str();
+}
+
+string Z10() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	A.push_back( 3 );
+	A.push_back( 4 );
+	A.push_back( 5 );
+	A.push_back( 6 );
+	A.push_back( 7 );
+	ss << combinations( A, 4 ) << "    " << combinations( A, 4 ).size();
+	return ss.str();
+}
+
+string Z11() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	A.push_back( 3 );
+	A.push_back( 4 );
+	A.push_back( 5 );
+	A.push_back( 6 );
+	A.push_back( 7 );
+	ss << combinations( A, 5 ) << "    " << combinations( A, 5 ).size();
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -1741,6 +1877,32 @@ int main( int argc, char** argv ) {
 	UnitTest( "Y10: getDeltaSignature() X, (4,2,2)", &Y10, "[ ( 0, 1 )  ( 1, 2 )  ( 2, 3 )  ( 4, 5 )  ( 6, 7 ) ]    [ ( 3, 4 )  ( 5, 6 ) ]" );
 
 	UnitTest( "Y11: getDeltaSignature() XI, (2,2,2,2)", &Y11, "[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 )  ( 6, 7 ) ]    [ ( 1, 2 )  ( 3, 4 )  ( 5, 6 ) ]" );
+
+	/*
+	 * Z: combinations()
+	 */
+
+	UnitTest( "Z01: combinations() I, operator<< Overload", &Z01, "[ [  1  ] ]" );
+
+	UnitTest( "Z02: combinations() II", &Z02, "[ [  1  ]  [  2  ]  [  3  ] ]" );
+
+	UnitTest( "Z03: combinations() III", &Z03, "[ [  1  2  ]  [  1  3  ]  [  1  4  ]  [  1  5  ]  [  2  3  ]  [  2  4  ]  [  2  5  ]  [  3  4  ]  [  3  5  ]  [  4  5  ] ]    10" );
+
+	UnitTest( "Z04: combinations() IV", &Z04, "[ [  1  2  3  ]  [  1  2  4  ]  [  1  2  5  ]  [  1  3  4  ]  [  1  3  5  ]  [  1  4  5  ]  [  2  3  4  ]  [  2  3  5  ]  [  2  4  5  ]  [  3  4  5  ] ]    10" );
+
+	UnitTest( "Z05: combinations() V", &Z05, "[ [  1  2  3  4  ]  [  1  2  3  5  ]  [  1  2  4  5  ]  [  1  3  4  5  ]  [  2  3  4  5  ] ]    5" );
+
+	UnitTest( "Z06: combinations() VI", &Z06, "[ [  1  2  3  4  5  ] ]    1" );
+
+	UnitTest( "Z07: combinations() VII", &Z07, "[ [  1  ]  [  2  ]  [  3  ]  [  4  ]  [  5  ]  [  6  ]  [  7  ] ]    7" );
+
+	UnitTest( "Z08: combinations() VIII", &Z08, "[ [  1  2  ]  [  1  3  ]  [  1  4  ]  [  1  5  ]  [  1  6  ]  [  1  7  ]  [  2  3  ]  [  2  4  ]  [  2  5  ]  [  2  6  ]  [  2  7  ]  [  3  4  ]  [  3  5  ]  [  3  6  ]  [  3  7  ]  [  4  5  ]  [  4  6  ]  [  4  7  ]  [  5  6  ]  [  5  7  ]  [  6  7  ] ]    21" );
+
+	UnitTest( "Z09: combinations() IX", &Z09, "[ [  1  2  3  ]  [  1  2  4  ]  [  1  2  5  ]  [  1  2  6  ]  [  1  2  7  ]  [  1  3  4  ]  [  1  3  5  ]  [  1  3  6  ]  [  1  3  7  ]  [  1  4  5  ]  [  1  4  6  ]  [  1  4  7  ]  [  1  5  6  ]  [  1  5  7  ]  [  1  6  7  ]  [  2  3  4  ]  [  2  3  5  ]  [  2  3  6  ]  [  2  3  7  ]  [  2  4  5  ]  [  2  4  6  ]  [  2  4  7  ]  [  2  5  6  ]  [  2  5  7  ]  [  2  6  7  ]  [  3  4  5  ]  [  3  4  6  ]  [  3  4  7  ]  [  3  5  6  ]  [  3  5  7  ]  [  3  6  7  ]  [  4  5  6  ]  [  4  5  7  ]  [  4  6  7  ]  [  5  6  7  ] ]    35" );
+
+	UnitTest( "Z10: combinations() X", &Z10, "[ [  1  2  3  4  ]  [  1  2  3  5  ]  [  1  2  3  6  ]  [  1  2  3  7  ]  [  1  2  4  5  ]  [  1  2  4  6  ]  [  1  2  4  7  ]  [  1  2  5  6  ]  [  1  2  5  7  ]  [  1  2  6  7  ]  [  1  3  4  5  ]  [  1  3  4  6  ]  [  1  3  4  7  ]  [  1  3  5  6  ]  [  1  3  5  7  ]  [  1  3  6  7  ]  [  1  4  5  6  ]  [  1  4  5  7  ]  [  1  4  6  7  ]  [  1  5  6  7  ]  [  2  3  4  5  ]  [  2  3  4  6  ]  [  2  3  4  7  ]  [  2  3  5  6  ]  [  2  3  5  7  ]  [  2  3  6  7  ]  [  2  4  5  6  ]  [  2  4  5  7  ]  [  2  4  6  7  ]  [  2  5  6  7  ]  [  3  4  5  6  ]  [  3  4  5  7  ]  [  3  4  6  7  ]  [  3  5  6  7  ]  [  4  5  6  7  ] ]    35" );
+
+	UnitTest( "Z11: combinations() XI", &Z11, "[ [  1  2  3  4  5  ]  [  1  2  3  4  6  ]  [  1  2  3  4  7  ]  [  1  2  3  5  6  ]  [  1  2  3  5  7  ]  [  1  2  3  6  7  ]  [  1  2  4  5  6  ]  [  1  2  4  5  7  ]  [  1  2  4  6  7  ]  [  1  2  5  6  7  ]  [  1  3  4  5  6  ]  [  1  3  4  5  7  ]  [  1  3  4  6  7  ]  [  1  3  5  6  7  ]  [  1  4  5  6  7  ]  [  2  3  4  5  6  ]  [  2  3  4  5  7  ]  [  2  3  4  6  7  ]  [  2  3  5  6  7  ]  [  2  4  5  6  7  ]  [  3  4  5  6  7  ] ]    21" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

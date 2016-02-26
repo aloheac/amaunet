@@ -131,6 +131,66 @@ TotalSignature getDeltaSignature( vector<int> contraction ) {
     return signature;
 }
 
+//def combination( lst, k ):
+//if k == 1:
+//combos = []
+//    for e in lst:
+//    combos.append( [e] )
+//    return combos
+//    elif len( lst ) == k:
+//    return [lst]
+//    else: # len( lst ) > k
+//    subcombinations = combination( lst[1:], k-1 )
+//    combos = []
+//        for sc in subcombinations:
+//        combos.append( [lst[0]] + sc )
+//
+//        subcombinations = combination( lst[1:], k )
+//        for sc in subcombinations:
+//        combos.append( sc )
+//
+//        return combos
+
+vector< vector<int> > combinations( vector<int> list, int k ) {
+    // TODO: Throw proper exceptions here.
+    if ( k == 1 ) {  // Simply return the list with each element placed in a vector<int>. n choose 1 is always n.
+        vector< vector<int> > combos;
+        for( vector<int>::iterator element = list.begin(); element != list.end(); ++element ) {
+            vector<int> nextCombination;
+            nextCombination.push_back( *element );
+            combos.push_back( nextCombination );
+        }
+
+        return combos;
+    } else if ( list.size() == k ) {  // n choose n is always 1. Simply return the list inside a vector<int>/
+        vector< vector<int> > combos;
+        combos.push_back( list );
+
+        return combos;
+    } else {  // list.size() > k. We have a non-trivial case; recursively call.
+        int firstElement = list[ 0 ];
+        list.erase( list.begin() );  // Remove first element of list. All references to list below depend only on the
+                                     // tail of the list.
+        vector< vector<int> > combos;
+
+        // Consider the combinations with the first element and choose k-1 combinations with the tail of the list.
+        vector< vector<int> > subcombinations = combinations( list, k - 1 );
+        for ( vector< vector<int> >::iterator sc = subcombinations.begin(); sc != subcombinations.end(); ++sc ) {
+            vector<int> nextCombination;
+            nextCombination.push_back( firstElement );
+            nextCombination.insert( nextCombination.end(), (*sc).begin(), (*sc).end() );
+            combos.push_back( nextCombination );
+        }
+
+        // Consider choose k combinations with the tail of the list; the head element is not included.
+        subcombinations = combinations( list, k );
+        for ( vector< vector<int> >::iterator sc = subcombinations.begin(); sc != subcombinations.end(); ++sc ) {
+            combos.push_back( *sc );
+        }
+
+        return combos;
+    }
+}
 /*
  * ***********************************************************************
  * INPUT REDIRECTION OPERATOR OVERLOADS
@@ -145,4 +205,16 @@ ostream& operator<<( std::ostream& os, const DeltaContractionSet &obj ) {
 ostream& operator<<( std::ostream& os, const DeltaSignature &obj ) {
     os << obj.to_string();
     return os;
+}
+
+ostream& operator<<( std::ostream& os, const vector< vector<int> > &obj ) {
+    os << "[";
+    for( vector< vector<int> >::const_iterator vec = obj.begin(); vec != obj.end(); ++vec ) {
+        os << " [ ";
+        for ( vector<int>::const_iterator element = (*vec).begin(); element != (*vec).end(); ++element ) {
+            os << " " << *element << " ";
+        }
+        os << " ] ";
+    }
+    os << "]";
 }

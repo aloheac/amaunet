@@ -111,6 +111,8 @@ Sum generateCoordinateSpacePathIntegral( int n );
 
 Sum pathIntegrateExpression( SymbolicTermPtr expr );
 
+std::vector< std::vector<int> > combinations( std::vector<int> list, int k );
+
 /*
  * ***********************************************************************
  * INPUT REDIRECTION OPERATOR OVERLOADS
@@ -120,5 +122,7 @@ Sum pathIntegrateExpression( SymbolicTermPtr expr );
 std::ostream& operator<<( std::ostream& os, const DeltaContractionSet &obj );
 
 std::ostream& operator<<( std::ostream& os, const DeltaSignature &obj );
+
+std::ostream& operator<<( std::ostream& os, const std::vector< std::vector<int> > &obj );
 
 #endif //AMAUNETC_PATHINTEGRATION_H
