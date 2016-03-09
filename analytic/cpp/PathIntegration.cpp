@@ -69,6 +69,10 @@ void DeltaContractionSet::addContraction( IndexContraction newContraction ) {
     contractions.push_back( newContraction );
 }
 
+void DeltaContractionSet::addContractionSet( DeltaContractionSet set ) {
+    contractions.insert( contractions.end(), set.contractions.begin(), set.contractions.end() );
+}
+
 unsigned int DeltaContractionSet::getNumContractions() {
     return (int)contractions.size();
 }
@@ -81,6 +85,14 @@ std::vector<IndexContraction>::iterator DeltaContractionSet::getIteratorEnd() {
     return contractions.end();
 }
 
+std::vector<IndexContraction>::const_iterator DeltaContractionSet::getIteratorBegin() const {
+    return contractions.begin();
+}
+
+std::vector<IndexContraction>::const_iterator DeltaContractionSet::getIteratorEnd() const {
+    return contractions.end();
+}
+
 string DeltaContractionSet::to_string() const {
     stringstream ss;
     ss << "[";
@@ -90,6 +102,19 @@ string DeltaContractionSet::to_string() const {
     ss << "]";
 
     return ss.str();
+}
+
+bool DeltaContractionSet::operator==( const DeltaContractionSet &rhs ) const {
+    // If the vector sizes of the left- and right-hand sides are not equal, the two object will not be equivalent.
+    if ( contractions.size() != rhs.contractions.size() ) return false;
+
+    // It is known that lhs.size() == rhs.size().
+    for ( int i = 0; i < contractions.size(); i++ ) {
+        // Overload for operator== of types IndexContraction is implemented.
+        if ( not ( contractions[ i ] == rhs.contractions[ i ] ) ) return false;
+    }
+
+    return true;
 }
 
 /*
@@ -204,19 +229,19 @@ vector< vector<int> > combinations( vector<int> list, int k ) {
     }
 }
 
-vector< vector<IndexContraction> > generatePairedPermutations( vector<int> combination ) {
+vector<DeltaContractionSet> generatePairedPermutations( vector<int> combination ) {
     assert( combination.size() % 2 == 0 );  // n must be even for contact interactions.
 
-    vector< vector<IndexContraction> > pairedPermutations;
+    vector<DeltaContractionSet> pairedPermutations;
 
     if ( combination.size() == 2 ) {  // Trivial base case.
-        vector<IndexContraction> permutation;
+        DeltaContractionSet permutation;
 
         // Impose convention that the larger valued index appears second in the contraction, e.g. ( 1, 2 ).
         if ( combination[0] < combination[1] ) {
-            permutation.push_back( IndexContraction( combination[0], combination[1] ) );
+            permutation.addContraction( IndexContraction( combination[0], combination[1] ) );
         } else {
-            permutation.push_back( IndexContraction( combination[1], combination[0] ) );
+            permutation.addContraction( IndexContraction( combination[1], combination[0] ) );
         }
 
         pairedPermutations.push_back( permutation );
@@ -225,14 +250,14 @@ vector< vector<IndexContraction> > generatePairedPermutations( vector<int> combi
         vector< vector<int> > possiblePairs = combinations( combination, 2 );
 
         for ( vector< vector<int> >::iterator pair = possiblePairs.begin(); pair != possiblePairs.end(); ++pair ) {
-            vector<IndexContraction> permutation;
+            DeltaContractionSet permutation;
 
             // Impose convention that the larger valued index appears second in the contraction, e.g. ( 1, 2 ).
             if ( (*pair)[0] < (*pair)[1] ) {
-                permutation.push_back( IndexContraction( (*pair)[0], (*pair)[1] ) ); // Append selected pair combination
+                permutation.addContraction( IndexContraction( (*pair)[0], (*pair)[1] ) ); // Append selected pair combination
                                                                                      // to the next permutation.
             } else {
-                permutation.push_back( IndexContraction( (*pair)[1], (*pair)[0] ) );
+                permutation.addContraction( IndexContraction( (*pair)[1], (*pair)[0] ) );
             }
 
             vector<int> subcombination( combination );  // Copy combination from which we will remove the pair that was
@@ -256,18 +281,18 @@ vector< vector<IndexContraction> > generatePairedPermutations( vector<int> combi
                 }
             }
 
-            vector< vector<IndexContraction> > tailPairedPermutations = generatePairedPermutations( subcombination );
+            vector<DeltaContractionSet> tailPairedPermutations = generatePairedPermutations( subcombination );
 
             // For each possible set of paired permutations for the tail, generate a new permutation, concatenate pairs,
             // and add the permutation to pairedPermutations, which is the data (a set of permutations) to be returned.
-            for ( vector< vector<IndexContraction> >::iterator tailPermutation = tailPairedPermutations.begin(); tailPermutation != tailPairedPermutations.end(); ++tailPermutation ) {
-                vector<IndexContraction> nextPermutation( permutation );  // Copy vector permutation.
+            for ( vector<DeltaContractionSet>::iterator tailPermutation = tailPairedPermutations.begin(); tailPermutation != tailPairedPermutations.end(); ++tailPermutation ) {
+                DeltaContractionSet nextPermutation( permutation );  // Copy vector permutation.
 
                 // Concatenate head and tail vectors.
-                nextPermutation.insert( nextPermutation.end(), (*tailPermutation).begin(), (*tailPermutation).end() );
+                nextPermutation.addContractionSet( *tailPermutation );
 
                 // Sort the IndexContraction elements of nextPermutation according to the operator< overload.
-                sort( nextPermutation.begin(), nextPermutation.end() );
+                sort( nextPermutation.getIteratorBegin(), nextPermutation.getIteratorEnd() );
 
                 // Add nextPermutation to pairedPermutations only if pairedPermutations does not already contain an
                 // identically equivalent object. Note that std::find is declared in <algorithm>. std::find is defined
@@ -299,8 +324,8 @@ vector< vector<int> > getIndexPermutations( TotalSignature signature, int n ) {
     vector< vector<int> > deltaBarIndexCombinations = combinations( list, 2 * signature.deltaBars.getNumContractions() );
 
     for ( vector< vector<int> >::iterator combination = deltaBarIndexCombinations.begin(); combination != deltaBarIndexCombinations.end(); ++combination ) {
-        vector< vector<IndexContraction> > pairedPermutations = generatePairedPermutations( *combination );
-        
+        vector<DeltaContractionSet> pairedPermutations = generatePairedPermutations( *combination );
+
     }
 }
 
@@ -332,33 +357,14 @@ ostream& operator<<( std::ostream& os, const vector< vector<int> > &obj ) {
     os << "]";
 }
 
-ostream& operator<<( std::ostream& os, const vector< vector<IndexContraction> > &obj ) {
+ostream& operator<<( std::ostream& os, const vector<DeltaContractionSet> &obj ) {
     os << "[";
-    for( vector< vector<IndexContraction> >::const_iterator vec = obj.begin(); vec != obj.end(); ++vec ) {
+    for( vector<DeltaContractionSet>::const_iterator vec = obj.begin(); vec != obj.end(); ++vec ) {
         os << " [ ";
-        for ( vector<IndexContraction>::const_iterator element = (*vec).begin(); element != (*vec).end(); ++element ) {
+        for ( vector<IndexContraction>::const_iterator element = (*vec).getIteratorBegin(); element != (*vec).getIteratorEnd(); ++element ) {
             os << "( " << element->i << ", " << element->j << " )";
         }
         os << " ] ";
     }
     os << "]";
-}
-
-/*
- * ***********************************************************************
- * RELATIONAL OPERATOR OVERLOADS
- * ***********************************************************************
- */
-
-bool operator==( const std::vector<IndexContraction> &lhs, const std::vector<IndexContraction> &rhs ) {
-    // If the vector sizes of the left- and right-hand sides are not equal, the two object will not be equivalent.
-    if ( lhs.size() != rhs.size() ) return false;
-
-    // It is known that lhs.size() == rhs.size().
-    for ( int i = 0; i < lhs.size(); i++ ) {
-        // Overload for operator== of types IndexContraction is implemented.
-        if ( not ( lhs[ i ] == rhs[ i ] ) ) return false;
-    }
-
-    return true;
 }

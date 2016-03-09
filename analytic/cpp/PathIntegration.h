@@ -55,13 +55,21 @@ public:
 
     void addContraction( IndexContraction newContraction );
 
+    void addContractionSet( DeltaContractionSet set );
+
     unsigned int getNumContractions();
 
     std::vector<IndexContraction>::iterator getIteratorBegin();
 
     std::vector<IndexContraction>::iterator getIteratorEnd();
 
-    std::string to_string() const ;
+    std::vector<IndexContraction>::const_iterator getIteratorBegin() const;
+
+    std::vector<IndexContraction>::const_iterator getIteratorEnd() const;
+
+    std::string to_string() const;
+
+    bool operator==( const DeltaContractionSet &rhs ) const;
 
 private:
 
@@ -113,7 +121,7 @@ void initializeStaticReferences();
 
 TotalSignature getDeltaSignature( std::vector<int> contraction );
 
-std::vector< std::vector<IndexContraction> > generatePairedPermutations( std::vector<int> combination );
+std::vector<DeltaContractionSet> generatePairedPermutations( std::vector<int> combination );
 
 std::vector< std::vector<int> > getIndexPermutations( TotalSignature signature, int n );
 
@@ -137,14 +145,6 @@ std::ostream& operator<<( std::ostream& os, const DeltaSignature &obj );
 
 std::ostream& operator<<( std::ostream& os, const std::vector< std::vector<int> > &obj );
 
-std::ostream& operator<<( std::ostream& os, const std::vector< std::vector<IndexContraction> > &obj );
-
-/*
- * ***********************************************************************
- * RELATIONAL OPERATOR OVERLOADS
- * ***********************************************************************
- */
-
-bool operator==( const std::vector<IndexContraction> &lhs, const std::vector<IndexContraction> &rhs );
+std::ostream& operator<<( std::ostream& os, const std::vector<DeltaContractionSet> &obj );
 
 #endif //AMAUNETC_PATHINTEGRATION_H
