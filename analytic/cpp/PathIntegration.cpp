@@ -17,6 +17,8 @@
  */
 
 #include <sstream>
+#include <assert.h>
+#include <algorithm>
 #include "PathIntegration.h"
 
 using namespace std;
@@ -35,6 +37,28 @@ IndexContraction::IndexContraction(int a, int b) {
     j = b;
 }
 
+bool IndexContraction::operator<( const IndexContraction& rhs ) const {
+    if ( i == rhs.i ) {
+        return j < rhs.j;
+    } else {
+        return i < rhs.i;
+    }
+}
+
+bool IndexContraction::operator>( const IndexContraction& rhs ) const {
+    if ( i == rhs.i ) {
+        return j > rhs.j;
+    } else {
+        return i > rhs.i;
+    }
+}
+
+
+
+bool IndexContraction::operator==( const IndexContraction& rhs ) const {
+    return i == rhs.i and j == rhs.j;
+}
+
 /*
  * DeltaContractionSet
  */
@@ -47,6 +71,14 @@ void DeltaContractionSet::addContraction( IndexContraction newContraction ) {
 
 unsigned int DeltaContractionSet::getNumContractions() {
     return (int)contractions.size();
+}
+
+std::vector<IndexContraction>::iterator DeltaContractionSet::getIteratorBegin() {
+    return contractions.begin();
+}
+
+std::vector<IndexContraction>::iterator DeltaContractionSet::getIteratorEnd() {
+    return contractions.end();
 }
 
 string DeltaContractionSet::to_string() const {
@@ -131,26 +163,6 @@ TotalSignature getDeltaSignature( vector<int> contraction ) {
     return signature;
 }
 
-//def combination( lst, k ):
-//if k == 1:
-//combos = []
-//    for e in lst:
-//    combos.append( [e] )
-//    return combos
-//    elif len( lst ) == k:
-//    return [lst]
-//    else: # len( lst ) > k
-//    subcombinations = combination( lst[1:], k-1 )
-//    combos = []
-//        for sc in subcombinations:
-//        combos.append( [lst[0]] + sc )
-//
-//        subcombinations = combination( lst[1:], k )
-//        for sc in subcombinations:
-//        combos.append( sc )
-//
-//        return combos
-
 vector< vector<int> > combinations( vector<int> list, int k ) {
     // TODO: Throw proper exceptions here.
     if ( k == 1 ) {  // Simply return the list with each element placed in a vector<int>. n choose 1 is always n.
@@ -162,7 +174,7 @@ vector< vector<int> > combinations( vector<int> list, int k ) {
         }
 
         return combos;
-    } else if ( list.size() == k ) {  // n choose n is always 1. Simply return the list inside a vector<int>/
+    } else if ( list.size() == k ) {  // n choose n is always 1. Simply return the list inside a vector<int>.
         vector< vector<int> > combos;
         combos.push_back( list );
 
@@ -191,6 +203,107 @@ vector< vector<int> > combinations( vector<int> list, int k ) {
         return combos;
     }
 }
+
+vector< vector<IndexContraction> > generatePairedPermutations( vector<int> combination ) {
+    assert( combination.size() % 2 == 0 );  // n must be even for contact interactions.
+
+    vector< vector<IndexContraction> > pairedPermutations;
+
+    if ( combination.size() == 2 ) {  // Trivial base case.
+        vector<IndexContraction> permutation;
+
+        // Impose convention that the larger valued index appears second in the contraction, e.g. ( 1, 2 ).
+        if ( combination[0] < combination[1] ) {
+            permutation.push_back( IndexContraction( combination[0], combination[1] ) );
+        } else {
+            permutation.push_back( IndexContraction( combination[1], combination[0] ) );
+        }
+
+        pairedPermutations.push_back( permutation );
+
+    } else {
+        vector< vector<int> > possiblePairs = combinations( combination, 2 );
+
+        for ( vector< vector<int> >::iterator pair = possiblePairs.begin(); pair != possiblePairs.end(); ++pair ) {
+            vector<IndexContraction> permutation;
+
+            // Impose convention that the larger valued index appears second in the contraction, e.g. ( 1, 2 ).
+            if ( (*pair)[0] < (*pair)[1] ) {
+                permutation.push_back( IndexContraction( (*pair)[0], (*pair)[1] ) ); // Append selected pair combination
+                                                                                     // to the next permutation.
+            } else {
+                permutation.push_back( IndexContraction( (*pair)[1], (*pair)[0] ) );
+            }
+
+            vector<int> subcombination( combination );  // Copy combination from which we will remove the pair that was
+                                                        // already added to the next permutation; make a recursive call
+                                                        // that will generate the paired permutations for this subset
+                                                        // (the 'tail' of the data structure).
+
+            // Remove elements in *pair from subcombination. Choose to do each removal in separate loops, where we
+            // break from the loop after the element is found and erased.
+            for ( vector<int>::iterator subcombinationValue = subcombination.begin(); subcombinationValue != subcombination.end(); ++subcombinationValue ) {
+                if ( (*subcombinationValue) == (*pair)[0] ) {
+                    subcombination.erase( subcombinationValue );
+                    break;
+                }
+            }
+
+            for ( vector<int>::iterator subcombinationValue = subcombination.begin(); subcombinationValue != subcombination.end(); ++subcombinationValue ) {
+                if ( (*subcombinationValue) == (*pair)[1] ) {
+                    subcombination.erase( subcombinationValue );
+                    break;
+                }
+            }
+
+            vector< vector<IndexContraction> > tailPairedPermutations = generatePairedPermutations( subcombination );
+
+            // For each possible set of paired permutations for the tail, generate a new permutation, concatenate pairs,
+            // and add the permutation to pairedPermutations, which is the data (a set of permutations) to be returned.
+            for ( vector< vector<IndexContraction> >::iterator tailPermutation = tailPairedPermutations.begin(); tailPermutation != tailPairedPermutations.end(); ++tailPermutation ) {
+                vector<IndexContraction> nextPermutation( permutation );  // Copy vector permutation.
+
+                // Concatenate head and tail vectors.
+                nextPermutation.insert( nextPermutation.end(), (*tailPermutation).begin(), (*tailPermutation).end() );
+
+                // Sort the IndexContraction elements of nextPermutation according to the operator< overload.
+                sort( nextPermutation.begin(), nextPermutation.end() );
+
+                // Add nextPermutation to pairedPermutations only if pairedPermutations does not already contain an
+                // identically equivalent object. Note that std::find is declared in <algorithm>. std::find is defined
+                // such that here the iterator pairedPermutations.end() is returned if nextPermutation is not contained
+                // in pairedPermutations.
+                if ( find( pairedPermutations.begin(), pairedPermutations.end(), nextPermutation ) == pairedPermutations.end() ) {
+                    pairedPermutations.push_back( nextPermutation );
+                }
+            }
+        }
+    }
+
+    return pairedPermutations;
+}
+
+vector< vector<int> > getIndexPermutations( TotalSignature signature, int n ) {
+    // TODO: Add appropriate exception throws.
+
+    // Generate a vector of integers ranging from 0 to n. Permutations of this list will be generated to provide all
+    // possible combinations of indices for a given delta signature.
+    vector<int> list;
+    for ( int i = 0; i < n; i++ ) {
+        list.push_back( i );
+    }
+
+    // Obtain all combinations of available indices, where we choose the appropriate number of \bar{\delta} indices
+    // out of n indices. Recall that DeltaContractionSet::getNumContractions() gives the number of delta functions
+    // in that set, therefore doubling that result gives the number of indices.
+    vector< vector<int> > deltaBarIndexCombinations = combinations( list, 2 * signature.deltaBars.getNumContractions() );
+
+    for ( vector< vector<int> >::iterator combination = deltaBarIndexCombinations.begin(); combination != deltaBarIndexCombinations.end(); ++combination ) {
+        vector< vector<IndexContraction> > pairedPermutations = generatePairedPermutations( *combination );
+        
+    }
+}
+
 /*
  * ***********************************************************************
  * INPUT REDIRECTION OPERATOR OVERLOADS
@@ -217,4 +330,35 @@ ostream& operator<<( std::ostream& os, const vector< vector<int> > &obj ) {
         os << " ] ";
     }
     os << "]";
+}
+
+ostream& operator<<( std::ostream& os, const vector< vector<IndexContraction> > &obj ) {
+    os << "[";
+    for( vector< vector<IndexContraction> >::const_iterator vec = obj.begin(); vec != obj.end(); ++vec ) {
+        os << " [ ";
+        for ( vector<IndexContraction>::const_iterator element = (*vec).begin(); element != (*vec).end(); ++element ) {
+            os << "( " << element->i << ", " << element->j << " )";
+        }
+        os << " ] ";
+    }
+    os << "]";
+}
+
+/*
+ * ***********************************************************************
+ * RELATIONAL OPERATOR OVERLOADS
+ * ***********************************************************************
+ */
+
+bool operator==( const std::vector<IndexContraction> &lhs, const std::vector<IndexContraction> &rhs ) {
+    // If the vector sizes of the left- and right-hand sides are not equal, the two object will not be equivalent.
+    if ( lhs.size() != rhs.size() ) return false;
+
+    // It is known that lhs.size() == rhs.size().
+    for ( int i = 0; i < lhs.size(); i++ ) {
+        // Overload for operator== of types IndexContraction is implemented.
+        if ( not ( lhs[ i ] == rhs[ i ] ) ) return false;
+    }
+
+    return true;
 }

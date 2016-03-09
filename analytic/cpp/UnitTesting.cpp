@@ -1531,6 +1531,39 @@ string Z11() {
 	return ss.str();
 }
 
+string AA01() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	ss << generatePairedPermutations( A );
+	return ss.str();
+}
+
+string AA02() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	A.push_back( 3 );
+	A.push_back( 4 );
+	ss << generatePairedPermutations( A );
+	return ss.str();
+}
+
+string AA03() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	A.push_back( 3 );
+	A.push_back( 4 );
+	A.push_back( 5 );
+	A.push_back( 6 );
+	ss << generatePairedPermutations( A );
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -1903,6 +1936,17 @@ int main( int argc, char** argv ) {
 	UnitTest( "Z10: combinations() X", &Z10, "[ [  1  2  3  4  ]  [  1  2  3  5  ]  [  1  2  3  6  ]  [  1  2  3  7  ]  [  1  2  4  5  ]  [  1  2  4  6  ]  [  1  2  4  7  ]  [  1  2  5  6  ]  [  1  2  5  7  ]  [  1  2  6  7  ]  [  1  3  4  5  ]  [  1  3  4  6  ]  [  1  3  4  7  ]  [  1  3  5  6  ]  [  1  3  5  7  ]  [  1  3  6  7  ]  [  1  4  5  6  ]  [  1  4  5  7  ]  [  1  4  6  7  ]  [  1  5  6  7  ]  [  2  3  4  5  ]  [  2  3  4  6  ]  [  2  3  4  7  ]  [  2  3  5  6  ]  [  2  3  5  7  ]  [  2  3  6  7  ]  [  2  4  5  6  ]  [  2  4  5  7  ]  [  2  4  6  7  ]  [  2  5  6  7  ]  [  3  4  5  6  ]  [  3  4  5  7  ]  [  3  4  6  7  ]  [  3  5  6  7  ]  [  4  5  6  7  ] ]    35" );
 
 	UnitTest( "Z11: combinations() XI", &Z11, "[ [  1  2  3  4  5  ]  [  1  2  3  4  6  ]  [  1  2  3  4  7  ]  [  1  2  3  5  6  ]  [  1  2  3  5  7  ]  [  1  2  3  6  7  ]  [  1  2  4  5  6  ]  [  1  2  4  5  7  ]  [  1  2  4  6  7  ]  [  1  2  5  6  7  ]  [  1  3  4  5  6  ]  [  1  3  4  5  7  ]  [  1  3  4  6  7  ]  [  1  3  5  6  7  ]  [  1  4  5  6  7  ]  [  2  3  4  5  6  ]  [  2  3  4  5  7  ]  [  2  3  4  6  7  ]  [  2  3  5  6  7  ]  [  2  4  5  6  7  ]  [  3  4  5  6  7  ] ]    21" );
+
+	/*
+	 * generatePairedPermutations()
+	 */
+
+	UnitTest( "AA01: generatePairedPermutations() I, operator<< Overload", &AA01, "[ [ ( 1, 2 ) ] ]" );
+
+	UnitTest( "AA02: generatePairedPermutations() II", &AA02, "[ [ ( 1, 2 )( 3, 4 ) ]  [ ( 1, 3 )( 2, 4 ) ]  [ ( 1, 4 )( 2, 3 ) ] ]" );
+
+	// TODO: Verify.
+	UnitTest( "AA03: generatePairedPermutations() III", &AA03, "[ [ ( 1, 2 )( 3, 4 )( 5, 6 ) ]  [ ( 1, 2 )( 3, 5 )( 4, 6 ) ]  [ ( 1, 2 )( 3, 6 )( 4, 5 ) ]  [ ( 1, 3 )( 2, 4 )( 5, 6 ) ]  [ ( 1, 3 )( 2, 5 )( 4, 6 ) ]  [ ( 1, 3 )( 2, 6 )( 4, 5 ) ]  [ ( 1, 4 )( 2, 3 )( 5, 6 ) ]  [ ( 1, 4 )( 2, 5 )( 3, 6 ) ]  [ ( 1, 4 )( 2, 6 )( 3, 5 ) ]  [ ( 1, 5 )( 2, 3 )( 4, 6 ) ]  [ ( 1, 5 )( 2, 4 )( 3, 6 ) ]  [ ( 1, 5 )( 2, 6 )( 3, 4 ) ]  [ ( 1, 6 )( 2, 3 )( 4, 5 ) ]  [ ( 1, 6 )( 2, 4 )( 3, 5 ) ]  [ ( 1, 6 )( 2, 5 )( 3, 4 ) ] ]" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

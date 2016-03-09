@@ -16,7 +16,7 @@
  * ***********************************************************************
  */
 
-#ifndef AMAUNETC_PATHINTEGRATION_Hs
+#ifndef AMAUNETC_PATHINTEGRATION_H
 #define AMAUNETC_PATHINTEGRATION_H
 
 #include <map>
@@ -39,6 +39,12 @@ struct IndexContraction{
 
     int j;
 
+    bool operator<( const IndexContraction& rhs ) const;
+
+    bool operator>( const IndexContraction& rhs ) const;
+
+    bool operator==( const IndexContraction& rhs ) const;
+
 };
 
 class DeltaContractionSet {
@@ -50,6 +56,10 @@ public:
     void addContraction( IndexContraction newContraction );
 
     unsigned int getNumContractions();
+
+    std::vector<IndexContraction>::iterator getIteratorBegin();
+
+    std::vector<IndexContraction>::iterator getIteratorEnd();
 
     std::string to_string() const ;
 
@@ -103,7 +113,9 @@ void initializeStaticReferences();
 
 TotalSignature getDeltaSignature( std::vector<int> contraction );
 
-std::vector<int*> getIndexPermutations( std::vector<int*> signature, int n );
+std::vector< std::vector<IndexContraction> > generatePairedPermutations( std::vector<int> combination );
+
+std::vector< std::vector<int> > getIndexPermutations( TotalSignature signature, int n );
 
 std::vector<int*> calculateAllContractions( int n );
 
@@ -124,5 +136,15 @@ std::ostream& operator<<( std::ostream& os, const DeltaContractionSet &obj );
 std::ostream& operator<<( std::ostream& os, const DeltaSignature &obj );
 
 std::ostream& operator<<( std::ostream& os, const std::vector< std::vector<int> > &obj );
+
+std::ostream& operator<<( std::ostream& os, const std::vector< std::vector<IndexContraction> > &obj );
+
+/*
+ * ***********************************************************************
+ * RELATIONAL OPERATOR OVERLOADS
+ * ***********************************************************************
+ */
+
+bool operator==( const std::vector<IndexContraction> &lhs, const std::vector<IndexContraction> &rhs );
 
 #endif //AMAUNETC_PATHINTEGRATION_H
