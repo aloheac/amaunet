@@ -19,8 +19,9 @@
 #include <sstream>
 #include <assert.h>
 #include <algorithm>
+#include <map>
 #include "PathIntegration.h"
-
+#include <iostream>
 using namespace std;
 
 /*
@@ -59,6 +60,10 @@ bool IndexContraction::operator==( const IndexContraction& rhs ) const {
     return i == rhs.i and j == rhs.j;
 }
 
+bool IndexContraction::containsIndex( int index ) {
+    return i == index or j == index;
+}
+
 /*
  * DeltaContractionSet
  */
@@ -75,6 +80,14 @@ void DeltaContractionSet::addContractionSet( DeltaContractionSet set ) {
 
 unsigned int DeltaContractionSet::getNumContractions() {
     return (int)contractions.size();
+}
+
+bool DeltaContractionSet::containsIndex( int index ) {
+    for ( vector<IndexContraction>::iterator contraction = contractions.begin(); contraction != contractions.end(); ++contraction ) {
+        if ( (*contraction).containsIndex( index ) ) return true;
+    }
+
+    return false;
 }
 
 std::vector<IndexContraction>::iterator DeltaContractionSet::getIteratorBegin() {
@@ -115,6 +128,15 @@ bool DeltaContractionSet::operator==( const DeltaContractionSet &rhs ) const {
     }
 
     return true;
+}
+
+/*
+ * TotalSignature
+ */
+
+TotalSignature::TotalSignature() {
+    deltas = DeltaContractionSet();     // If the default constructor is called, initialize deltas and deltaBars with
+    deltaBars = DeltaContractionSet();  // empty DeltaContractionSet objects.
 }
 
 /*
@@ -189,8 +211,13 @@ TotalSignature getDeltaSignature( vector<int> contraction ) {
 }
 
 vector< vector<int> > combinations( vector<int> list, int k ) {
+    assert(k <= list.size());
+
     // TODO: Throw proper exceptions here.
-    if ( k == 1 ) {  // Simply return the list with each element placed in a vector<int>. n choose 1 is always n.
+    if ( k == 0 ) {
+        return vector< vector<int> >();  // Return empty vector, choose nothing.
+
+    } else if ( k == 1 ) {  // Simply return the list with each element placed in a vector<int>. n choose 1 is always n.
         vector< vector<int> > combos;
         for( vector<int>::iterator element = list.begin(); element != list.end(); ++element ) {
             vector<int> nextCombination;
@@ -308,8 +335,19 @@ vector<DeltaContractionSet> generatePairedPermutations( vector<int> combination 
     return pairedPermutations;
 }
 
-vector< vector<int> > getIndexPermutations( TotalSignature signature, int n ) {
+vector<TotalSignature> getIndexPermutations( TotalSignature signature, int n ) {
     // TODO: Add appropriate exception throws.
+
+    vector<TotalSignature> indexPermutations;
+
+    // Check for a trivial case - if the length of the signature.deltaBars vector is zero, the only possible
+    // permutation is the passed signature. Return it. If the length of signature.deltaBars is non-zero, this
+    // case will be included by the nature of finding all paired combinations.
+    if ( signature.deltaBars.getNumContractions() == 0 ) {
+        indexPermutations.push_back( signature );
+        return indexPermutations;
+    }
+
 
     // Generate a vector of integers ranging from 0 to n. Permutations of this list will be generated to provide all
     // possible combinations of indices for a given delta signature.
@@ -324,9 +362,83 @@ vector< vector<int> > getIndexPermutations( TotalSignature signature, int n ) {
     vector< vector<int> > deltaBarIndexCombinations = combinations( list, 2 * signature.deltaBars.getNumContractions() );
 
     for ( vector< vector<int> >::iterator combination = deltaBarIndexCombinations.begin(); combination != deltaBarIndexCombinations.end(); ++combination ) {
-        vector<DeltaContractionSet> pairedPermutations = generatePairedPermutations( *combination );
+        // Generate all possible sets of \bar{\delta} index pairs from the current combination.
+        vector<DeltaContractionSet> pairedDeltaBarPermutations = generatePairedPermutations( *combination );
 
+        // Iterate over all possible contraction sets of \bar{\delta} indices.
+        for ( vector<DeltaContractionSet>::iterator contractionSet = pairedDeltaBarPermutations.begin(); contractionSet != pairedDeltaBarPermutations.end(); ++contractionSet ) {
+            TotalSignature nextPermutation;
+            nextPermutation.deltaBars = *contractionSet;  // Delta bar contractions already computed by
+                                                          // generatePairedPermutations.
+            nextPermutation.deltas = DeltaContractionSet();  // Delta contractions to be added below.
+
+            map<int, int> signatureIndexMapping;
+
+            // Generate the mapping from the signature index to the \bar{\delta} indices for this permutation. Loop
+            // over IndexContraction objects of the \bar{\delta} signature.
+            vector<IndexContraction>::iterator permutationIndexPair = contractionSet->getIteratorBegin();
+
+            for( vector<IndexContraction>::iterator indexPair = signature.deltaBars.getIteratorBegin(); indexPair != signature.deltaBars.getIteratorEnd(); ++indexPair ) {
+                assert( signature.deltaBars.getNumContractions() == contractionSet->getNumContractions() );
+
+                if ( signatureIndexMapping.count( indexPair-> i ) == 0 ) {  // Index i is not in the map; add mapping.
+                    signatureIndexMapping[ indexPair->i ] = permutationIndexPair->i;
+                }
+
+                if ( signatureIndexMapping.count( indexPair-> j ) == 0 ) {  // Index j is not in the map; add mapping.
+                    signatureIndexMapping[ indexPair->j ] = permutationIndexPair->j;
+                }
+
+                ++permutationIndexPair;
+            }
+
+            // Generate the mapping from the signature index to the \delta indices for this permutation. Loop over
+            // IndexContraction objects of the \delta signature.
+            int currentFreeIndex = 0;
+            for ( vector<IndexContraction>::iterator indexPair = signature.deltas.getIteratorBegin(); indexPair != signature.deltas.getIteratorEnd(); ++indexPair ) {
+                // Advance the current free index to the next available index that is not a \bar{\delta} index.
+                while ( contractionSet->containsIndex( currentFreeIndex ) ) {
+                    currentFreeIndex++;
+                }
+
+                if ( signatureIndexMapping.count( indexPair-> i ) == 0 ) {  // Index i is not in the map; add mapping.
+                    signatureIndexMapping[ indexPair->i ] = currentFreeIndex;
+                    currentFreeIndex++;
+                }
+
+                // Advance the current free index to the next available index that is not a \bar{\delta} index.
+                while ( contractionSet->containsIndex( currentFreeIndex ) ) {
+                    currentFreeIndex++;
+                }
+
+                if ( signatureIndexMapping.count( indexPair-> j ) == 0 ) {  // Index j is not in the map; add mapping.
+                    signatureIndexMapping[ indexPair->j ] = currentFreeIndex;
+                    currentFreeIndex++;
+                }
+
+                assert( currentFreeIndex < n + 1 );
+            }
+
+            // Generate the DeltaContractionSet object for the \delta indices for this permutation. Loop over
+            // IndexContraction objects of the \delta signature.
+            for ( vector<IndexContraction>::iterator indexPair = signature.deltas.getIteratorBegin(); indexPair != signature.deltas.getIteratorEnd(); ++indexPair ) {
+                nextPermutation.deltas.addContraction( IndexContraction( signatureIndexMapping[ indexPair->i ], signatureIndexMapping[ indexPair->j ] ) );
+            }
+
+
+            // Since indices of a delta function commute, adding every generated permutation will double the number of
+            // terms in each contribution to the spatial path integral. To eliminate double counting, use the
+            // convention that the permutation is added to the returned data structure only if for the first
+            // IndexContraction, i < j.
+            assert( nextPermutation.deltas.getNumContractions() > 0 );
+
+            if ( nextPermutation.deltas.getIteratorBegin()->i < nextPermutation.deltas.getIteratorBegin()->j ) {
+                indexPermutations.push_back( nextPermutation );
+            }
+        }
     }
+
+    return indexPermutations;
 }
 
 /*
@@ -365,6 +477,14 @@ ostream& operator<<( std::ostream& os, const vector<DeltaContractionSet> &obj ) 
             os << "( " << element->i << ", " << element->j << " )";
         }
         os << " ] ";
+    }
+    os << "]";
+}
+
+ostream& operator<<( ostream& os, const vector<TotalSignature> &obj ) {
+    os << "[";
+    for ( vector<TotalSignature>::const_iterator vec = obj.begin(); vec != obj.end(); ++vec ) {
+        os << " { " << vec->deltas << " | " << vec->deltaBars << " } ";
     }
     os << "]";
 }

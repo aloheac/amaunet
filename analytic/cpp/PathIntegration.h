@@ -45,6 +45,8 @@ struct IndexContraction{
 
     bool operator==( const IndexContraction& rhs ) const;
 
+    bool containsIndex( int index );
+
 };
 
 class DeltaContractionSet {
@@ -58,6 +60,8 @@ public:
     void addContractionSet( DeltaContractionSet set );
 
     unsigned int getNumContractions();
+
+    bool containsIndex( int index );
 
     std::vector<IndexContraction>::iterator getIteratorBegin();
 
@@ -78,6 +82,8 @@ private:
 };
 
 struct TotalSignature {
+
+    TotalSignature();
 
     DeltaContractionSet deltas;
 
@@ -123,7 +129,7 @@ TotalSignature getDeltaSignature( std::vector<int> contraction );
 
 std::vector<DeltaContractionSet> generatePairedPermutations( std::vector<int> combination );
 
-std::vector< std::vector<int> > getIndexPermutations( TotalSignature signature, int n );
+std::vector<TotalSignature> getIndexPermutations( TotalSignature signature, int n );
 
 std::vector<int*> calculateAllContractions( int n );
 
@@ -146,5 +152,7 @@ std::ostream& operator<<( std::ostream& os, const DeltaSignature &obj );
 std::ostream& operator<<( std::ostream& os, const std::vector< std::vector<int> > &obj );
 
 std::ostream& operator<<( std::ostream& os, const std::vector<DeltaContractionSet> &obj );
+
+std::ostream& operator<<( std::ostream& os, const std::vector<TotalSignature> &obj );
 
 #endif //AMAUNETC_PATHINTEGRATION_H

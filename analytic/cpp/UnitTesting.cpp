@@ -1531,6 +1531,23 @@ string Z11() {
 	return ss.str();
 }
 
+string Z12() {
+	stringstream ss;
+	vector<int> A;
+	ss << combinations( A, 0 );
+	return ss.str();
+}
+
+string Z13() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 1 );
+	A.push_back( 2 );
+	A.push_back( 3 );
+	ss << combinations( A, 0 );
+	return ss.str();
+}
+
 string AA01() {
 	stringstream ss;
 	vector<int> A;
@@ -1561,6 +1578,46 @@ string AA03() {
 	A.push_back( 5 );
 	A.push_back( 6 );
 	ss << generatePairedPermutations( A );
+	return ss.str();
+}
+
+string AB01() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << getIndexPermutations( B, 2 );
+	return ss.str();
+}
+
+string AB02() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 2 );
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << getIndexPermutations( B, 4 );
+	return ss.str();
+}
+
+string AB03() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 4 );
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << getIndexPermutations( B, 6 );
+	return ss.str();
+}
+
+string AB04() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 2 );
+	A.push_back( 2 );
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	ss << getIndexPermutations( B, 6 );
 	return ss.str();
 }
 
@@ -1937,6 +1994,10 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "Z11: combinations() XI", &Z11, "[ [  1  2  3  4  5  ]  [  1  2  3  4  6  ]  [  1  2  3  4  7  ]  [  1  2  3  5  6  ]  [  1  2  3  5  7  ]  [  1  2  3  6  7  ]  [  1  2  4  5  6  ]  [  1  2  4  5  7  ]  [  1  2  4  6  7  ]  [  1  2  5  6  7  ]  [  1  3  4  5  6  ]  [  1  3  4  5  7  ]  [  1  3  4  6  7  ]  [  1  3  5  6  7  ]  [  1  4  5  6  7  ]  [  2  3  4  5  6  ]  [  2  3  4  5  7  ]  [  2  3  4  6  7  ]  [  2  3  5  6  7  ]  [  2  4  5  6  7  ]  [  3  4  5  6  7  ] ]    21" );
 
+	UnitTest( "Z12: combinations() XII, Choose Zero, Empty Vector", &Z12, "[]" );
+
+	UnitTest( "Z13: combinations() XIII, Choose Zero, Non-empty Vector", &Z13, "[]" );
+
 	/*
 	 * generatePairedPermutations()
 	 */
@@ -1947,6 +2008,18 @@ int main( int argc, char** argv ) {
 
 	// TODO: Verify.
 	UnitTest( "AA03: generatePairedPermutations() III", &AA03, "[ [ ( 1, 2 )( 3, 4 )( 5, 6 ) ]  [ ( 1, 2 )( 3, 5 )( 4, 6 ) ]  [ ( 1, 2 )( 3, 6 )( 4, 5 ) ]  [ ( 1, 3 )( 2, 4 )( 5, 6 ) ]  [ ( 1, 3 )( 2, 5 )( 4, 6 ) ]  [ ( 1, 3 )( 2, 6 )( 4, 5 ) ]  [ ( 1, 4 )( 2, 3 )( 5, 6 ) ]  [ ( 1, 4 )( 2, 5 )( 3, 6 ) ]  [ ( 1, 4 )( 2, 6 )( 3, 5 ) ]  [ ( 1, 5 )( 2, 3 )( 4, 6 ) ]  [ ( 1, 5 )( 2, 4 )( 3, 6 ) ]  [ ( 1, 5 )( 2, 6 )( 3, 4 ) ]  [ ( 1, 6 )( 2, 3 )( 4, 5 ) ]  [ ( 1, 6 )( 2, 4 )( 3, 5 ) ]  [ ( 1, 6 )( 2, 5 )( 3, 4 ) ] ]" );
+
+	/*
+	 * getIndexPermutations()
+	 */
+
+	UnitTest( "AB01: getIndexPermutations() I, operator<< Overload", &AB01, "[ { [ ( 0, 1 ) ] | [] } ]" );
+
+	UnitTest( "AB02: getIndexPermutations() II", &AB02, "[ { [ ( 0, 1 )  ( 2, 3 ) ] | [ ( 1, 2 ) ] }  { [ ( 0, 1 )  ( 3, 2 ) ] | [ ( 1, 3 ) ] }  { [ ( 0, 2 )  ( 3, 1 ) ] | [ ( 2, 3 ) ] } ]" );
+
+	UnitTest( "AB03: getIndexPermutations() III", &AB03, "[ { [ ( 2, 3 )  ( 4, 0 )  ( 1, 5 ) ] | [ ( 0, 1 ) ] }  { [ ( 1, 3 )  ( 4, 0 )  ( 2, 5 ) ] | [ ( 0, 2 ) ] }  { [ ( 1, 2 )  ( 4, 0 )  ( 3, 5 ) ] | [ ( 0, 3 ) ] }  { [ ( 1, 2 )  ( 3, 0 )  ( 4, 5 ) ] | [ ( 0, 4 ) ] }  { [ ( 1, 2 )  ( 3, 0 )  ( 5, 4 ) ] | [ ( 0, 5 ) ] }  { [ ( 0, 3 )  ( 4, 1 )  ( 2, 5 ) ] | [ ( 1, 2 ) ] }  { [ ( 0, 2 )  ( 4, 1 )  ( 3, 5 ) ] | [ ( 1, 3 ) ] }  { [ ( 0, 2 )  ( 3, 1 )  ( 4, 5 ) ] | [ ( 1, 4 ) ] }  { [ ( 0, 2 )  ( 3, 1 )  ( 5, 4 ) ] | [ ( 1, 5 ) ] }  { [ ( 0, 1 )  ( 4, 2 )  ( 3, 5 ) ] | [ ( 2, 3 ) ] }  { [ ( 0, 1 )  ( 3, 2 )  ( 4, 5 ) ] | [ ( 2, 4 ) ] }  { [ ( 0, 1 )  ( 3, 2 )  ( 5, 4 ) ] | [ ( 2, 5 ) ] }  { [ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ] | [ ( 3, 4 ) ] }  { [ ( 0, 1 )  ( 2, 3 )  ( 5, 4 ) ] | [ ( 3, 5 ) ] }  { [ ( 0, 1 )  ( 2, 4 )  ( 5, 3 ) ] | [ ( 4, 5 ) ] } ]" );
+
+	UnitTest( "AB04: getIndexPermutations() IV", &AB04, "" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;
