@@ -1551,33 +1551,42 @@ string Z13() {
 string AA01() {
 	stringstream ss;
 	vector<int> A;
-	A.push_back( 1 );
 	A.push_back( 2 );
-	ss << generatePairedPermutations( A );
+	ss << getIndexPermutations( A );
 	return ss.str();
 }
 
 string AA02() {
 	stringstream ss;
 	vector<int> A;
-	A.push_back( 1 );
-	A.push_back( 2 );
-	A.push_back( 3 );
 	A.push_back( 4 );
-	ss << generatePairedPermutations( A );
+	ss << getIndexPermutations( A );
 	return ss.str();
 }
 
 string AA03() {
 	stringstream ss;
 	vector<int> A;
-	A.push_back( 1 );
 	A.push_back( 2 );
-	A.push_back( 3 );
-	A.push_back( 4 );
-	A.push_back( 5 );
+	A.push_back( 2 );
+	ss << getIndexPermutations( A );
+	return ss.str();
+}
+
+string AA04() {
+	stringstream ss;
+	vector<int> A;
 	A.push_back( 6 );
-	ss << generatePairedPermutations( A );
+	ss << getIndexPermutations( A );
+	return ss.str();
+}
+
+string AA05() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 4 );
+	A.push_back( 2 );
+	ss << getIndexPermutations( A );
 	return ss.str();
 }
 
@@ -1586,38 +1595,140 @@ string AB01() {
 	vector<int> A;
 	A.push_back( 2 );
 	TotalSignature B = getDeltaSignature( A );
-	ss << getIndexPermutations( B, 2 );
+	vector< vector<int> > C = getIndexPermutations( A );
+	ss << generateSignaturePermutations( C, B );
 	return ss.str();
 }
 
 string AB02() {
 	stringstream ss;
 	vector<int> A;
-	A.push_back( 2 );
-	A.push_back( 2 );
+	A.push_back( 4 );
 	TotalSignature B = getDeltaSignature( A );
-	ss << getIndexPermutations( B, 4 );
+	vector< vector<int> > C = getIndexPermutations( A );
+	ss << generateSignaturePermutations( C, B );
 	return ss.str();
 }
 
 string AB03() {
 	stringstream ss;
 	vector<int> A;
-	A.push_back( 4 );
+	A.push_back( 2 );
 	A.push_back( 2 );
 	TotalSignature B = getDeltaSignature( A );
-	ss << getIndexPermutations( B, 6 );
+	vector< vector<int> > C = getIndexPermutations( A );
+	ss << generateSignaturePermutations( C, B );
 	return ss.str();
 }
 
 string AB04() {
 	stringstream ss;
 	vector<int> A;
-	A.push_back( 2 );
-	A.push_back( 2 );
+	A.push_back( 6 );
+	TotalSignature B = getDeltaSignature( A );
+	vector< vector<int> > C = getIndexPermutations( A );
+	ss << generateSignaturePermutations( C, B );
+	return ss.str();
+}
+
+string AB05() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 4 );
 	A.push_back( 2 );
 	TotalSignature B = getDeltaSignature( A );
-	ss << getIndexPermutations( B, 6 );
+	vector< vector<int> > C = getIndexPermutations( A );
+	ss << generateSignaturePermutations( C, B );
+	return ss.str();
+}
+
+string AC01() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	TotalSignature C;
+	DeltaContractionSet D;
+	D.addContraction( IndexContraction( 2, 3 ) );
+	C.deltas = D;
+	DeltaContractionSet E;
+	C.deltaBars = E;
+	ss << B.deltas << "    " << C.deltas << "    " << B.areSignaturesDegenerate( C );
+	return ss.str();
+}
+
+string AC02() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	TotalSignature C;
+	DeltaContractionSet D;
+	D.addContraction( IndexContraction( 2, 1 ) );
+	C.deltas = D;
+	DeltaContractionSet E;
+	C.deltaBars = E;
+	ss << B.deltas << "    " << C.deltas << "    " << B.areSignaturesDegenerate( C );
+	return ss.str();
+}
+
+string AC03() {
+	stringstream ss;
+	TotalSignature A;
+	TotalSignature B;
+	DeltaContractionSet C;
+	DeltaContractionSet D;
+	DeltaContractionSet E;
+	DeltaContractionSet F;
+	C.addContraction( IndexContraction( 2, 3 ) );
+	C.addContraction( IndexContraction( 1, 5 ) );
+	D.addContraction( IndexContraction( 1, 2 ) );
+	D.addContraction( IndexContraction( 5, 4 ) );
+	A.deltas = C;
+	B.deltas = D;
+	A.deltaBars = E;
+	A.deltaBars = F;
+	ss << A.deltas << "    " << B.deltas << "    " << A.areSignaturesDegenerate( B );
+	return ss.str();
+}
+
+string AC04() {
+	stringstream ss;
+	TotalSignature A;
+	TotalSignature B;
+	DeltaContractionSet C;
+	DeltaContractionSet D;
+	DeltaContractionSet E;
+	DeltaContractionSet F;
+	C.addContraction( IndexContraction( 2, 3 ) );
+	C.addContraction( IndexContraction( 1, 5 ) );
+	D.addContraction( IndexContraction( 1, 2 ) );
+	D.addContraction( IndexContraction( 5, 4 ) );
+	A.deltas = C;
+	B.deltas = D;
+	A.deltaBars = E;
+	A.deltaBars = F;
+	ss << A.deltas << "    " << B.deltas << "    " << B.areSignaturesDegenerate( A );
+	return ss.str();
+}
+
+string AC05() {
+	stringstream ss;
+	TotalSignature A;
+	TotalSignature B;
+	DeltaContractionSet C;
+	DeltaContractionSet D;
+	DeltaContractionSet E;
+	DeltaContractionSet F;
+	C.addContraction( IndexContraction( 1, 2 ) );
+	C.addContraction( IndexContraction( 3, 4 ) );
+	D.addContraction( IndexContraction( 3, 4 ) );
+	D.addContraction( IndexContraction( 1, 2 ) );
+	A.deltas = C;
+	B.deltas = D;
+	A.deltaBars = E;
+	A.deltaBars = F;
+	ss << A.deltas << "    " << B.deltas << "    " << B.areSignaturesDegenerate( A );
 	return ss.str();
 }
 
@@ -1999,27 +2110,47 @@ int main( int argc, char** argv ) {
 	UnitTest( "Z13: combinations() XIII, Choose Zero, Non-empty Vector", &Z13, "[]" );
 
 	/*
-	 * generatePairedPermutations()
-	 */
-
-	UnitTest( "AA01: generatePairedPermutations() I, operator<< Overload", &AA01, "[ [ ( 1, 2 ) ] ]" );
-
-	UnitTest( "AA02: generatePairedPermutations() II", &AA02, "[ [ ( 1, 2 )( 3, 4 ) ]  [ ( 1, 3 )( 2, 4 ) ]  [ ( 1, 4 )( 2, 3 ) ] ]" );
-
-	// TODO: Verify.
-	UnitTest( "AA03: generatePairedPermutations() III", &AA03, "[ [ ( 1, 2 )( 3, 4 )( 5, 6 ) ]  [ ( 1, 2 )( 3, 5 )( 4, 6 ) ]  [ ( 1, 2 )( 3, 6 )( 4, 5 ) ]  [ ( 1, 3 )( 2, 4 )( 5, 6 ) ]  [ ( 1, 3 )( 2, 5 )( 4, 6 ) ]  [ ( 1, 3 )( 2, 6 )( 4, 5 ) ]  [ ( 1, 4 )( 2, 3 )( 5, 6 ) ]  [ ( 1, 4 )( 2, 5 )( 3, 6 ) ]  [ ( 1, 4 )( 2, 6 )( 3, 5 ) ]  [ ( 1, 5 )( 2, 3 )( 4, 6 ) ]  [ ( 1, 5 )( 2, 4 )( 3, 6 ) ]  [ ( 1, 5 )( 2, 6 )( 3, 4 ) ]  [ ( 1, 6 )( 2, 3 )( 4, 5 ) ]  [ ( 1, 6 )( 2, 4 )( 3, 5 ) ]  [ ( 1, 6 )( 2, 5 )( 3, 4 ) ] ]" );
-
-	/*
 	 * getIndexPermutations()
 	 */
 
-	UnitTest( "AB01: getIndexPermutations() I, operator<< Overload", &AB01, "[ { [ ( 0, 1 ) ] | [] } ]" );
+	UnitTest( "AA01: getIndexPermutations() I, (2), operator<< Overload", &AA01, "[ [  0  1  ] ]" );
 
-	UnitTest( "AB02: getIndexPermutations() II", &AB02, "[ { [ ( 0, 1 )  ( 2, 3 ) ] | [ ( 1, 2 ) ] }  { [ ( 0, 1 )  ( 3, 2 ) ] | [ ( 1, 3 ) ] }  { [ ( 0, 2 )  ( 3, 1 ) ] | [ ( 2, 3 ) ] } ]" );
+	UnitTest( "AA02: getIndexPermutations() II, (4)", &AA02, "[ [  0  1  2  3  ] ]" );
 
-	UnitTest( "AB03: getIndexPermutations() III", &AB03, "[ { [ ( 2, 3 )  ( 4, 0 )  ( 1, 5 ) ] | [ ( 0, 1 ) ] }  { [ ( 1, 3 )  ( 4, 0 )  ( 2, 5 ) ] | [ ( 0, 2 ) ] }  { [ ( 1, 2 )  ( 4, 0 )  ( 3, 5 ) ] | [ ( 0, 3 ) ] }  { [ ( 1, 2 )  ( 3, 0 )  ( 4, 5 ) ] | [ ( 0, 4 ) ] }  { [ ( 1, 2 )  ( 3, 0 )  ( 5, 4 ) ] | [ ( 0, 5 ) ] }  { [ ( 0, 3 )  ( 4, 1 )  ( 2, 5 ) ] | [ ( 1, 2 ) ] }  { [ ( 0, 2 )  ( 4, 1 )  ( 3, 5 ) ] | [ ( 1, 3 ) ] }  { [ ( 0, 2 )  ( 3, 1 )  ( 4, 5 ) ] | [ ( 1, 4 ) ] }  { [ ( 0, 2 )  ( 3, 1 )  ( 5, 4 ) ] | [ ( 1, 5 ) ] }  { [ ( 0, 1 )  ( 4, 2 )  ( 3, 5 ) ] | [ ( 2, 3 ) ] }  { [ ( 0, 1 )  ( 3, 2 )  ( 4, 5 ) ] | [ ( 2, 4 ) ] }  { [ ( 0, 1 )  ( 3, 2 )  ( 5, 4 ) ] | [ ( 2, 5 ) ] }  { [ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ] | [ ( 3, 4 ) ] }  { [ ( 0, 1 )  ( 2, 3 )  ( 5, 4 ) ] | [ ( 3, 5 ) ] }  { [ ( 0, 1 )  ( 2, 4 )  ( 5, 3 ) ] | [ ( 4, 5 ) ] } ]" );
+	UnitTest( "AA03: getIndexPermutations() III, (2,2)", &AA03, "[ [  0  1  2  3  ]  [  0  2  1  3  ]  [  0  3  1  2  ]  [  1  2  0  3  ]  [  1  3  0  2  ]  [  2  3  0  1  ] ]" );
 
-	UnitTest( "AB04: getIndexPermutations() IV", &AB04, "" );
+	UnitTest( "AA04: getIndexPermutations() IV, (6)", &AA04, "[ [  0  1  2  3  4  5  ] ]" );
+
+	// TODO: Verify.
+	UnitTest( "AA05: getIndexPermutations() V, (4,2)", &AA05, "[ [  0  1  2  3  4  5  ]  [  0  1  2  4  3  5  ]  [  0  1  2  5  3  4  ]  [  0  1  3  4  2  5  ]  [  0  1  3  5  2  4  ]  [  0  1  4  5  2  3  ]  [  0  2  3  4  1  5  ]  [  0  2  3  5  1  4  ]  [  0  2  4  5  1  3  ]  [  0  3  4  5  1  2  ]  [  1  2  3  4  0  5  ]  [  1  2  3  5  0  4  ]  [  1  2  4  5  0  3  ]  [  1  3  4  5  0  2  ]  [  2  3  4  5  0  1  ] ]" );
+
+	/*
+	 * generateSignaturePermutations()
+	 */
+
+	UnitTest( "AB01: generateSignaturePermutations() I, (2), operator<< Overload", &AB01, "[ { [ ( 0, 1 ) ] | [] } ]" );
+
+	UnitTest( "AB02: generateSignaturePermutations() II, (4)", &AB02, "[ { [ ( 0, 1 )  ( 1, 2 )  ( 2, 3 ) ] | [] } ]" );
+
+	UnitTest( "AB03: generateSignaturePermutations() III, (2,2)", &AB03, "[ { [ ( 0, 1 )  ( 2, 3 ) ] | [ ( 1, 2 ) ] }  { [ ( 0, 2 )  ( 1, 3 ) ] | [ ( 2, 1 ) ] }  { [ ( 0, 3 )  ( 1, 2 ) ] | [ ( 3, 1 ) ] } ]" );
+
+	UnitTest( "AB04: generateSignaturePermutations() IV, (6)", &AB04, "[ { [ ( 0, 1 )  ( 1, 2 )  ( 2, 3 )  ( 3, 4 )  ( 4, 5 ) ] | [] } ]" );
+
+	UnitTest( "AB05: generateSignaturePermutations() V, (4,2)", &AB05, "[ { [ ( 0, 1 )  ( 1, 2 )  ( 2, 3 )  ( 4, 5 ) ] | [ ( 3, 4 ) ] }  { [ ( 0, 1 )  ( 1, 2 )  ( 2, 4 )  ( 3, 5 ) ] | [ ( 4, 3 ) ] }  { [ ( 0, 1 )  ( 1, 2 )  ( 2, 5 )  ( 3, 4 ) ] | [ ( 5, 3 ) ] }  { [ ( 0, 1 )  ( 1, 3 )  ( 3, 4 )  ( 2, 5 ) ] | [ ( 4, 2 ) ] }  { [ ( 0, 1 )  ( 1, 3 )  ( 3, 5 )  ( 2, 4 ) ] | [ ( 5, 2 ) ] }  { [ ( 0, 1 )  ( 1, 4 )  ( 4, 5 )  ( 2, 3 ) ] | [ ( 5, 2 ) ] }  { [ ( 0, 2 )  ( 2, 3 )  ( 3, 4 )  ( 1, 5 ) ] | [ ( 4, 1 ) ] }  { [ ( 0, 2 )  ( 2, 3 )  ( 3, 5 )  ( 1, 4 ) ] | [ ( 5, 1 ) ] }  { [ ( 0, 2 )  ( 2, 4 )  ( 4, 5 )  ( 1, 3 ) ] | [ ( 5, 1 ) ] }  { [ ( 0, 3 )  ( 3, 4 )  ( 4, 5 )  ( 1, 2 ) ] | [ ( 5, 1 ) ] }  { [ ( 1, 2 )  ( 2, 3 )  ( 3, 4 )  ( 0, 5 ) ] | [ ( 4, 0 ) ] }  { [ ( 1, 2 )  ( 2, 3 )  ( 3, 5 )  ( 0, 4 ) ] | [ ( 5, 0 ) ] }  { [ ( 1, 2 )  ( 2, 4 )  ( 4, 5 )  ( 0, 3 ) ] | [ ( 5, 0 ) ] }  { [ ( 1, 3 )  ( 3, 4 )  ( 4, 5 )  ( 0, 2 ) ] | [ ( 5, 0 ) ] }  { [ ( 2, 3 )  ( 3, 4 )  ( 4, 5 )  ( 0, 1 ) ] | [ ( 5, 0 ) ] } ]" );
+
+	/*
+	 * TotalSignature
+	 */
+
+	UnitTest( "AC01: TotalSignature, areSignaturesDegenerate() I", &AC01, "[ ( 0, 1 ) ]    [ ( 2, 3 ) ]    0" );
+
+	UnitTest( "AC02: TotalSignature, areSignaturesDegenerate() II", &AC02, "[ ( 0, 1 ) ]    [ ( 2, 1 ) ]    0" );
+
+	UnitTest( "AC03: TotalSignature, areSignaturesDegenerate() III", &AC03, "[ ( 2, 3 )  ( 1, 5 ) ]    [ ( 1, 2 )  ( 5, 4 ) ]    0" );
+
+	UnitTest( "AC04: TotalSignature, areSignaturesDegenerate() III, Callee switched", &AC04, "[ ( 2, 3 )  ( 1, 5 ) ]    [ ( 1, 2 )  ( 5, 4 ) ]    0" );
+
+	UnitTest( "AC05: TotalSignature, areSignaturesDegenerate() IV", &AC05, "[ ( 1, 2 )  ( 3, 4 ) ]    [ ( 3, 4 )  ( 1, 2 ) ]    1" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

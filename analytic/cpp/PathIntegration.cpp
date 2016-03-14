@@ -20,8 +20,9 @@
 #include <assert.h>
 #include <algorithm>
 #include <map>
+#include <boost/bimap.hpp>
 #include "PathIntegration.h"
-#include <iostream>
+
 using namespace std;
 
 /*
@@ -57,7 +58,7 @@ bool IndexContraction::operator>( const IndexContraction& rhs ) const {
 
 
 bool IndexContraction::operator==( const IndexContraction& rhs ) const {
-    return i == rhs.i and j == rhs.j;
+    return i == rhs.i and j == rhs.j or i == rhs.j and j == rhs.i;
 }
 
 bool IndexContraction::containsIndex( int index ) {
@@ -137,6 +138,32 @@ bool DeltaContractionSet::operator==( const DeltaContractionSet &rhs ) const {
 TotalSignature::TotalSignature() {
     deltas = DeltaContractionSet();     // If the default constructor is called, initialize deltas and deltaBars with
     deltaBars = DeltaContractionSet();  // empty DeltaContractionSet objects.
+}
+
+bool TotalSignature::areSignaturesDegenerate( const TotalSignature &other) {
+    set<IndexContraction> thisDeltaContractions, otherDeltaContractions;
+
+    for ( vector<IndexContraction>::const_iterator indexPair = deltas.getIteratorBegin(); indexPair != deltas.getIteratorEnd(); ++indexPair ) {
+        thisDeltaContractions.insert( IndexContraction( *indexPair ) );
+    }
+
+    for ( vector<IndexContraction>::const_iterator indexPair = other.deltas.getIteratorBegin(); indexPair != other.deltas.getIteratorEnd(); ++indexPair ) {
+        otherDeltaContractions.insert( IndexContraction( *indexPair ) );
+    }
+
+    return thisDeltaContractions == otherDeltaContractions;
+}
+
+bool TotalSignature::isValidSignature() {
+    for ( vector<IndexContraction>::iterator indexPair = deltas.getIteratorBegin(); indexPair != deltas.getIteratorEnd(); ++indexPair ) {
+        if ( indexPair->i == indexPair-> j) return false;
+    }
+
+    for ( vector<IndexContraction>::iterator indexPair = deltaBars.getIteratorBegin(); indexPair != deltaBars.getIteratorEnd(); ++indexPair ) {
+        if ( indexPair->i == indexPair-> j) return false;
+    }
+
+    return true;
 }
 
 /*
@@ -256,189 +283,101 @@ vector< vector<int> > combinations( vector<int> list, int k ) {
     }
 }
 
-vector<DeltaContractionSet> generatePairedPermutations( vector<int> combination ) {
-    assert( combination.size() % 2 == 0 );  // n must be even for contact interactions.
+vector< vector<int> > getIndexPermutations( vector<int> contraction, vector<int> list ) {
+    // Declare data structure to be returned.
+    vector< vector<int> > indexPermutations;
 
-    vector<DeltaContractionSet> pairedPermutations;
-
-    if ( combination.size() == 2 ) {  // Trivial base case.
-        DeltaContractionSet permutation;
-
-        // Impose convention that the larger valued index appears second in the contraction, e.g. ( 1, 2 ).
-        if ( combination[0] < combination[1] ) {
-            permutation.addContraction( IndexContraction( combination[0], combination[1] ) );
-        } else {
-            permutation.addContraction( IndexContraction( combination[1], combination[0] ) );
-        }
-
-        pairedPermutations.push_back( permutation );
-
-    } else {
-        vector< vector<int> > possiblePairs = combinations( combination, 2 );
-
-        for ( vector< vector<int> >::iterator pair = possiblePairs.begin(); pair != possiblePairs.end(); ++pair ) {
-            DeltaContractionSet permutation;
-
-            // Impose convention that the larger valued index appears second in the contraction, e.g. ( 1, 2 ).
-            if ( (*pair)[0] < (*pair)[1] ) {
-                permutation.addContraction( IndexContraction( (*pair)[0], (*pair)[1] ) ); // Append selected pair combination
-                                                                                     // to the next permutation.
-            } else {
-                permutation.addContraction( IndexContraction( (*pair)[1], (*pair)[0] ) );
-            }
-
-            vector<int> subcombination( combination );  // Copy combination from which we will remove the pair that was
-                                                        // already added to the next permutation; make a recursive call
-                                                        // that will generate the paired permutations for this subset
-                                                        // (the 'tail' of the data structure).
-
-            // Remove elements in *pair from subcombination. Choose to do each removal in separate loops, where we
-            // break from the loop after the element is found and erased.
-            for ( vector<int>::iterator subcombinationValue = subcombination.begin(); subcombinationValue != subcombination.end(); ++subcombinationValue ) {
-                if ( (*subcombinationValue) == (*pair)[0] ) {
-                    subcombination.erase( subcombinationValue );
-                    break;
-                }
-            }
-
-            for ( vector<int>::iterator subcombinationValue = subcombination.begin(); subcombinationValue != subcombination.end(); ++subcombinationValue ) {
-                if ( (*subcombinationValue) == (*pair)[1] ) {
-                    subcombination.erase( subcombinationValue );
-                    break;
-                }
-            }
-
-            vector<DeltaContractionSet> tailPairedPermutations = generatePairedPermutations( subcombination );
-
-            // For each possible set of paired permutations for the tail, generate a new permutation, concatenate pairs,
-            // and add the permutation to pairedPermutations, which is the data (a set of permutations) to be returned.
-            for ( vector<DeltaContractionSet>::iterator tailPermutation = tailPairedPermutations.begin(); tailPermutation != tailPairedPermutations.end(); ++tailPermutation ) {
-                DeltaContractionSet nextPermutation( permutation );  // Copy vector permutation.
-
-                // Concatenate head and tail vectors.
-                nextPermutation.addContractionSet( *tailPermutation );
-
-                // Sort the IndexContraction elements of nextPermutation according to the operator< overload.
-                sort( nextPermutation.getIteratorBegin(), nextPermutation.getIteratorEnd() );
-
-                // Add nextPermutation to pairedPermutations only if pairedPermutations does not already contain an
-                // identically equivalent object. Note that std::find is declared in <algorithm>. std::find is defined
-                // such that here the iterator pairedPermutations.end() is returned if nextPermutation is not contained
-                // in pairedPermutations.
-                if ( find( pairedPermutations.begin(), pairedPermutations.end(), nextPermutation ) == pairedPermutations.end() ) {
-                    pairedPermutations.push_back( nextPermutation );
-                }
-            }
-        }
-    }
-
-    return pairedPermutations;
-}
-
-vector<TotalSignature> getIndexPermutations( TotalSignature signature, int n ) {
-    // TODO: Add appropriate exception throws.
-
-    vector<TotalSignature> indexPermutations;
-
-    // Check for a trivial case - if the length of the signature.deltaBars vector is zero, the only possible
-    // permutation is the passed signature. Return it. If the length of signature.deltaBars is non-zero, this
-    // case will be included by the nature of finding all paired combinations.
-    if ( signature.deltaBars.getNumContractions() == 0 ) {
-        indexPermutations.push_back( signature );
+    // Check for the trivial base case. If met, return result.
+    if ( contraction.size() == 1 ) {
+        indexPermutations.push_back( list );
         return indexPermutations;
     }
 
+    // Get the total signature (which includes \delta and \bar{\delta} index contractions) corresponding to the passed
+    // contraction.
+    TotalSignature signature = getDeltaSignature( contraction );
 
-    // Generate a vector of integers ranging from 0 to n. Permutations of this list will be generated to provide all
-    // possible combinations of indices for a given delta signature.
+    vector<int> difference;
+    vector<int>::iterator iter;
+    int groupSize = contraction[0];  // Work with first element of contraction, recursively call on the rest.
+    vector< vector<int> > subpermutations;
+
+    // Get all combinations of elements of list where groupSize elements are chosen.
+    vector< vector<int> > listCombinations = combinations( list, groupSize );
+
+    // Iterate over listCombinations, the set of ways to choose groupSize indices to be contracted together.
+    for ( vector< vector<int> >::iterator combination = listCombinations.begin(); combination != listCombinations.end(); ++combination ) {
+        // Calculate difference between sets list and *combination to find remaining indices to use in recursive
+        // call. Difference is computed using set_difference which is a member of the STL in header <algorithm>.
+        difference = vector<int>( 2 * list.size() );
+        iter = set_difference( list.begin(), list.end(), combination->begin(), combination->end(), difference.begin() );
+        difference.resize( iter - difference.begin() );
+
+        // Get index permutations for the remaining contractions.
+        vector<int> subcontraction( ++contraction.begin(), contraction.end() );
+        subpermutations = getIndexPermutations( subcontraction, difference );
+
+        // Concatenate *combination with each subpermutation, and push the result on to indexPermutations.
+        for ( vector< vector<int> >::iterator subpermutation = subpermutations.begin(); subpermutation != subpermutations.end(); ++subpermutation ) {
+            vector<int> nextPermutation( *combination );
+            nextPermutation.insert( nextPermutation.end(), subpermutation->begin(), subpermutation->end() );
+            indexPermutations.push_back( nextPermutation );
+        }
+    }
+
+    return indexPermutations;
+}
+
+vector< vector<int> > getIndexPermutations( vector<int> contraction ) {
+    // Calculate the order of the contraction, n.
+    unsigned int n = 0;
+    for ( vector<int>::iterator groupSize = contraction.begin(); groupSize != contraction.end(); ++groupSize ) {
+        n += *groupSize;
+    }
+
     vector<int> list;
     for ( int i = 0; i < n; i++ ) {
         list.push_back( i );
     }
 
-    // Obtain all combinations of available indices, where we choose the appropriate number of \bar{\delta} indices
-    // out of n indices. Recall that DeltaContractionSet::getNumContractions() gives the number of delta functions
-    // in that set, therefore doubling that result gives the number of indices.
-    vector< vector<int> > deltaBarIndexCombinations = combinations( list, 2 * signature.deltaBars.getNumContractions() );
+    return getIndexPermutations( contraction, list );
+}
 
-    for ( vector< vector<int> >::iterator combination = deltaBarIndexCombinations.begin(); combination != deltaBarIndexCombinations.end(); ++combination ) {
-        // Generate all possible sets of \bar{\delta} index pairs from the current combination.
-        vector<DeltaContractionSet> pairedDeltaBarPermutations = generatePairedPermutations( *combination );
+vector<TotalSignature> generateSignaturePermutations( vector< vector<int> > indexPermutations, TotalSignature signature ) {
+    vector<TotalSignature> signatureSet;
 
-        // Iterate over all possible contraction sets of \bar{\delta} indices.
-        for ( vector<DeltaContractionSet>::iterator contractionSet = pairedDeltaBarPermutations.begin(); contractionSet != pairedDeltaBarPermutations.end(); ++contractionSet ) {
-            TotalSignature nextPermutation;
-            nextPermutation.deltaBars = *contractionSet;  // Delta bar contractions already computed by
-                                                          // generatePairedPermutations.
-            nextPermutation.deltas = DeltaContractionSet();  // Delta contractions to be added below.
+    // Iterate over all permutations generated by getIndexPermutations.
+    TotalSignature nextSignature;
+    DeltaContractionSet deltaSet;
+    DeltaContractionSet deltaBarSet;
+    bool signatureIsNondegenerate;
 
-            map<int, int> signatureIndexMapping;
+    for ( vector< vector<int> >::iterator permutation = indexPermutations.begin(); permutation != indexPermutations.end(); ++permutation ) {
+        deltaSet = DeltaContractionSet();
+        for ( vector<IndexContraction>::iterator indexPair = signature.deltas.getIteratorBegin(); indexPair != signature.deltas.getIteratorEnd(); ++indexPair ) {
+            deltaSet.addContraction( IndexContraction( permutation->at( indexPair->i ), permutation->at( indexPair->j ) ) );
+        }
 
-            // Generate the mapping from the signature index to the \bar{\delta} indices for this permutation. Loop
-            // over IndexContraction objects of the \bar{\delta} signature.
-            vector<IndexContraction>::iterator permutationIndexPair = contractionSet->getIteratorBegin();
+        deltaBarSet = DeltaContractionSet();
+        for ( vector<IndexContraction>::iterator indexPair = signature.deltaBars.getIteratorBegin(); indexPair != signature.deltaBars.getIteratorEnd(); ++indexPair ) {
+            deltaBarSet.addContraction( IndexContraction( permutation->at( indexPair->i ), permutation->at( indexPair->j ) ) );
+        }
 
-            for( vector<IndexContraction>::iterator indexPair = signature.deltaBars.getIteratorBegin(); indexPair != signature.deltaBars.getIteratorEnd(); ++indexPair ) {
-                assert( signature.deltaBars.getNumContractions() == contractionSet->getNumContractions() );
+        nextSignature.deltas = deltaSet;
+        nextSignature.deltaBars = deltaBarSet;
 
-                if ( signatureIndexMapping.count( indexPair-> i ) == 0 ) {  // Index i is not in the map; add mapping.
-                    signatureIndexMapping[ indexPair->i ] = permutationIndexPair->i;
-                }
-
-                if ( signatureIndexMapping.count( indexPair-> j ) == 0 ) {  // Index j is not in the map; add mapping.
-                    signatureIndexMapping[ indexPair->j ] = permutationIndexPair->j;
-                }
-
-                ++permutationIndexPair;
-            }
-
-            // Generate the mapping from the signature index to the \delta indices for this permutation. Loop over
-            // IndexContraction objects of the \delta signature.
-            int currentFreeIndex = 0;
-            for ( vector<IndexContraction>::iterator indexPair = signature.deltas.getIteratorBegin(); indexPair != signature.deltas.getIteratorEnd(); ++indexPair ) {
-                // Advance the current free index to the next available index that is not a \bar{\delta} index.
-                while ( contractionSet->containsIndex( currentFreeIndex ) ) {
-                    currentFreeIndex++;
-                }
-
-                if ( signatureIndexMapping.count( indexPair-> i ) == 0 ) {  // Index i is not in the map; add mapping.
-                    signatureIndexMapping[ indexPair->i ] = currentFreeIndex;
-                    currentFreeIndex++;
-                }
-
-                // Advance the current free index to the next available index that is not a \bar{\delta} index.
-                while ( contractionSet->containsIndex( currentFreeIndex ) ) {
-                    currentFreeIndex++;
-                }
-
-                if ( signatureIndexMapping.count( indexPair-> j ) == 0 ) {  // Index j is not in the map; add mapping.
-                    signatureIndexMapping[ indexPair->j ] = currentFreeIndex;
-                    currentFreeIndex++;
-                }
-
-                assert( currentFreeIndex < n + 1 );
-            }
-
-            // Generate the DeltaContractionSet object for the \delta indices for this permutation. Loop over
-            // IndexContraction objects of the \delta signature.
-            for ( vector<IndexContraction>::iterator indexPair = signature.deltas.getIteratorBegin(); indexPair != signature.deltas.getIteratorEnd(); ++indexPair ) {
-                nextPermutation.deltas.addContraction( IndexContraction( signatureIndexMapping[ indexPair->i ], signatureIndexMapping[ indexPair->j ] ) );
-            }
-
-
-            // Since indices of a delta function commute, adding every generated permutation will double the number of
-            // terms in each contribution to the spatial path integral. To eliminate double counting, use the
-            // convention that the permutation is added to the returned data structure only if for the first
-            // IndexContraction, i < j.
-            assert( nextPermutation.deltas.getNumContractions() > 0 );
-
-            if ( nextPermutation.deltas.getIteratorBegin()->i < nextPermutation.deltas.getIteratorBegin()->j ) {
-                indexPermutations.push_back( nextPermutation );
+        signatureIsNondegenerate = true;
+        for ( vector<TotalSignature>::iterator pushedSignature = signatureSet.begin(); pushedSignature != signatureSet.end(); ++pushedSignature ) {
+            if ( nextSignature.areSignaturesDegenerate( *pushedSignature ) ) {
+                signatureIsNondegenerate = false;
+                break;
             }
         }
+
+        if ( signatureIsNondegenerate ) signatureSet.push_back( nextSignature );
     }
 
-    return indexPermutations;
+    return signatureSet;
 }
 
 /*

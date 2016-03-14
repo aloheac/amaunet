@@ -89,6 +89,10 @@ struct TotalSignature {
 
     DeltaContractionSet deltaBars;
 
+    bool areSignaturesDegenerate( const TotalSignature &signature );
+
+    bool isValidSignature();
+
 };
 
 class DeltaSignature {
@@ -127,9 +131,11 @@ void initializeStaticReferences();
 
 TotalSignature getDeltaSignature( std::vector<int> contraction );
 
-std::vector<DeltaContractionSet> generatePairedPermutations( std::vector<int> combination );
+std::vector< std::vector<int> > getIndexPermutations( std::vector<int> contraction, std::vector<int> list );
 
-std::vector<TotalSignature> getIndexPermutations( TotalSignature signature, int n );
+std::vector< std::vector<int> > getIndexPermutations( std::vector<int> contraction );
+
+std::vector<TotalSignature> generateSignaturePermutations( std::vector< std::vector<int> > indexPermutations, TotalSignature signature );
 
 std::vector<int*> calculateAllContractions( int n );
 
