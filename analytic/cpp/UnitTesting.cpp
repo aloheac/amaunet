@@ -1732,6 +1732,36 @@ string AC05() {
 	return ss.str();
 }
 
+string AD01() {
+	stringstream ss;
+	ss << calculateAllContractions( 2 );
+	return ss.str();
+}
+
+string AD02() {
+	stringstream ss;
+	ss << calculateAllContractions( 4 );
+	return ss.str();
+}
+
+string AD03() {
+	stringstream ss;
+	ss << calculateAllContractions( 6 );
+	return ss.str();
+}
+
+string AD04() {
+	stringstream ss;
+	ss << calculateAllContractions( 8 );
+	return ss.str();
+}
+
+string AD05() {
+	stringstream ss;
+	ss << calculateAllContractions( 10 );
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -2151,6 +2181,20 @@ int main( int argc, char** argv ) {
 	UnitTest( "AC04: TotalSignature, areSignaturesDegenerate() III, Callee switched", &AC04, "[ ( 2, 3 )  ( 1, 5 ) ]    [ ( 1, 2 )  ( 5, 4 ) ]    0" );
 
 	UnitTest( "AC05: TotalSignature, areSignaturesDegenerate() IV", &AC05, "[ ( 1, 2 )  ( 3, 4 ) ]    [ ( 3, 4 )  ( 1, 2 ) ]    1" );
+
+	/*
+	 * calculateAllContractions()
+	 */
+
+	UnitTest( "AD01: calculateAllContractions(), n = 2", &AD01, "[ [  2  ] ]" );
+
+	UnitTest( "AD02: calculateAllContractions(), n = 4", &AD02, "[ [  4  ]  [  2  2  ] ]" );
+
+	UnitTest( "AD03: calculateAllContractions(), n = 6", &AD03, "[ [  6  ]  [  2  4  ]  [  2  2  2  ] ]" );
+
+	UnitTest( "AD04: calculateAllContractions(), n = 8", &AD04, "[ [  8  ]  [  2  6  ]  [  2  2  4  ]  [  2  2  2  2  ] ]" );
+
+	UnitTest( "AD05: calculateAllContractions(), n = 10", &AD05, "[ [  10  ]  [  2  8  ]  [  2  2  6  ]  [  2  2  2  4  ]  [  2  2  2  2  2  ] ]" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

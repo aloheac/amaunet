@@ -137,7 +137,7 @@ std::vector< std::vector<int> > getIndexPermutations( std::vector<int> contracti
 
 std::vector<TotalSignature> generateSignaturePermutations( std::vector< std::vector<int> > indexPermutations, TotalSignature signature );
 
-std::vector<int*> calculateAllContractions( int n );
+std::vector< std::vector<int> > calculateAllContractions( int n );
 
 Sum generateCoordinateSpacePathIntegral( int n );
 

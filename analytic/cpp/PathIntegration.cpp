@@ -380,6 +380,32 @@ vector<TotalSignature> generateSignaturePermutations( vector< vector<int> > inde
     return signatureSet;
 }
 
+std::vector< std::vector<int> > calculateAllContractions( int n ) {
+    vector< vector<int> > contractions;
+    vector<int> nextContraction;
+    vector< vector<int> > subcontractions;
+
+    if ( n == 2 ) {
+        nextContraction.push_back( 2 );
+        contractions.push_back( nextContraction );
+        return contractions;
+    } else {
+        nextContraction.push_back( n );
+        contractions.push_back( nextContraction );
+
+        subcontractions = calculateAllContractions( n - 2 );
+
+        for ( vector< vector<int> >::iterator contraction = subcontractions.begin(); contraction != subcontractions.end(); ++contraction ) {
+            nextContraction = vector<int>();
+            nextContraction.push_back( 2 );
+            nextContraction.insert( nextContraction.end(), contraction->begin(), contraction->end() );
+            contractions.push_back( nextContraction );
+        }
+    }
+
+    return contractions;
+}
+
 /*
  * ***********************************************************************
  * INPUT REDIRECTION OPERATOR OVERLOADS
