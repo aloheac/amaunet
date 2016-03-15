@@ -1133,6 +1133,10 @@ const std::string Delta::to_string() const {
 	return ss.str();
 }
 
+SymbolicTermPtr Delta::copy() {
+	return SymbolicTermPtr( new Delta( indices[0], indices[1] ) );
+}
+
 bool Delta::operator==( const Delta &other ) const {
 	return isBar == other.isBar and indices[0] == other.indices[0] and indices[1] == other.indices[1];
 }

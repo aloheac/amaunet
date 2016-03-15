@@ -406,6 +406,56 @@ std::vector< std::vector<int> > calculateAllContractions( int n ) {
     return contractions;
 }
 
+Sum generateCoordinateSpacePathIntegral( int n ) {
+    Sum pathIntegral;
+
+    vector< vector<int> > contractions = calculateAllContractions( n );
+    TotalSignature signature;
+    vector< vector<int> > indexPermutations;
+    vector<TotalSignature> signaturePermutations;
+
+    for ( vector< vector<int> >::iterator contraction = contractions.begin(); contraction != contractions.end(); ++contraction ) {
+        Product nextPathIntegralTerm;
+        for ( vector<int>::iterator contractedGroup = contraction->begin(); contractedGroup != contraction->end(); ++contractedGroup ) {
+            nextPathIntegralTerm.addTerm( SymbolicTermPtr( Amaunet::SINE_PATH_INTEGRALS[ *contractedGroup ].copy() ) );
+        }
+
+        // Note: If you would like the signatures to presented such that the largest group appears first, reverse the
+        // contraction vector here.
+
+        Sum vertexIntegrals;
+        signature = getDeltaSignature( *contraction );
+        indexPermutations = getIndexPermutations( *contraction );
+        signaturePermutations = generateSignaturePermutations( indexPermutations, signature );
+
+        for ( vector<TotalSignature>::iterator permutation = signaturePermutations.begin(); permutation != signaturePermutations.end(); ++permutation ) {
+            Product nextDeltaProduct;
+            for ( vector<IndexContraction>::iterator indexPair = permutation->deltas.getIteratorBegin(); indexPair != permutation->deltas.getIteratorEnd(); ++indexPair ) {
+                nextDeltaProduct.addTerm( SymbolicTermPtr( new Delta( indexPair->i, indexPair->j ) ) );
+            }
+
+            for ( vector<IndexContraction>::iterator indexPair = permutation->deltaBars.getIteratorBegin(); indexPair != permutation->deltaBars.getIteratorEnd(); ++indexPair ) {
+                Sum deltaBarSum;
+                Product negativeDelta;
+
+                negativeDelta.addTerm( SymbolicTermPtr( new CoefficientFloat( -1.0 ) ) );
+                negativeDelta.addTerm( SymbolicTermPtr( new Delta( indexPair->i, indexPair->j ) ) );
+                deltaBarSum.addTerm( SymbolicTermPtr( new CoefficientFloat( 1.0 ) ) );
+                deltaBarSum.addTerm( negativeDelta.copy() );
+                nextDeltaProduct.addTerm( deltaBarSum.copy() );
+            }
+
+            vertexIntegrals.addTerm( nextDeltaProduct.copy() );
+        }
+
+        nextPathIntegralTerm.addTerm( vertexIntegrals.copy() );
+        pathIntegral.addTerm( nextPathIntegralTerm.copy() );
+    }
+
+    pathIntegral.reduceTree();
+    return pathIntegral;
+}
+
 /*
  * ***********************************************************************
  * INPUT REDIRECTION OPERATOR OVERLOADS

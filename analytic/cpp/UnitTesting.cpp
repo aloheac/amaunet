@@ -1590,6 +1590,16 @@ string AA05() {
 	return ss.str();
 }
 
+string AA06() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 2 );
+	A.push_back( 2 );
+	A.push_back( 2 );
+	ss << getIndexPermutations( A );
+	return ss.str();
+}
+
 string AB01() {
 	stringstream ss;
 	vector<int> A;
@@ -1635,6 +1645,18 @@ string AB05() {
 	stringstream ss;
 	vector<int> A;
 	A.push_back( 4 );
+	A.push_back( 2 );
+	TotalSignature B = getDeltaSignature( A );
+	vector< vector<int> > C = getIndexPermutations( A );
+	ss << generateSignaturePermutations( C, B );
+	return ss.str();
+}
+
+string AB06() {
+	stringstream ss;
+	vector<int> A;
+	A.push_back( 2 );
+	A.push_back( 2 );
 	A.push_back( 2 );
 	TotalSignature B = getDeltaSignature( A );
 	vector< vector<int> > C = getIndexPermutations( A );
@@ -1759,6 +1781,24 @@ string AD04() {
 string AD05() {
 	stringstream ss;
 	ss << calculateAllContractions( 10 );
+	return ss.str();
+}
+
+string AE01() {
+	stringstream ss;
+	ss << generateCoordinateSpacePathIntegral( 2 );
+	return ss.str();
+}
+
+string AE02() {
+	stringstream ss;
+	ss << generateCoordinateSpacePathIntegral( 4 );
+	return ss.str();
+}
+
+string AE03() {
+	stringstream ss;
+	ss << generateCoordinateSpacePathIntegral( 6 );
 	return ss.str();
 }
 
@@ -2154,6 +2194,8 @@ int main( int argc, char** argv ) {
 	// TODO: Verify.
 	UnitTest( "AA05: getIndexPermutations() V, (4,2)", &AA05, "[ [  0  1  2  3  4  5  ]  [  0  1  2  4  3  5  ]  [  0  1  2  5  3  4  ]  [  0  1  3  4  2  5  ]  [  0  1  3  5  2  4  ]  [  0  1  4  5  2  3  ]  [  0  2  3  4  1  5  ]  [  0  2  3  5  1  4  ]  [  0  2  4  5  1  3  ]  [  0  3  4  5  1  2  ]  [  1  2  3  4  0  5  ]  [  1  2  3  5  0  4  ]  [  1  2  4  5  0  3  ]  [  1  3  4  5  0  2  ]  [  2  3  4  5  0  1  ] ]" );
 
+	// TODO: Verify.
+	UnitTest( "AA06: getIndexPermutations() VI, (2,2,2)", &AA06, "[ [  0  1  2  3  4  5  ]  [  0  1  2  4  3  5  ]  [  0  1  2  5  3  4  ]  [  0  1  3  4  2  5  ]  [  0  1  3  5  2  4  ]  [  0  1  4  5  2  3  ]  [  0  2  1  3  4  5  ]  [  0  2  1  4  3  5  ]  [  0  2  1  5  3  4  ]  [  0  2  3  4  1  5  ]  [  0  2  3  5  1  4  ]  [  0  2  4  5  1  3  ]  [  0  3  1  2  4  5  ]  [  0  3  1  4  2  5  ]  [  0  3  1  5  2  4  ]  [  0  3  2  4  1  5  ]  [  0  3  2  5  1  4  ]  [  0  3  4  5  1  2  ]  [  0  4  1  2  3  5  ]  [  0  4  1  3  2  5  ]  [  0  4  1  5  2  3  ]  [  0  4  2  3  1  5  ]  [  0  4  2  5  1  3  ]  [  0  4  3  5  1  2  ]  [  0  5  1  2  3  4  ]  [  0  5  1  3  2  4  ]  [  0  5  1  4  2  3  ]  [  0  5  2  3  1  4  ]  [  0  5  2  4  1  3  ]  [  0  5  3  4  1  2  ]  [  1  2  0  3  4  5  ]  [  1  2  0  4  3  5  ]  [  1  2  0  5  3  4  ]  [  1  2  3  4  0  5  ]  [  1  2  3  5  0  4  ]  [  1  2  4  5  0  3  ]  [  1  3  0  2  4  5  ]  [  1  3  0  4  2  5  ]  [  1  3  0  5  2  4  ]  [  1  3  2  4  0  5  ]  [  1  3  2  5  0  4  ]  [  1  3  4  5  0  2  ]  [  1  4  0  2  3  5  ]  [  1  4  0  3  2  5  ]  [  1  4  0  5  2  3  ]  [  1  4  2  3  0  5  ]  [  1  4  2  5  0  3  ]  [  1  4  3  5  0  2  ]  [  1  5  0  2  3  4  ]  [  1  5  0  3  2  4  ]  [  1  5  0  4  2  3  ]  [  1  5  2  3  0  4  ]  [  1  5  2  4  0  3  ]  [  1  5  3  4  0  2  ]  [  2  3  0  1  4  5  ]  [  2  3  0  4  1  5  ]  [  2  3  0  5  1  4  ]  [  2  3  1  4  0  5  ]  [  2  3  1  5  0  4  ]  [  2  3  4  5  0  1  ]  [  2  4  0  1  3  5  ]  [  2  4  0  3  1  5  ]  [  2  4  0  5  1  3  ]  [  2  4  1  3  0  5  ]  [  2  4  1  5  0  3  ]  [  2  4  3  5  0  1  ]  [  2  5  0  1  3  4  ]  [  2  5  0  3  1  4  ]  [  2  5  0  4  1  3  ]  [  2  5  1  3  0  4  ]  [  2  5  1  4  0  3  ]  [  2  5  3  4  0  1  ]  [  3  4  0  1  2  5  ]  [  3  4  0  2  1  5  ]  [  3  4  0  5  1  2  ]  [  3  4  1  2  0  5  ]  [  3  4  1  5  0  2  ]  [  3  4  2  5  0  1  ]  [  3  5  0  1  2  4  ]  [  3  5  0  2  1  4  ]  [  3  5  0  4  1  2  ]  [  3  5  1  2  0  4  ]  [  3  5  1  4  0  2  ]  [  3  5  2  4  0  1  ]  [  4  5  0  1  2  3  ]  [  4  5  0  2  1  3  ]  [  4  5  0  3  1  2  ]  [  4  5  1  2  0  3  ]  [  4  5  1  3  0  2  ]  [  4  5  2  3  0  1  ] ]" );
 	/*
 	 * generateSignaturePermutations()
 	 */
@@ -2167,6 +2209,8 @@ int main( int argc, char** argv ) {
 	UnitTest( "AB04: generateSignaturePermutations() IV, (6)", &AB04, "[ { [ ( 0, 1 )  ( 1, 2 )  ( 2, 3 )  ( 3, 4 )  ( 4, 5 ) ] | [] } ]" );
 
 	UnitTest( "AB05: generateSignaturePermutations() V, (4,2)", &AB05, "[ { [ ( 0, 1 )  ( 1, 2 )  ( 2, 3 )  ( 4, 5 ) ] | [ ( 3, 4 ) ] }  { [ ( 0, 1 )  ( 1, 2 )  ( 2, 4 )  ( 3, 5 ) ] | [ ( 4, 3 ) ] }  { [ ( 0, 1 )  ( 1, 2 )  ( 2, 5 )  ( 3, 4 ) ] | [ ( 5, 3 ) ] }  { [ ( 0, 1 )  ( 1, 3 )  ( 3, 4 )  ( 2, 5 ) ] | [ ( 4, 2 ) ] }  { [ ( 0, 1 )  ( 1, 3 )  ( 3, 5 )  ( 2, 4 ) ] | [ ( 5, 2 ) ] }  { [ ( 0, 1 )  ( 1, 4 )  ( 4, 5 )  ( 2, 3 ) ] | [ ( 5, 2 ) ] }  { [ ( 0, 2 )  ( 2, 3 )  ( 3, 4 )  ( 1, 5 ) ] | [ ( 4, 1 ) ] }  { [ ( 0, 2 )  ( 2, 3 )  ( 3, 5 )  ( 1, 4 ) ] | [ ( 5, 1 ) ] }  { [ ( 0, 2 )  ( 2, 4 )  ( 4, 5 )  ( 1, 3 ) ] | [ ( 5, 1 ) ] }  { [ ( 0, 3 )  ( 3, 4 )  ( 4, 5 )  ( 1, 2 ) ] | [ ( 5, 1 ) ] }  { [ ( 1, 2 )  ( 2, 3 )  ( 3, 4 )  ( 0, 5 ) ] | [ ( 4, 0 ) ] }  { [ ( 1, 2 )  ( 2, 3 )  ( 3, 5 )  ( 0, 4 ) ] | [ ( 5, 0 ) ] }  { [ ( 1, 2 )  ( 2, 4 )  ( 4, 5 )  ( 0, 3 ) ] | [ ( 5, 0 ) ] }  { [ ( 1, 3 )  ( 3, 4 )  ( 4, 5 )  ( 0, 2 ) ] | [ ( 5, 0 ) ] }  { [ ( 2, 3 )  ( 3, 4 )  ( 4, 5 )  ( 0, 1 ) ] | [ ( 5, 0 ) ] } ]" );
+
+	UnitTest( "AB06: generateSignaturePermutations() VI, (2,2,2)", &AB06, "[ { [ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ] | [ ( 1, 2 )  ( 3, 4 ) ] }  { [ ( 0, 1 )  ( 2, 4 )  ( 3, 5 ) ] | [ ( 1, 2 )  ( 4, 3 ) ] }  { [ ( 0, 1 )  ( 2, 5 )  ( 3, 4 ) ] | [ ( 1, 2 )  ( 5, 3 ) ] }  { [ ( 0, 2 )  ( 1, 3 )  ( 4, 5 ) ] | [ ( 2, 1 )  ( 3, 4 ) ] }  { [ ( 0, 2 )  ( 1, 4 )  ( 3, 5 ) ] | [ ( 2, 1 )  ( 4, 3 ) ] }  { [ ( 0, 2 )  ( 1, 5 )  ( 3, 4 ) ] | [ ( 2, 1 )  ( 5, 3 ) ] }  { [ ( 0, 3 )  ( 1, 2 )  ( 4, 5 ) ] | [ ( 3, 1 )  ( 2, 4 ) ] }  { [ ( 0, 3 )  ( 1, 4 )  ( 2, 5 ) ] | [ ( 3, 1 )  ( 4, 2 ) ] }  { [ ( 0, 3 )  ( 1, 5 )  ( 2, 4 ) ] | [ ( 3, 1 )  ( 5, 2 ) ] }  { [ ( 0, 4 )  ( 1, 2 )  ( 3, 5 ) ] | [ ( 4, 1 )  ( 2, 3 ) ] }  { [ ( 0, 4 )  ( 1, 3 )  ( 2, 5 ) ] | [ ( 4, 1 )  ( 3, 2 ) ] }  { [ ( 0, 4 )  ( 1, 5 )  ( 2, 3 ) ] | [ ( 4, 1 )  ( 5, 2 ) ] }  { [ ( 0, 5 )  ( 1, 2 )  ( 3, 4 ) ] | [ ( 5, 1 )  ( 2, 3 ) ] }  { [ ( 0, 5 )  ( 1, 3 )  ( 2, 4 ) ] | [ ( 5, 1 )  ( 3, 2 ) ] }  { [ ( 0, 5 )  ( 1, 4 )  ( 2, 3 ) ] | [ ( 5, 1 )  ( 4, 2 ) ] } ]" );
 
 	/*
 	 * TotalSignature
@@ -2195,6 +2239,16 @@ int main( int argc, char** argv ) {
 	UnitTest( "AD04: calculateAllContractions(), n = 8", &AD04, "[ [  8  ]  [  2  6  ]  [  2  2  4  ]  [  2  2  2  2  ] ]" );
 
 	UnitTest( "AD05: calculateAllContractions(), n = 10", &AD05, "[ [  10  ]  [  2  8  ]  [  2  2  6  ]  [  2  2  2  4  ]  [  2  2  2  2  2  ] ]" );
+
+	/*
+	 * generateCoordinateSpacePathIntegral()
+	 */
+
+	UnitTest( "AE01: generateCoordinateSpacePathIntegral(), n = 2", &AE01, " {1 / 2} {Delta( 0, 1 )} " );
+
+	UnitTest( "AE02: generateCoordinateSpacePathIntegral(), n = 4", &AE02, " {3 / 8} {Delta( 0, 1 )} {Delta( 1, 2 )} {Delta( 2, 3 )}  +  {1 / 2} {1 / 2} { {Delta( 0, 1 )} {Delta( 2, 3 )} {1 +  {-1} {Delta( 1, 2 )} }  +  {Delta( 0, 2 )} {Delta( 1, 3 )} {1 +  {-1} {Delta( 2, 1 )} }  +  {Delta( 0, 3 )} {Delta( 1, 2 )} {1 +  {-1} {Delta( 3, 1 )} } } " );
+
+	UnitTest( "AE03: generateCoordinateSpacePathIntegral(), n = 6", &AE03, " {5 / 16} {Delta( 0, 1 )} {Delta( 1, 2 )} {Delta( 2, 3 )} {Delta( 3, 4 )} {Delta( 4, 5 )}  +  {1 / 2} {3 / 8} { {Delta( 0, 1 )} {Delta( 2, 3 )} {Delta( 3, 4 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 1, 2 )} }  +  {Delta( 0, 2 )} {Delta( 1, 3 )} {Delta( 3, 4 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 2, 1 )} }  +  {Delta( 0, 3 )} {Delta( 1, 2 )} {Delta( 2, 4 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 3, 1 )} }  +  {Delta( 0, 4 )} {Delta( 1, 2 )} {Delta( 2, 3 )} {Delta( 3, 5 )} {1 +  {-1} {Delta( 4, 1 )} }  +  {Delta( 0, 5 )} {Delta( 1, 2 )} {Delta( 2, 3 )} {Delta( 3, 4 )} {1 +  {-1} {Delta( 5, 1 )} }  +  {Delta( 1, 2 )} {Delta( 0, 3 )} {Delta( 3, 4 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 2, 0 )} }  +  {Delta( 1, 3 )} {Delta( 0, 2 )} {Delta( 2, 4 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 3, 0 )} }  +  {Delta( 1, 4 )} {Delta( 0, 2 )} {Delta( 2, 3 )} {Delta( 3, 5 )} {1 +  {-1} {Delta( 4, 0 )} }  +  {Delta( 1, 5 )} {Delta( 0, 2 )} {Delta( 2, 3 )} {Delta( 3, 4 )} {1 +  {-1} {Delta( 5, 0 )} }  +  {Delta( 2, 3 )} {Delta( 0, 1 )} {Delta( 1, 4 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 3, 0 )} }  +  {Delta( 2, 4 )} {Delta( 0, 1 )} {Delta( 1, 3 )} {Delta( 3, 5 )} {1 +  {-1} {Delta( 4, 0 )} }  +  {Delta( 2, 5 )} {Delta( 0, 1 )} {Delta( 1, 3 )} {Delta( 3, 4 )} {1 +  {-1} {Delta( 5, 0 )} }  +  {Delta( 3, 4 )} {Delta( 0, 1 )} {Delta( 1, 2 )} {Delta( 2, 5 )} {1 +  {-1} {Delta( 4, 0 )} }  +  {Delta( 3, 5 )} {Delta( 0, 1 )} {Delta( 1, 2 )} {Delta( 2, 4 )} {1 +  {-1} {Delta( 5, 0 )} }  +  {Delta( 4, 5 )} {Delta( 0, 1 )} {Delta( 1, 2 )} {Delta( 2, 3 )} {1 +  {-1} {Delta( 5, 0 )} } }  +  {1 / 2} {1 / 2} {1 / 2} { {Delta( 0, 1 )} {Delta( 2, 3 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 1, 2 )} } {1 +  {-1} {Delta( 3, 4 )} }  +  {Delta( 0, 1 )} {Delta( 2, 4 )} {Delta( 3, 5 )} {1 +  {-1} {Delta( 1, 2 )} } {1 +  {-1} {Delta( 4, 3 )} }  +  {Delta( 0, 1 )} {Delta( 2, 5 )} {Delta( 3, 4 )} {1 +  {-1} {Delta( 1, 2 )} } {1 +  {-1} {Delta( 5, 3 )} }  +  {Delta( 0, 2 )} {Delta( 1, 3 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 2, 1 )} } {1 +  {-1} {Delta( 3, 4 )} }  +  {Delta( 0, 2 )} {Delta( 1, 4 )} {Delta( 3, 5 )} {1 +  {-1} {Delta( 2, 1 )} } {1 +  {-1} {Delta( 4, 3 )} }  +  {Delta( 0, 2 )} {Delta( 1, 5 )} {Delta( 3, 4 )} {1 +  {-1} {Delta( 2, 1 )} } {1 +  {-1} {Delta( 5, 3 )} }  +  {Delta( 0, 3 )} {Delta( 1, 2 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 3, 1 )} } {1 +  {-1} {Delta( 2, 4 )} }  +  {Delta( 0, 3 )} {Delta( 1, 4 )} {Delta( 2, 5 )} {1 +  {-1} {Delta( 3, 1 )} } {1 +  {-1} {Delta( 4, 2 )} }  +  {Delta( 0, 3 )} {Delta( 1, 5 )} {Delta( 2, 4 )} {1 +  {-1} {Delta( 3, 1 )} } {1 +  {-1} {Delta( 5, 2 )} }  +  {Delta( 0, 4 )} {Delta( 1, 2 )} {Delta( 3, 5 )} {1 +  {-1} {Delta( 4, 1 )} } {1 +  {-1} {Delta( 2, 3 )} }  +  {Delta( 0, 4 )} {Delta( 1, 3 )} {Delta( 2, 5 )} {1 +  {-1} {Delta( 4, 1 )} } {1 +  {-1} {Delta( 3, 2 )} }  +  {Delta( 0, 4 )} {Delta( 1, 5 )} {Delta( 2, 3 )} {1 +  {-1} {Delta( 4, 1 )} } {1 +  {-1} {Delta( 5, 2 )} }  +  {Delta( 0, 5 )} {Delta( 1, 2 )} {Delta( 3, 4 )} {1 +  {-1} {Delta( 5, 1 )} } {1 +  {-1} {Delta( 2, 3 )} }  +  {Delta( 0, 5 )} {Delta( 1, 3 )} {Delta( 2, 4 )} {1 +  {-1} {Delta( 5, 1 )} } {1 +  {-1} {Delta( 3, 2 )} }  +  {Delta( 0, 5 )} {Delta( 1, 4 )} {Delta( 2, 3 )} {1 +  {-1} {Delta( 5, 1 )} } {1 +  {-1} {Delta( 4, 2 )} } } " );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

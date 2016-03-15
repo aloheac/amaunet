@@ -453,6 +453,8 @@ public:
 
 	const std::string to_string() const;
 
+	SymbolicTermPtr copy();
+
 	bool operator==( const Delta &other ) const;
 
 	bool isDeltaBar();
