@@ -1848,6 +1848,18 @@ string AF02() {
 	return ss.str();
 }
 
+string AG01() {
+	stringstream ss;
+	Sum A;
+	Product B;
+	B.addTerm( SymbolicTermPtr( new TermA() ) );
+	A.addTerm( B.copy() );
+	B.addTerm( SymbolicTermPtr( new TermA() ) );
+	A.addTerm( B.copy() );
+	ss << A << "    " << truncateAOrder( A.copy(), 1 );
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -2303,6 +2315,12 @@ int main( int argc, char** argv ) {
 	UnitTest( "AF01: pathIntegrateExpression() I", &AF01, " {K__( 0, 1 )} {S_(1, 0)} {K__( 2, 3 )} {S_(3, 2)}      {K__( 0, 1 )} {Delta( 1, 0 )} {K__( 2, 3 )} {Delta( 3, 2 )} { {1 / 2} {Delta( 0, 2 )} } " );
 
 	UnitTest( "AF02: pathIntegrateExpression() II", &AF02, " {K__( 0, 1 )} {S_(1, 0)} {K__( 2, 3 )} {S_(3, 2)} {K__( 4, 5 )} {S_(5, 4)} {K__( 6, 7 )} {S_(7, 6)}      {K__( 0, 1 )} {Delta( 1, 0 )} {K__( 2, 3 )} {Delta( 3, 2 )} {K__( 4, 5 )} {Delta( 5, 4 )} {K__( 6, 7 )} {Delta( 7, 6 )} { {3 / 8} {Delta( 0, 2 )} {Delta( 2, 4 )} {Delta( 4, 6 )}  +  {1 / 2} {1 / 2} {Delta( 0, 2 )} {Delta( 4, 6 )} {1}  +  {1 / 2} {1 / 2} {Delta( 0, 2 )} {Delta( 4, 6 )} {-1} {Delta( 2, 4 )}  +  {1 / 2} {1 / 2} {Delta( 0, 4 )} {Delta( 2, 6 )} {1}  +  {1 / 2} {1 / 2} {Delta( 0, 4 )} {Delta( 2, 6 )} {-1} {Delta( 4, 2 )}  +  {1 / 2} {1 / 2} {Delta( 0, 6 )} {Delta( 2, 4 )} {1}  +  {1 / 2} {1 / 2} {Delta( 0, 6 )} {Delta( 2, 4 )} {-1} {Delta( 6, 2 )} } " );
+
+	/*
+	 * truncateAOrder()
+	 */
+
+	UnitTest( "AG01: truncateAOrder() I", &AG01, " {A}  +  {A} {A}      {A} " );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

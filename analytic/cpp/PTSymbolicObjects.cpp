@@ -1291,6 +1291,31 @@ Sum distributeAllTraces( SymbolicTermPtr expr ) {
 	return *distributedExpr;
 }
 
+Sum truncateAOrder( SymbolicTermPtr expr, int highestOrder ) {
+	if ( expr->getTermID() != TermTypes::SUM ) {
+		return Sum();  // TODO: Throw exception.
+	}
+
+	Sum truncatedSum;
+	SumPtr castExpr = static_pointer_cast<Sum>( expr );
+
+	for ( vector<SymbolicTermPtr>::iterator term = castExpr->getIteratorBegin(); term != castExpr->getIteratorEnd(); ++term ) {
+		int orderInA = 0;
+
+		if ( (*term)->getTermID() == TermTypes::PRODUCT ) {
+			ProductPtr castTerm = static_pointer_cast<Product>( *term );
+
+			for ( vector<SymbolicTermPtr>::iterator factor = castTerm->getIteratorBegin(); factor != castTerm->getIteratorEnd(); ++factor ) {
+				if ( (*factor)->getTermID() == TermTypes::TERM_A ) orderInA++;
+			}
+		}
+
+		if ( orderInA <= highestOrder ) truncatedSum.addTerm( (*term)->copy() );
+	}
+
+	return truncatedSum;
+}
+
 void rewriteSumInKSFormalism( SymbolicTermPtr expr ) {
 	if ( expr->getTermID() != TermTypes::SUM ) {
 		// TODO: Throw exception.

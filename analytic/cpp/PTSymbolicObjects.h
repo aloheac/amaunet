@@ -525,7 +525,7 @@ Sum distributeTrace( SymbolicTermPtr tr );
 
 Sum distributeAllTraces( SymbolicTermPtr expr );
 
-Sum truncateAOrder( Sum expr, int highestOrder );
+Sum truncateAOrder( SymbolicTermPtr expr, int highestOrder );
 
 Sum truncateOddOrders( Sum expr );
 

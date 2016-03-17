@@ -132,47 +132,131 @@ int main( int argc, char** argv ) {
 	SumPtr Zup( new Sum() );
 	if ( EXPANSION_ORDER_IN_A >= 2 ) {
 		Zup->addTerm( detUp.copy() );
-		Zup->addTerm( D1.copy() );
+
+		Product P1;
+		P1.addTerm( SymbolicTermPtr( new TermA() ) );
+		P1.addTerm( D1.copy() );
+		Zup->addTerm( P1.copy() );
 
 		Product P2;
 		P2.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 2 ) ) );
+		P2.addTerm( SymbolicTermPtr( new TermA() ) );
+		P2.addTerm( SymbolicTermPtr( new TermA() ) );
 		P2.addTerm( D2.copy() );
 		Zup->addTerm( P2.copy() );
 	}
 
 	if ( EXPANSION_ORDER_IN_A >= 4 ) {
+		Product P3;
+		P3.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 6 ) ) );
+		P3.addTerm( SymbolicTermPtr( new TermA() ) );
+		P3.addTerm( SymbolicTermPtr( new TermA() ) );
+		P3.addTerm( D3.copy() );
+		Zup->addTerm( P3.copy() );
+
 		Product P4;
 		P4.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 24 ) ) );
+		P4.addTerm( SymbolicTermPtr( new TermA() ) );
+		P4.addTerm( SymbolicTermPtr( new TermA() ) );
+		P4.addTerm( SymbolicTermPtr( new TermA() ) );
+		P4.addTerm( SymbolicTermPtr( new TermA() ) );
 		P4.addTerm( D4.copy() );
 		Zup->addTerm( P4.copy() );
 	}
 
 	if ( EXPANSION_ORDER_IN_A >= 6 ) {
+		Product P5;
+		P5.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 120 ) ) );
+		P5.addTerm( SymbolicTermPtr( new TermA() ) );
+		P5.addTerm( SymbolicTermPtr( new TermA() ) );
+		P5.addTerm( SymbolicTermPtr( new TermA() ) );
+		P5.addTerm( SymbolicTermPtr( new TermA() ) );
+		P5.addTerm( SymbolicTermPtr( new TermA() ) );
+		P5.addTerm( D5.copy() );
+		Zup->addTerm( P5.copy() );
+
 		Product P6;
 		P6.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 270 ) ) );
+		P6.addTerm( SymbolicTermPtr( new TermA() ) );
+		P6.addTerm( SymbolicTermPtr( new TermA() ) );
+		P6.addTerm( SymbolicTermPtr( new TermA() ) );
+		P6.addTerm( SymbolicTermPtr( new TermA() ) );
+		P6.addTerm( SymbolicTermPtr( new TermA() ) );
+		P6.addTerm( SymbolicTermPtr( new TermA() ) );
 		P6.addTerm( D6.copy() );
 		Zup->addTerm( P6.copy() );
 	}
 
 	if ( EXPANSION_ORDER_IN_A >= 8 ) {
+		Product P7;
+		P7.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 5040 ) ) );
+		P7.addTerm( SymbolicTermPtr( new TermA() ) );
+		P7.addTerm( SymbolicTermPtr( new TermA() ) );
+		P7.addTerm( SymbolicTermPtr( new TermA() ) );
+		P7.addTerm( SymbolicTermPtr( new TermA() ) );
+		P7.addTerm( SymbolicTermPtr( new TermA() ) );
+		P7.addTerm( SymbolicTermPtr( new TermA() ) );
+		P7.addTerm( SymbolicTermPtr( new TermA() ) );
+		P7.addTerm( D7.copy() );
+		Zup->addTerm( P7.copy() );
+
 		Product P8;
 		P8.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 40320 ) ) );
+		P8.addTerm( SymbolicTermPtr( new TermA() ) );
+		P8.addTerm( SymbolicTermPtr( new TermA() ) );
+		P8.addTerm( SymbolicTermPtr( new TermA() ) );
+		P8.addTerm( SymbolicTermPtr( new TermA() ) );
+		P8.addTerm( SymbolicTermPtr( new TermA() ) );
+		P8.addTerm( SymbolicTermPtr( new TermA() ) );
+		P8.addTerm( SymbolicTermPtr( new TermA() ) );
+		P8.addTerm( SymbolicTermPtr( new TermA() ) );
 		P8.addTerm( D8.copy() );
 		Zup->addTerm( P8.copy() );
 	}
 
 	if ( EXPANSION_ORDER_IN_A >= 10 ) {
+		Product P9;
+		P9.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 362880 ) ) );
+		P9.addTerm( SymbolicTermPtr( new TermA() ) );
+		P9.addTerm( SymbolicTermPtr( new TermA() ) );
+		P9.addTerm( SymbolicTermPtr( new TermA() ) );
+		P9.addTerm( SymbolicTermPtr( new TermA() ) );
+		P9.addTerm( SymbolicTermPtr( new TermA() ) );
+		P9.addTerm( SymbolicTermPtr( new TermA() ) );
+		P9.addTerm( SymbolicTermPtr( new TermA() ) );
+		P9.addTerm( SymbolicTermPtr( new TermA() ) );
+		P9.addTerm( SymbolicTermPtr( new TermA() ) );
+		P9.addTerm( D9.copy() );
+		Zup->addTerm( P9.copy() );
+
 		Product P10;
 		P10.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 3628800 ) ) );
+		P10.addTerm( SymbolicTermPtr( new TermA() ) );
+		P10.addTerm( SymbolicTermPtr( new TermA() ) );
+		P10.addTerm( SymbolicTermPtr( new TermA() ) );
+		P10.addTerm( SymbolicTermPtr( new TermA() ) );
+		P10.addTerm( SymbolicTermPtr( new TermA() ) );
+		P10.addTerm( SymbolicTermPtr( new TermA() ) );
+		P10.addTerm( SymbolicTermPtr( new TermA() ) );
+		P10.addTerm( SymbolicTermPtr( new TermA() ) );
+		P10.addTerm( SymbolicTermPtr( new TermA() ) );
+		P10.addTerm( SymbolicTermPtr( new TermA() ) );
 		P10.addTerm( D10.copy() );
 		Zup->addTerm( P10.copy() );
 	}
 
 	cout << "Expanding full determinant..." << endl;
-	SumPtr Z( new Sum() );
-	Z->addTerm( Zup->copy() );
-	Z->addTerm( Zup->copy() );
-	Z = static_pointer_cast<Sum>( Z->getExpandedExpr().copy() );
+	ProductPtr ZProduct( new Product() );
+	SumPtr Z;
+	ZProduct->addTerm( Zup->copy() );
+	ZProduct->addTerm( Zup->copy() );
+	Z = static_pointer_cast<Sum>( ZProduct->getExpandedExpr().copy() );
+
+	cout << "Reducing expression tree..." << endl;
+	Z->reduceTree();
+
+	cout << "Truncating order in A of expansion..." << endl;
+	Z = static_pointer_cast<Sum>( truncateAOrder( Z, EXPANSION_ORDER_IN_A ).copy() );
 
 	cout << *Z << endl;
 
