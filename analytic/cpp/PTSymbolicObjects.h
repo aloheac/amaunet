@@ -70,7 +70,22 @@ typedef std::shared_ptr<CoefficientFraction> CoefficientFractionPtr;
  * ***********************************************************************
  */
 
-enum class TermTypes : char;
+enum class TermTypes : char {
+	INVALID_TERM = '0',
+	GENERIC_TEST_TERM = 'g',
+	MATRIX_M = 'M',
+	MATRIX_B = 'B',
+	MATRIX_K = 'K',
+	MATRIX_S = 's',
+	DET_M = 'D',
+	TERM_A = 'A',
+	COEFFICIENT_FLOAT = 'L',
+	COEFFICIENT_FRACTION = 'R',
+	SUM = 'S',
+	PRODUCT = 'P',
+	TRACE = 'T',
+	DELTA = 'd'
+};
 
 /*
  * ***********************************************************************
@@ -517,6 +532,8 @@ Sum truncateOddOrders( Sum expr );
 void rewriteSumInKSFormalism( SymbolicTermPtr expr );
 
 void indexExpression( SymbolicTermPtr expr );
+
+Sum fourierTransformExpression( SymbolicTermPtr expr );
 
 /*
  * ***********************************************************************

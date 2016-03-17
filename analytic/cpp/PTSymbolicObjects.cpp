@@ -24,29 +24,6 @@ using namespace std;
 
 /*
  * ***********************************************************************
- * ENUMERATED TYPES
- * ***********************************************************************
- */
-
-enum class TermTypes : char {
-	INVALID_TERM = '0',
-	GENERIC_TEST_TERM = 'g',
-	MATRIX_M = 'M',
-	MATRIX_B = 'B',
-	MATRIX_K = 'K',
-	MATRIX_S = 's',
-	DET_M = 'D',
-	TERM_A = 'A',
-	COEFFICIENT_FLOAT = 'L',
-	COEFFICIENT_FRACTION = 'R',
-	SUM = 'S',
-	PRODUCT = 'P',
-	TRACE = 'T',
-	DELTA = 'd'
-};
-
-/*
- * ***********************************************************************
  * EXPRESSION BASE CLASSES : IMPLEMENTATIONS
  * ***********************************************************************
  */
@@ -1369,6 +1346,48 @@ void indexExpression( SymbolicTermPtr expr ) {
 				}
 			}
 
+		}
+	}
+}
+
+Sum fourierTransformExpression( SymbolicTermPtr expr ) {
+	Sum transformedExpression;
+
+	if ( expr->getTermID() != TermTypes::SUM) {
+		return Sum(); // TODO: Raise exception.
+	}
+
+	SumPtr castExpr = static_pointer_cast<Sum>( expr );
+	for ( vector<SymbolicTermPtr>::iterator term = castExpr->getIteratorBegin(); term != castExpr->getIteratorEnd(); ++term ) {
+		if ( (*term)->getTermID() != TermTypes::PRODUCT ) {
+			return Sum();  // TODO: Raise exception.
+		}
+
+		ProductPtr castTerm = static_pointer_cast<Product>( *term );
+
+		Product transformedProduct;
+		int orderInK = 0;
+		map<int, int> deltaMapping;
+		vector<IndexContraction> fourierIndices;
+		vector<IndexContraction> indexPairsToBeContracted;
+
+		for ( vector<SymbolicTermPtr>::iterator factor = castTerm->getIteratorBegin(); factor != castTerm->getIteratorEnd(); ++factor ) {
+			if ( (*factor)->getTermID() == TermTypes::MATRIX_K ) {
+				MatrixKPtr castFactor = static_pointer_cast<MatrixK>( *factor );
+				castFactor->fourierTransform();
+
+				transformedProduct.addTerm( castFactor->copy() );
+				fourierIndices.push_back( IndexContraction( castFactor->getIndices()[0], castFactor->getIndices()[1] ) );
+
+				orderInK++;
+			} else if ( (*factor)->getTermID() == TermTypes::DELTA ) {
+				DeltaPtr castFactor = static_pointer_cast<Delta>( *factor );
+				if ( not castFactor->isDeltaBar() ) {
+					indexPairsToBeContracted.push_back( IndexContraction( castFactor->getIndices()[0], castFactor->getIndices()[1] ) );
+				}
+			} else {
+				transformedProduct.addTerm( (*factor)->copy() );
+			}
 		}
 	}
 }

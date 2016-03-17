@@ -431,7 +431,7 @@ Sum generateCoordinateSpacePathIntegral( int n ) {
         for ( vector<TotalSignature>::iterator permutation = signaturePermutations.begin(); permutation != signaturePermutations.end(); ++permutation ) {
             Product nextDeltaProduct;
             for ( vector<IndexContraction>::iterator indexPair = permutation->deltas.getIteratorBegin(); indexPair != permutation->deltas.getIteratorEnd(); ++indexPair ) {
-                nextDeltaProduct.addTerm( SymbolicTermPtr( new Delta( indexPair->i, indexPair->j ) ) );
+                nextDeltaProduct.addTerm( SymbolicTermPtr( new Delta(  indexPair->i, indexPair->j ) ) );
             }
 
             for ( vector<IndexContraction>::iterator indexPair = permutation->deltaBars.getIteratorBegin(); indexPair != permutation->deltaBars.getIteratorEnd(); ++indexPair ) {
@@ -454,6 +454,74 @@ Sum generateCoordinateSpacePathIntegral( int n ) {
 
     pathIntegral.reduceTree();
     return pathIntegral;
+}
+
+Sum pathIntegrateExpression( SymbolicTermPtr expr ) {
+    Sum integratedExpression;
+
+    if ( expr->getTermID() != TermTypes::SUM ) {
+        return Sum();  // TODO: Raise exception.
+    }
+
+    SumPtr castExpr = static_pointer_cast<Sum>( expr );
+    for ( vector<SymbolicTermPtr>::iterator term = castExpr->getIteratorBegin(); term != castExpr->getIteratorEnd(); ++term ) {
+        if ( (*term)->getTermID() != TermTypes::PRODUCT ) {
+            return Sum();  // TODO: Raise exception.
+        }
+
+        ProductPtr castTerm = static_pointer_cast<Product>( *term );
+        Product integratedProduct;
+        int orderInSigma = 0;
+        vector<int> secondMatrixSIndices;
+
+        for ( vector<SymbolicTermPtr>::iterator factor = castTerm->getIteratorBegin(); factor != castTerm->getIteratorEnd(); ++factor ) {
+            if ( (*factor)->getTermID() == TermTypes::MATRIX_S ) {
+                orderInSigma++;
+                integratedProduct.addTerm( SymbolicTermPtr( new Delta( (*factor)->getIndices()[0], (*factor)->getIndices()[1] ) ) );
+                secondMatrixSIndices.push_back( (*factor)->getIndices()[1] );
+            } else {
+                integratedProduct.addTerm( (*factor)->copy() );
+            }
+        }
+
+        map<int, int> expressionToSignatureIndexMapping;
+        for ( int i = 0; i < secondMatrixSIndices.size(); i++ ) {
+            expressionToSignatureIndexMapping[ i ] = secondMatrixSIndices.at( i );
+        }
+
+        if ( orderInSigma > 1 ) {
+            if ( orderInSigma % 2 == 0 ) {
+                Sum spatialPathIntegral = generateCoordinateSpacePathIntegral( orderInSigma );
+                spatialPathIntegral = spatialPathIntegral.getExpandedExpr();
+                spatialPathIntegral.reduceTree();
+
+                for ( vector<SymbolicTermPtr>::iterator pathIntegralTerm = spatialPathIntegral.getIteratorBegin(); pathIntegralTerm != spatialPathIntegral.getIteratorEnd(); ++pathIntegralTerm ) {
+                    if ( (*pathIntegralTerm)->getTermID() != TermTypes::PRODUCT ) {
+                        return Sum();  // TODO: Raise exception.
+                    }
+
+                    ProductPtr castPathIntegralTerm = static_pointer_cast<Product>( *pathIntegralTerm );
+
+                    for ( vector<SymbolicTermPtr>::iterator pathIntegralFactor = castPathIntegralTerm->getIteratorBegin(); pathIntegralFactor != castPathIntegralTerm->getIteratorEnd(); ++pathIntegralFactor ) {
+                        if ( (*pathIntegralFactor)->getTermID() == TermTypes::DELTA ) {
+                            int* indices;  // Size of assigned array is 2.
+                            indices = (*pathIntegralFactor)->getIndices();
+                            indices[0] = expressionToSignatureIndexMapping[ indices[0] ];
+                            indices[1] = expressionToSignatureIndexMapping[ indices[1] ];
+                        }
+                    }
+                }
+
+                integratedProduct.addTerm( spatialPathIntegral.copy() );
+            } else {
+                integratedProduct.addTerm( SymbolicTermPtr( new CoefficientFloat( 0.0 ) ) );
+            }
+        }
+
+        integratedExpression.addTerm( integratedProduct.copy() );
+    }
+
+    return integratedExpression;
 }
 
 /*

@@ -1802,6 +1802,52 @@ string AE03() {
 	return ss.str();
 }
 
+string AF01() {
+	stringstream ss;
+	Sum A;
+	Product B;
+	MatrixK C;
+	C.setIndices( 0, 1 );
+	MatrixS D;
+	D.setIndices( 1, 0 );
+	B.addTerm( C.copy() );
+	B.addTerm( D.copy() );
+	C.setIndices( 2, 3 );
+	D.setIndices( 3, 2 );
+	B.addTerm( C.copy() );
+	B.addTerm( D.copy() );
+	A.addTerm( B.copy() );
+	ss << A << "    " << pathIntegrateExpression( A.copy() );
+	return ss.str();
+}
+
+string AF02() {
+	stringstream ss;
+	Sum A;
+	Product B;
+	MatrixK C;
+	C.setIndices( 0, 1 );
+	MatrixS D;
+	D.setIndices( 1, 0 );
+	B.addTerm( C.copy() );
+	B.addTerm( D.copy() );
+	C.setIndices( 2, 3 );
+	D.setIndices( 3, 2 );
+	B.addTerm( C.copy() );
+	B.addTerm( D.copy() );
+	C.setIndices( 4, 5 );
+	D.setIndices( 5, 4 );
+	B.addTerm( C.copy() );
+	B.addTerm( D.copy() );
+	C.setIndices( 6, 7 );
+	D.setIndices( 7, 6 );
+	B.addTerm( C.copy() );
+	B.addTerm( D.copy() );
+	A.addTerm( B.copy() );
+	ss << A << "    " << pathIntegrateExpression( A.copy() );
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -2249,6 +2295,14 @@ int main( int argc, char** argv ) {
 	UnitTest( "AE02: generateCoordinateSpacePathIntegral(), n = 4", &AE02, " {3 / 8} {Delta( 0, 1 )} {Delta( 1, 2 )} {Delta( 2, 3 )}  +  {1 / 2} {1 / 2} { {Delta( 0, 1 )} {Delta( 2, 3 )} {1 +  {-1} {Delta( 1, 2 )} }  +  {Delta( 0, 2 )} {Delta( 1, 3 )} {1 +  {-1} {Delta( 2, 1 )} }  +  {Delta( 0, 3 )} {Delta( 1, 2 )} {1 +  {-1} {Delta( 3, 1 )} } } " );
 
 	UnitTest( "AE03: generateCoordinateSpacePathIntegral(), n = 6", &AE03, " {5 / 16} {Delta( 0, 1 )} {Delta( 1, 2 )} {Delta( 2, 3 )} {Delta( 3, 4 )} {Delta( 4, 5 )}  +  {1 / 2} {3 / 8} { {Delta( 0, 1 )} {Delta( 2, 3 )} {Delta( 3, 4 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 1, 2 )} }  +  {Delta( 0, 2 )} {Delta( 1, 3 )} {Delta( 3, 4 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 2, 1 )} }  +  {Delta( 0, 3 )} {Delta( 1, 2 )} {Delta( 2, 4 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 3, 1 )} }  +  {Delta( 0, 4 )} {Delta( 1, 2 )} {Delta( 2, 3 )} {Delta( 3, 5 )} {1 +  {-1} {Delta( 4, 1 )} }  +  {Delta( 0, 5 )} {Delta( 1, 2 )} {Delta( 2, 3 )} {Delta( 3, 4 )} {1 +  {-1} {Delta( 5, 1 )} }  +  {Delta( 1, 2 )} {Delta( 0, 3 )} {Delta( 3, 4 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 2, 0 )} }  +  {Delta( 1, 3 )} {Delta( 0, 2 )} {Delta( 2, 4 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 3, 0 )} }  +  {Delta( 1, 4 )} {Delta( 0, 2 )} {Delta( 2, 3 )} {Delta( 3, 5 )} {1 +  {-1} {Delta( 4, 0 )} }  +  {Delta( 1, 5 )} {Delta( 0, 2 )} {Delta( 2, 3 )} {Delta( 3, 4 )} {1 +  {-1} {Delta( 5, 0 )} }  +  {Delta( 2, 3 )} {Delta( 0, 1 )} {Delta( 1, 4 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 3, 0 )} }  +  {Delta( 2, 4 )} {Delta( 0, 1 )} {Delta( 1, 3 )} {Delta( 3, 5 )} {1 +  {-1} {Delta( 4, 0 )} }  +  {Delta( 2, 5 )} {Delta( 0, 1 )} {Delta( 1, 3 )} {Delta( 3, 4 )} {1 +  {-1} {Delta( 5, 0 )} }  +  {Delta( 3, 4 )} {Delta( 0, 1 )} {Delta( 1, 2 )} {Delta( 2, 5 )} {1 +  {-1} {Delta( 4, 0 )} }  +  {Delta( 3, 5 )} {Delta( 0, 1 )} {Delta( 1, 2 )} {Delta( 2, 4 )} {1 +  {-1} {Delta( 5, 0 )} }  +  {Delta( 4, 5 )} {Delta( 0, 1 )} {Delta( 1, 2 )} {Delta( 2, 3 )} {1 +  {-1} {Delta( 5, 0 )} } }  +  {1 / 2} {1 / 2} {1 / 2} { {Delta( 0, 1 )} {Delta( 2, 3 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 1, 2 )} } {1 +  {-1} {Delta( 3, 4 )} }  +  {Delta( 0, 1 )} {Delta( 2, 4 )} {Delta( 3, 5 )} {1 +  {-1} {Delta( 1, 2 )} } {1 +  {-1} {Delta( 4, 3 )} }  +  {Delta( 0, 1 )} {Delta( 2, 5 )} {Delta( 3, 4 )} {1 +  {-1} {Delta( 1, 2 )} } {1 +  {-1} {Delta( 5, 3 )} }  +  {Delta( 0, 2 )} {Delta( 1, 3 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 2, 1 )} } {1 +  {-1} {Delta( 3, 4 )} }  +  {Delta( 0, 2 )} {Delta( 1, 4 )} {Delta( 3, 5 )} {1 +  {-1} {Delta( 2, 1 )} } {1 +  {-1} {Delta( 4, 3 )} }  +  {Delta( 0, 2 )} {Delta( 1, 5 )} {Delta( 3, 4 )} {1 +  {-1} {Delta( 2, 1 )} } {1 +  {-1} {Delta( 5, 3 )} }  +  {Delta( 0, 3 )} {Delta( 1, 2 )} {Delta( 4, 5 )} {1 +  {-1} {Delta( 3, 1 )} } {1 +  {-1} {Delta( 2, 4 )} }  +  {Delta( 0, 3 )} {Delta( 1, 4 )} {Delta( 2, 5 )} {1 +  {-1} {Delta( 3, 1 )} } {1 +  {-1} {Delta( 4, 2 )} }  +  {Delta( 0, 3 )} {Delta( 1, 5 )} {Delta( 2, 4 )} {1 +  {-1} {Delta( 3, 1 )} } {1 +  {-1} {Delta( 5, 2 )} }  +  {Delta( 0, 4 )} {Delta( 1, 2 )} {Delta( 3, 5 )} {1 +  {-1} {Delta( 4, 1 )} } {1 +  {-1} {Delta( 2, 3 )} }  +  {Delta( 0, 4 )} {Delta( 1, 3 )} {Delta( 2, 5 )} {1 +  {-1} {Delta( 4, 1 )} } {1 +  {-1} {Delta( 3, 2 )} }  +  {Delta( 0, 4 )} {Delta( 1, 5 )} {Delta( 2, 3 )} {1 +  {-1} {Delta( 4, 1 )} } {1 +  {-1} {Delta( 5, 2 )} }  +  {Delta( 0, 5 )} {Delta( 1, 2 )} {Delta( 3, 4 )} {1 +  {-1} {Delta( 5, 1 )} } {1 +  {-1} {Delta( 2, 3 )} }  +  {Delta( 0, 5 )} {Delta( 1, 3 )} {Delta( 2, 4 )} {1 +  {-1} {Delta( 5, 1 )} } {1 +  {-1} {Delta( 3, 2 )} }  +  {Delta( 0, 5 )} {Delta( 1, 4 )} {Delta( 2, 3 )} {1 +  {-1} {Delta( 5, 1 )} } {1 +  {-1} {Delta( 4, 2 )} } } " );
+
+	/*
+	 * pathIntegrateExpression()
+	 */
+
+	UnitTest( "AF01: pathIntegrateExpression() I", &AF01, " {K__( 0, 1 )} {S_(1, 0)} {K__( 2, 3 )} {S_(3, 2)}      {K__( 0, 1 )} {Delta( 1, 0 )} {K__( 2, 3 )} {Delta( 3, 2 )} { {1 / 2} {Delta( 0, 2 )} } " );
+
+	UnitTest( "AF02: pathIntegrateExpression() II", &AF02, " {K__( 0, 1 )} {S_(1, 0)} {K__( 2, 3 )} {S_(3, 2)} {K__( 4, 5 )} {S_(5, 4)} {K__( 6, 7 )} {S_(7, 6)}      {K__( 0, 1 )} {Delta( 1, 0 )} {K__( 2, 3 )} {Delta( 3, 2 )} {K__( 4, 5 )} {Delta( 5, 4 )} {K__( 6, 7 )} {Delta( 7, 6 )} { {3 / 8} {Delta( 0, 2 )} {Delta( 2, 4 )} {Delta( 4, 6 )}  +  {1 / 2} {1 / 2} {Delta( 0, 2 )} {Delta( 4, 6 )} {1}  +  {1 / 2} {1 / 2} {Delta( 0, 2 )} {Delta( 4, 6 )} {-1} {Delta( 2, 4 )}  +  {1 / 2} {1 / 2} {Delta( 0, 4 )} {Delta( 2, 6 )} {1}  +  {1 / 2} {1 / 2} {Delta( 0, 4 )} {Delta( 2, 6 )} {-1} {Delta( 4, 2 )}  +  {1 / 2} {1 / 2} {Delta( 0, 6 )} {Delta( 2, 4 )} {1}  +  {1 / 2} {1 / 2} {Delta( 0, 6 )} {Delta( 2, 4 )} {-1} {Delta( 6, 2 )} } " );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;
