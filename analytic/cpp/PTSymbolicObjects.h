@@ -319,6 +319,8 @@ class Sum : public SymbolicTerm {
 
 	friend bool unpackTrivialExpression( SymbolicTermPtr & );
 
+	friend Sum truncateOddOrders( SymbolicTermPtr expr );
+
 	friend class Product;
 
 public:
@@ -527,7 +529,7 @@ Sum distributeAllTraces( SymbolicTermPtr expr );
 
 Sum truncateAOrder( SymbolicTermPtr expr, int highestOrder );
 
-Sum truncateOddOrders( Sum expr );
+Sum truncateOddOrders( SymbolicTermPtr expr );
 
 void rewriteSumInKSFormalism( SymbolicTermPtr expr );
 

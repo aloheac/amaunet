@@ -1316,6 +1316,34 @@ Sum truncateAOrder( SymbolicTermPtr expr, int highestOrder ) {
 	return truncatedSum;
 }
 
+Sum truncateOddOrders( SymbolicTermPtr expr ) {
+	if ( expr->getTermID() != TermTypes::SUM ) {
+		return Sum();  // TODO: Throw exception.
+	}
+
+	Sum truncatedSum;
+	SumPtr castExpr = static_pointer_cast<Sum>( expr );
+
+	for ( vector<SymbolicTermPtr>::iterator term = castExpr->getIteratorBegin(); term != castExpr->getIteratorEnd(); ++term ) {
+		if ( (*term)->getTermID() != TermTypes::PRODUCT ) {
+			return Sum();  // TODO: Throw exception.
+		}
+
+		ProductPtr castProduct = static_pointer_cast<Product>( *term );
+		int orderInA = 0;
+
+		for ( vector<SymbolicTermPtr>::iterator factor = castProduct->getIteratorBegin(); factor != castProduct->getIteratorEnd(); ++factor ) {
+			if ( (*factor)->getTermID() == TermTypes::TERM_A ) orderInA++;
+		}
+
+		if ( orderInA % 2 == 0 ) {  // If the order of the term in the parameter A is odd, erase the vector element.
+			truncatedSum.addTerm( (*term)->copy() );
+		}
+	}
+
+	return truncatedSum;
+}
+
 void rewriteSumInKSFormalism( SymbolicTermPtr expr ) {
 	if ( expr->getTermID() != TermTypes::SUM ) {
 		// TODO: Throw exception.

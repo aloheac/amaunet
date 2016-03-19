@@ -255,9 +255,11 @@ int main( int argc, char** argv ) {
 	cout << "Reducing expression tree..." << endl;
 	Z->reduceTree();
 
-	cout << "Truncating order in A of expansion..." << endl;
+	cout << "Truncating high orders in A of expansion..." << endl;
 	Z = static_pointer_cast<Sum>( truncateAOrder( Z, EXPANSION_ORDER_IN_A ).copy() );
 
+	cout << "Truncating odd orders in A of expansion..." << endl;
+	Z = static_pointer_cast<Sum>( truncateOddOrders( Z ).copy() );
 	cout << *Z << endl;
 
 }

@@ -1860,6 +1860,26 @@ string AG01() {
 	return ss.str();
 }
 
+string AH01() {
+	stringstream ss;
+	Sum A;
+	Product B;
+	B.addTerm( SymbolicTermPtr( new TermA() ) );
+	A.addTerm( B.copy() );
+	B.addTerm( SymbolicTermPtr( new TermA() ) );
+	A.addTerm( B.copy() );
+	B.addTerm( SymbolicTermPtr( new TermA() ) );
+	A.addTerm( B.copy() );
+	B.addTerm( SymbolicTermPtr( new TermA() ) );
+	A.addTerm( B.copy() );
+	B.addTerm( SymbolicTermPtr( new TermA() ) );
+	A.addTerm( B.copy() );
+	B.addTerm( SymbolicTermPtr( new TermA() ) );
+	A.addTerm( B.copy() );
+	ss << A << "    " << truncateOddOrders( A.copy() );
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -2321,6 +2341,12 @@ int main( int argc, char** argv ) {
 	 */
 
 	UnitTest( "AG01: truncateAOrder() I", &AG01, " {A}  +  {A} {A}      {A} " );
+
+	/*
+	 * truncateOddOrders()
+	 */
+
+	UnitTest( "AH01: truncateOddOrders() I", &AH01, " {A}  +  {A} {A}  +  {A} {A} {A}  +  {A} {A} {A} {A}  +  {A} {A} {A} {A} {A}  +  {A} {A} {A} {A} {A} {A}      {A} {A}  +  {A} {A} {A} {A}  +  {A} {A} {A} {A} {A} {A} " );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;
