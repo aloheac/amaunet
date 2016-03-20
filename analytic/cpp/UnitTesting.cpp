@@ -1239,6 +1239,64 @@ string V02() {
 	return ss.str();
 }
 
+string V03() {
+	stringstream ss;
+	DeltaContractionSet A;
+	IndexContraction B( 1, 2 );
+	IndexContraction C( 5, 3 );
+	IndexContraction D( 7, 11 );
+	IndexContraction E( 5, 5 );
+	IndexContraction F( 6, 5 );
+	A.addContraction( B );
+	A.addContraction( C );
+	A.addContraction( D );
+	A.addContraction( E );
+	A.addContraction( F );
+	ss << A << "    ";
+	A.orderContractionIndices();
+	ss << A;
+	return ss.str();
+}
+
+string V04() {
+	stringstream ss;
+	DeltaContractionSet A;
+	IndexContraction B( 1, 2 );
+	IndexContraction C( 5, 3 );
+	IndexContraction D( 4, 7 );
+	IndexContraction E( 9, 12 );
+	IndexContraction F( 8, 8 );
+	A.addContraction( B );
+	A.addContraction( C );
+	A.addContraction( D );
+	A.addContraction( E );
+	A.addContraction( F );
+	ss << A << "    ";
+	A.sortContractions();
+	ss << A;
+	return ss.str();
+}
+
+
+string V05() {
+	stringstream ss;
+	DeltaContractionSet A;
+	IndexContraction B( 1, 2 );
+	IndexContraction C( 5, 3 );
+	IndexContraction D( 1, 0 );
+	IndexContraction E( 8, 12 );
+	IndexContraction F( 8, 8 );
+	A.addContraction( B );
+	A.addContraction( C );
+	A.addContraction( D );
+	A.addContraction( E );
+	A.addContraction( F );
+	ss << A << "    ";
+	A.sortContractions();
+	ss << A;
+	return ss.str();
+}
+
 string X01() {
 	stringstream ss;
 	DeltaSignature A;
@@ -2192,6 +2250,12 @@ int main( int argc, char** argv ) {
 	UnitTest( "V01: DeltaContractionSet, Constructor, to_string()", &V01, "[ ( 1, 2 )  ( 3, 5 )  ( 7, 11 ) ]" );
 
 	UnitTest( "V02: DeltaContractionSet, operator<< Overload", &V02, "[ ( 1, 2 )  ( 3, 5 )  ( 7, 11 ) ]" );
+
+	UnitTest( "V03: DeltaContractionSet, orderContractionIndices()", &V03, "[ ( 1, 2 )  ( 5, 3 )  ( 7, 11 )  ( 5, 5 )  ( 6, 5 ) ]    [ ( 1, 2 )  ( 3, 5 )  ( 7, 11 )  ( 5, 5 )  ( 5, 6 ) ]" );
+
+	UnitTest( "V04: DeltaContractionSet, sortContractions() I", &V04, "[ ( 1, 2 )  ( 5, 3 )  ( 4, 7 )  ( 9, 12 )  ( 8, 8 ) ]    [ ( 1, 2 )  ( 4, 7 )  ( 5, 3 )  ( 8, 8 )  ( 9, 12 ) ]" );
+
+	UnitTest( "V05: DeltaContractionSet, sortContractions() II", &V05, "[ ( 1, 2 )  ( 5, 3 )  ( 1, 0 )  ( 8, 12 )  ( 8, 8 ) ]    [ ( 1, 0 )  ( 1, 2 )  ( 5, 3 )  ( 8, 8 )  ( 8, 12 ) ]" );
 
 	/*
 	 * X: DeltaSignature

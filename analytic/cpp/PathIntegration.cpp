@@ -91,6 +91,21 @@ bool DeltaContractionSet::containsIndex( int index ) {
     return false;
 }
 
+void DeltaContractionSet::orderContractionIndices() {
+    for ( vector<IndexContraction>::iterator indexPair = contractions.begin(); indexPair != contractions.end(); ++indexPair ) {
+        if ( indexPair->i > indexPair->j ) {
+            // Swap i and j.
+            int tmp = indexPair->i;
+            indexPair->i = indexPair->j;
+            indexPair->j = tmp;
+        }
+    }
+}
+
+void DeltaContractionSet::sortContractions() {
+    sort( contractions.begin(), contractions.end() );
+}
+
 std::vector<IndexContraction>::iterator DeltaContractionSet::getIteratorBegin() {
     return contractions.begin();
 }

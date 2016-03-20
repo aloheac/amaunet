@@ -63,6 +63,10 @@ public:
 
     bool containsIndex( int index );
 
+    void orderContractionIndices();
+
+    void sortContractions();
+
     std::vector<IndexContraction>::iterator getIteratorBegin();
 
     std::vector<IndexContraction>::iterator getIteratorEnd();
