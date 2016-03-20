@@ -1180,6 +1180,45 @@ bool isZeroTrace( SymbolicTermPtr tr ) {
 	return false;
 }
 
+int getTerminatedContraction( map<int, int> contractedIndexMapping, int index ) {
+	if ( contractedIndexMapping.count( index ) == 0 or contractedIndexMapping[ index ] == index  ) {
+		return index;
+	} else {
+		return getTerminatedContraction( contractedIndexMapping, contractedIndexMapping[ index ] );
+	}
+}
+
+map<int, int> constructContractionDictionary( DeltaContractionSet contractions ) {
+	contractions.orderContractionIndices();
+	contractions.sortContractions();
+
+	map<int, int> contractedIndexMapping;
+
+	for ( vector<IndexContraction>::iterator indexPair = contractions.getIteratorBegin(); indexPair != contractions.getIteratorEnd(); ++indexPair ) {
+		// Recall that always j >= i.
+		if ( contractedIndexMapping.count( indexPair->j ) == 0 ) {  // j is not in the dictionary, add the mapping.
+			contractedIndexMapping[ indexPair->j ] = indexPair->i;
+		} else if ( contractedIndexMapping[ indexPair->j ] > indexPair->i ) {
+			contractedIndexMapping[ indexPair->j ] = indexPair->i;
+		}
+
+		if ( contractedIndexMapping.count( indexPair->i ) == 0 ) {  // i has not been referenced before, add the mapping
+			contractedIndexMapping[ indexPair->i ] = indexPair->i;  // to itself. If j is contracted with another index
+		}															// less then i, this mapping will be updated next.
+
+		if ( contractedIndexMapping[ indexPair->j ] < indexPair->i ) {
+			contractedIndexMapping[ indexPair->i ] = contractedIndexMapping[ indexPair->j ];
+		}
+
+		// Iterate over current contents of the index mapping dictionary and terminate all contractions.
+		for ( map<int, int>::iterator key = contractedIndexMapping.begin(); key != contractedIndexMapping.end(); ++key ) {
+			contractedIndexMapping[ key->first ] = getTerminatedContraction( contractedIndexMapping, key->second );
+		}
+	}
+
+	return contractedIndexMapping;
+}
+
 Sum distributeTrace( SymbolicTermPtr tr ) {
 	if ( tr->getTermID() != TermTypes::TRACE ) {
 		cout << "***ERROR: An object other than a trace was passed to distributeTrace()." << endl;
@@ -1464,4 +1503,12 @@ std::ostream& operator<<( std::ostream& os, const MatrixM &obj ) {
 std::ostream& operator<<( std::ostream& os, const TermTypes &obj ) {
 	os << static_cast<char>( obj );
 	return os;
+}
+
+std::ostream& operator<<( std::ostream& os, const map<int, int> &obj ) {
+	os << "[";
+	for ( map<int, int>::const_iterator pair = obj.begin(); pair != obj.end(); ++pair ) {
+		os << " " << pair->first << " : " << pair->second << " ";
+	}
+	os << "]";
 }

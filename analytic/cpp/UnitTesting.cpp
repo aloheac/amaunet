@@ -1938,6 +1938,131 @@ string AH01() {
 	return ss.str();
 }
 
+string AI01() {
+	stringstream ss;
+	map<int, int> A;
+	A[ 3 ] = 2;
+	A[ 2 ] = 1;
+	A[ 1 ] = 0;
+	A[ 5 ] = 4;
+	ss << "1: " << getTerminatedContraction( A, 1 ) << "    2: " << getTerminatedContraction( A, 2 ) << "    3: "
+		<< getTerminatedContraction( A, 3 ) << "    4: " << getTerminatedContraction( A, 4 ) << "    5: "
+		<< getTerminatedContraction( A, 5 );
+	return ss.str();
+}
+
+string AI02() {
+	stringstream ss;
+	DeltaContractionSet A;
+	A.addContraction( IndexContraction( 0, 1 ) );
+	A.addContraction( IndexContraction( 1, 2 ) );
+	A.addContraction( IndexContraction( 2, 3 ) );
+	ss << A << "    " << constructContractionDictionary( A );
+	return ss.str();
+}
+
+string AI03() {
+	stringstream ss;
+	DeltaContractionSet A;
+	A.addContraction( IndexContraction( 0, 1 ) );
+	A.addContraction( IndexContraction( 2, 3 ) );
+	A.addContraction( IndexContraction( 0, 2 ) );
+	ss << A << "    " << constructContractionDictionary( A );
+	return ss.str();
+}
+
+string AI04() {
+	stringstream ss;
+	DeltaContractionSet A;
+	A.addContraction( IndexContraction( 0, 1 ) );
+	A.addContraction( IndexContraction( 2, 3 ) );
+	A.addContraction( IndexContraction( 3, 4 ) );
+	ss << A << "    " << constructContractionDictionary( A );
+	return ss.str();
+}
+
+string AI05() {
+	stringstream ss;
+	DeltaContractionSet A;
+	A.addContraction( IndexContraction( 0, 2 ) );
+	A.addContraction( IndexContraction( 2, 3 ) );
+	A.addContraction( IndexContraction( 0, 1 ) );
+	ss << A << "    " << constructContractionDictionary( A );
+	return ss.str();
+}
+
+string AI06() {
+	stringstream ss;
+	DeltaContractionSet A;
+	A.addContraction( IndexContraction( 1, 2 ) );
+	A.addContraction( IndexContraction( 0, 1 ) );
+	A.addContraction( IndexContraction( 0, 2 ) );
+	ss << A << "    " << constructContractionDictionary( A );
+	return ss.str();
+}
+
+string AI07() {
+	stringstream ss;
+	DeltaContractionSet A;
+	A.addContraction( IndexContraction( 0, 2 ) );
+	A.addContraction( IndexContraction( 0, 3 ) );
+	A.addContraction( IndexContraction( 3, 2 ) );
+	ss << A << "    " << constructContractionDictionary( A );
+	return ss.str();
+}
+
+string AI08() {
+	stringstream ss;
+	DeltaContractionSet A;
+	A.addContraction( IndexContraction( 0, 1 ) );
+	A.addContraction( IndexContraction( 2, 3 ) );
+	A.addContraction( IndexContraction( 4, 5 ) );
+	A.addContraction( IndexContraction( 6, 7 ) );
+	A.addContraction( IndexContraction( 0, 2 ) );
+	A.addContraction( IndexContraction( 2, 4 ) );
+	A.addContraction( IndexContraction( 4, 6 ) );
+	ss << A << "    " << constructContractionDictionary( A );
+	return ss.str();
+}
+
+string AI09() {
+	stringstream ss;
+	DeltaContractionSet A;
+	A.addContraction( IndexContraction( 1, 2 ) );
+	A.addContraction( IndexContraction( 3, 4 ) );
+	A.addContraction( IndexContraction( 0, 5 ) );
+	A.addContraction( IndexContraction( 0, 2 ) );
+	A.addContraction( IndexContraction( 4, 6 ) );
+	ss << A << "    " << constructContractionDictionary( A );
+	return ss.str();
+}
+
+string AI10() {
+	stringstream ss;
+	DeltaContractionSet A;
+	A.addContraction( IndexContraction( 1, 2 ) );
+	A.addContraction( IndexContraction( 3, 4 ) );
+	A.addContraction( IndexContraction( 5, 6 ) );
+	A.addContraction( IndexContraction( 0, 7 ) );
+	A.addContraction( IndexContraction( 0, 4 ) );
+	A.addContraction( IndexContraction( 2, 6 ) );
+	ss << A << "    " << constructContractionDictionary( A );
+	return ss.str();
+}
+
+string AI11() {
+	stringstream ss;
+	DeltaContractionSet A;
+	A.addContraction( IndexContraction( 1, 2 ) );
+	A.addContraction( IndexContraction( 3, 4 ) );
+	A.addContraction( IndexContraction( 2, 6 ) );
+	A.addContraction( IndexContraction( 5, 6 ) );
+	A.addContraction( IndexContraction( 0, 7 ) );
+	A.addContraction( IndexContraction( 0, 4 ) );
+	ss << A << "    " << constructContractionDictionary( A );
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -2411,6 +2536,32 @@ int main( int argc, char** argv ) {
 	 */
 
 	UnitTest( "AH01: truncateOddOrders() I", &AH01, " {A}  +  {A} {A}  +  {A} {A} {A}  +  {A} {A} {A} {A}  +  {A} {A} {A} {A} {A}  +  {A} {A} {A} {A} {A} {A}      {A} {A}  +  {A} {A} {A} {A}  +  {A} {A} {A} {A} {A} {A} " );
+
+	/*
+	 * getTerminatedContraction(), constructContractionDictionary()
+	 */
+
+	UnitTest( "AI01: getTerminatedContraction()" , &AI01, "1: 0    2: 0    3: 0    4: 4    5: 4" );
+
+	UnitTest( "AI02: constructContractionDictionary() I, operator<< Overload", &AI02, "[ ( 0, 1 )  ( 1, 2 )  ( 2, 3 ) ]    [ 0 : 0  1 : 0  2 : 0  3 : 0 ]" );
+
+	UnitTest( "AI03: constructContractionDictionary() II", &AI03, "[ ( 0, 1 )  ( 2, 3 )  ( 0, 2 ) ]    [ 0 : 0  1 : 0  2 : 0  3 : 0 ]" );
+
+	UnitTest( "AI04: constructContractionDictionary() III", &AI04, "[ ( 0, 1 )  ( 2, 3 )  ( 3, 4 ) ]    [ 0 : 0  1 : 0  2 : 2  3 : 2  4 : 2 ]" );
+
+	UnitTest( "AI05: constructContractionDictionary() IV", &AI05, "[ ( 0, 2 )  ( 2, 3 )  ( 0, 1 ) ]    [ 0 : 0  1 : 0  2 : 0  3 : 0 ]" );
+
+	UnitTest( "AI06: constructContractionDictionary() V", &AI06, "[ ( 1, 2 )  ( 0, 1 )  ( 0, 2 ) ]    [ 0 : 0  1 : 0  2 : 0 ]" );
+
+	UnitTest( "AI07: constructContractionDictionary() VI", &AI07, "[ ( 0, 2 )  ( 0, 3 )  ( 3, 2 ) ]    [ 0 : 0  2 : 0  3 : 0 ]" );
+
+	UnitTest( "AI08: constructContractionDictionary() VII", &AI08, "[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 )  ( 6, 7 )  ( 0, 2 )  ( 2, 4 )  ( 4, 6 ) ]    [ 0 : 0  1 : 0  2 : 0  3 : 0  4 : 0  5 : 0  6 : 0  7 : 0 ]" );
+
+	UnitTest( "AI09: constructContractionDictionary() VIII", &AI09, "[ ( 1, 2 )  ( 3, 4 )  ( 0, 5 )  ( 0, 2 )  ( 4, 6 ) ]    [ 0 : 0  1 : 0  2 : 0  3 : 3  4 : 3  5 : 0  6 : 3 ]" );
+
+	UnitTest( "AI10: constructContractionDictionary() IX", &AI10, "[ ( 1, 2 )  ( 3, 4 )  ( 5, 6 )  ( 0, 7 )  ( 0, 4 )  ( 2, 6 ) ]    [ 0 : 0  1 : 1  2 : 1  3 : 0  4 : 0  5 : 1  6 : 1  7 : 0 ]" );
+
+	UnitTest( "AI11: constructContractionDictionary() X", &AI11, "[ ( 1, 2 )  ( 3, 4 )  ( 2, 6 )  ( 5, 6 )  ( 0, 7 )  ( 0, 4 ) ]    [ 0 : 0  1 : 1  2 : 1  3 : 0  4 : 0  5 : 1  6 : 1  7 : 0 ]" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

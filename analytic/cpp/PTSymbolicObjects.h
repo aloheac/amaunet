@@ -21,6 +21,9 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <map>
+
+
 /*
  * ***********************************************************************
  * FORWARD DECLARATIONS
@@ -41,6 +44,8 @@ class TermA;
 class CoefficientFloat;
 class CoefficientFraction;
 class Delta;
+class IndexContraction;
+class DeltaContractionSet;
 bool unpackTrivialExpression( std::shared_ptr<SymbolicTerm> & );
 
 /*
@@ -517,6 +522,10 @@ int getProductAOrder( Product &prod );
 
 int getDualProductAOrder( Product &prodA, Product &prodB );
 
+int getTerminatedContraction( std::map<int, int> contractedIndexMapping, int index );
+
+std::map<int,int> constructContractionDictionary( DeltaContractionSet contractions );
+
 /*
  * ***********************************************************************
  * EXPRESSION MANIPULATION FUNCTIONS
@@ -550,5 +559,7 @@ std::ostream& operator<<( std::ostream& os, const TermA &obj );
 std::ostream& operator<<( std::ostream& os, const MatrixM &obj );
 
 std::ostream& operator<<( std::ostream& os, const TermTypes &obj );
+
+std::ostream& operator<<( std::ostream& os, const std::map<int, int> &obj );
 
 #endif /* PTSYMBOLICOBJECTS_H_ */
