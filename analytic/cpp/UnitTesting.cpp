@@ -251,6 +251,13 @@ string D01() {
 	return ss.str();
 }
 
+string D02() {
+	stringstream ss;
+	CoefficientFloat A = CoefficientFloat( 3.0 );
+	ss << A << "    " << A.getDerivative();
+	return ss.str();
+}
+
 string E01() {
 	stringstream ss;
 	MatrixB A = MatrixB();
@@ -388,6 +395,33 @@ string H05() {
 	Sum derivative = det.getDerivative().getDerivative().getDerivative();
 	derivative.reduceTree();
 	ss << derivative;
+	return ss.str();
+}
+
+string I01() {
+	stringstream ss;
+	CoefficientFraction A( 3, 7 );
+	ss << A;
+	return ss.str();
+}
+
+string I02() {
+	stringstream ss;
+	CoefficientFraction A( 5, 9 );
+	ss << A << "    " << A.getDerivative();
+	return ss.str();
+}
+
+string I03() {
+	stringstream ss;
+	Sum A;
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( CoefficientFractionPtr( new CoefficientFraction( 3, 7 ) ) );
+	ss << A << "    ";
+	Sum B = A.getDerivative();
+	ss << B << "    ";
+	B.simplify();
+	ss << B;
 	return ss.str();
 }
 
@@ -2166,6 +2200,8 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "D01: CoefficientFloat, to_string(), Constructor", &D01, "0" );
 
+	UnitTest( "D02: CoefficientFloat, getDerivative()", &D02, "3    0" );
+
 	/*
 	 * E: MatrixB
 	 */
@@ -2219,6 +2255,12 @@ int main( int argc, char** argv ) {
 	/*
 	 * I: CoefficientFraction
 	 */
+
+	UnitTest( "I01: CoefficientFraction, Constructor, operator<< Overload", &I01, "3 / 7" );
+
+	UnitTest( "I02: CoefficientFraction, getDerivative()", &I02, "5 / 9    0" );
+
+	UnitTest( "I03: CoefficientFraction, Sum, getDerivative(), simplify()", &I03, "GT_0^0 + 3 / 7    GT_0^1    GT_0^1" );
 
 	/*
 	 * J: Sum

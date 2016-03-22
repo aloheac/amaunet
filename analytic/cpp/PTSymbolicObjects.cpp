@@ -502,7 +502,7 @@ SymbolicTermPtr CoefficientFloat::copy() {
 }
 
 Sum CoefficientFloat::getDerivative() {
-	return Sum();
+	return Sum( SymbolicTermPtr( new CoefficientFloat( 0.0 ) ) );
 }
 
 double CoefficientFloat::eval() {
@@ -543,7 +543,7 @@ SymbolicTermPtr CoefficientFraction::copy() {
 }
 
 Sum CoefficientFraction::getDerivative() {
-	return Sum(); // TODO
+	return Sum( SymbolicTermPtr( new CoefficientFloat( 0.0 ) ) );
 }
 
 double CoefficientFraction::eval() {
