@@ -19,7 +19,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include "PTSymbolicObjects.h"
 #include "PathIntegration.h"
-
+#include <iostream>
 using namespace std;
 
 /*
@@ -636,9 +636,9 @@ void Sum::simplify() {
 		boost::trim( trimmedRepresentation );
 		if ( trimmedRepresentation == "0" or trimmedRepresentation == "{0}" or isZeroTrace( *iter ) ) {
 			(*iter).reset();  // Verify.
-			iter = terms.erase( iter );
-		} else {
-			++iter;
+			iter = terms.erase( iter );  // Note that we shouldn't need to check for a break condition as we do for
+		} else {                         // Product::simplify() since the for loop doesn't advance the iterator; we
+			++iter;                      // do it ourselves.
 		}
 	}
 
@@ -816,6 +816,12 @@ void Product::simplify() {
 		} else if ( trimmedRepresentation == "1" ) {
 			(*iter).reset(); // Verify.
 			iter = terms.erase( iter );
+
+			// Note that we could have the case where the last element of the vector could be removed, and the call
+			// vector::erase() returns the iterator terms.end(). The for loop then advances the iterator, which
+			// becomes invalid and results in a seg fault on the next recursive call. Therefore, check if the
+			// iterator has reached the end of the data structure, and if so, break out of the loop.
+			if ( iter == terms.end() ) break;
 		}
 	}
 }
@@ -1435,6 +1441,8 @@ void indexExpression( SymbolicTermPtr expr ) {
 					}
 					castTraceExpr->terms[ castTraceExpr->getNumberOfTerms() - 1 ]->setIndices( nextIndex + castTraceExpr->getNumberOfTerms() - 1, nextIndex);
 					nextIndex += castTraceExpr->getNumberOfTerms() + 1;
+
+					*factor = SymbolicTermPtr( castTraceExpr );
 				}
 			}
 

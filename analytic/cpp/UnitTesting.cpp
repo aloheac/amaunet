@@ -550,6 +550,17 @@ string J11() {
 	return ss.str();
 }
 
+string J12() {
+	stringstream ss;
+	Sum A;
+	A.addTerm( CoefficientFloatPtr( new CoefficientFloat( 0.0 ) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( CoefficientFloatPtr( new CoefficientFloat( 0.0 ) ) );
+	A.simplify();
+	ss << A;
+	return ss.str();
+}
+
 string K01() {
 	stringstream ss;
 	Product A = Product( SymbolicTermPtr( new GenericTestTerm(0,0) ) );
@@ -758,6 +769,17 @@ string K16() {
 	Sum F = E.getExpandedExpr();
 	F.reduceTree();
 	ss << F;
+	return ss.str();
+}
+
+string K17() {
+	stringstream ss;
+	Product A;
+	A.addTerm( CoefficientFloatPtr( new CoefficientFloat( 1.0 ) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
+	A.addTerm( CoefficientFloatPtr( new CoefficientFloat( 1.0 ) ) );
+	A.simplify();
+	ss << A;
 	return ss.str();
 }
 
@@ -2224,6 +2246,8 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "J11: Sum, reduceTree() VI", &J11, " { {5} { {3} { {GT_0^0} {GT_1^0} } } }     1     {5} {3} {GT_0^0} {GT_1^0}     1" );
 
+	UnitTest( "J12: Sum, simplify() II, Seg Fault Check, Ending Zero", &J12, "GT_0^0" );
+
 	/*
 	 * K: Product
 	 */
@@ -2259,6 +2283,8 @@ int main( int argc, char** argv ) {
 	UnitTest( "K15: Product, getExpandedExpr() IV", &K15, " {GT_0^0 + GT_1^0} {GT_5^0} {GT_2^0 + GT_3^0 + GT_4^0}      {GT_0^0} {GT_5^0} {GT_2^0}  +  {GT_0^0} {GT_5^0} {GT_3^0}  +  {GT_0^0} {GT_5^0} {GT_4^0}  +  {GT_1^0} {GT_5^0} {GT_2^0}  +  {GT_1^0} {GT_5^0} {GT_3^0}  +  {GT_1^0} {GT_5^0} {GT_4^0} " );
 
 	UnitTest( "K16: Product, getExpandedExpr() V, reduceTree()", &K16, " { {GT_4^0} {GT_0^0 + GT_1^0} } { {GT_5^0} {GT_2^0 + GT_3^0} }      {GT_4^0} {GT_0^0 + GT_1^0} {GT_5^0} {GT_2^0 + GT_3^0}      {GT_4^0} {GT_0^0} {GT_5^0} {GT_2^0}  +  {GT_4^0} {GT_0^0} {GT_5^0} {GT_3^0}  +  {GT_4^0} {GT_1^0} {GT_5^0} {GT_2^0}  +  {GT_4^0} {GT_1^0} {GT_5^0} {GT_3^0} " );
+
+	UnitTest( "K17: Product, simplify() IV, Seg Fault Check, Ending One", &K17, " {GT_0^0} " );
 
 	/*
 	 * L: Trace
@@ -2358,9 +2384,9 @@ int main( int argc, char** argv ) {
 	 * T: indexExpression()
 	 */
 
-	UnitTest( "T01: indexExpression() I", &T01, " {Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]}      {Trace[  {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 0)}  ]} " );
+	UnitTest( "T01: indexExpression() I", &T01, " {Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]}      { {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 0)} } " );
 
-	UnitTest( "T02: indexExpression() II", &T02, " {Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]}  +  {Trace[  {B_up} {M_up} {B_dn} {M_dn} {B_md} {M_md}  ]}      {Trace[  {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 0)}  ]}  +  {Trace[  {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 4)} {K_md_( 4, 5 )} {S_(5, 0)}  ]} " );
+	UnitTest( "T02: indexExpression() II", &T02, " {Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]}  +  {Trace[  {B_up} {M_up} {B_dn} {M_dn} {B_md} {M_md}  ]}      { {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 0)} }  +  { {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 4)} {K_md_( 4, 5 )} {S_(5, 0)} } " );
 
 	/*
 	 * U: IndexContraction

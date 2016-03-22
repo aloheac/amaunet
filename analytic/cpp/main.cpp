@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <memory>
 #include "PTSymbolicObjects.h"
 #include "PathIntegration.h"
 
@@ -61,6 +62,8 @@ int main( int argc, char** argv ) {
 	}
 	Sum D1, D2, D3, D4, D5, D6, D7, D8, D9, D10;
 	DetM detUp("up");
+
+	initializeStaticReferences();
 
 	if (EXPANSION_ORDER_IN_A >= 2) {
 		cout << "Computing first derivative of the determinant..." << endl;
@@ -260,6 +263,36 @@ int main( int argc, char** argv ) {
 
 	cout << "Truncating odd orders in A of expansion..." << endl;
 	Z = static_pointer_cast<Sum>( truncateOddOrders( Z ).copy() );
-	cout << *Z << endl;
+
+	cout << "Setting all objects in expansion as non-interacting..." << endl;
+	Z->setAsNonInteracting();
+
+	cout << "Rewriting expansion in terms of KS formalism..." << endl;
+	rewriteSumInKSFormalism( Z );
+
+	cout << "Indexing terms in expansion..." << endl;
+	indexExpression( Z );
+
+	cout << "Reducing expression tree..." << endl;
+	Z->reduceTree();
+
+	cout << "Computing path integral of expression..." << endl;
+	Sum pathIntegral;
+	pathIntegral = pathIntegrateExpression( Z );
+	Z.reset();
+
+	cout << "Reducing expression tree..." << endl;
+	pathIntegral.reduceTree();
+
+	cout << "Performing trivial mathematical simplification..." << endl;
+	pathIntegral.simplify();
+
+	cout << "Expanding integrated expression..." << endl;
+	pathIntegral = pathIntegral.getExpandedExpr();
+
+	cout << "Reducing expression tree..." << endl;
+	pathIntegral.reduceTree();
+
+	cout << pathIntegral << endl;
 
 }
