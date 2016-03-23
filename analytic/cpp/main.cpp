@@ -293,6 +293,9 @@ int main( int argc, char** argv ) {
 	cout << "Reducing expression tree..." << endl;
 	pathIntegral.reduceTree();
 
+	cout << "Computing analytic Fourier transform of expression..." << endl;
+	pathIntegral = fourierTransformExpression( pathIntegral.copy() );
+
 	cout << pathIntegral << endl;
 
 }

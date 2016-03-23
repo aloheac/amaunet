@@ -16,10 +16,11 @@
 
 #include <sstream>
 #include <cstring>
+#include <set>
 #include <boost/algorithm/string/trim.hpp>
 #include "PTSymbolicObjects.h"
 #include "PathIntegration.h"
-#include <iostream>
+
 using namespace std;
 
 /*
@@ -1153,6 +1154,10 @@ const string FourierSum::to_string() const {
 	return ss.str();
 }
 
+SymbolicTermPtr FourierSum::copy() {
+	return FourierSumPtr( new FourierSum( indices, order ) );
+}
+
 bool FourierSum::operator==( const FourierSum &other ) const {
 	vector<IndexContraction> lhs( indices );
 	vector<IndexContraction> rhs( other.indices );
@@ -1242,26 +1247,80 @@ map<int, int> constructContractionDictionary( DeltaContractionSet contractions )
 	contractions.sortContractions();
 
 	map<int, int> contractedIndexMapping;
+	vector< set<int> > contractionGroupings;
 
 	for ( vector<IndexContraction>::iterator indexPair = contractions.getIteratorBegin(); indexPair != contractions.getIteratorEnd(); ++indexPair ) {
-		// Recall that always j >= i.
-		if ( contractedIndexMapping.count( indexPair->j ) == 0 ) {  // j is not in the dictionary, add the mapping.
-			contractedIndexMapping[ indexPair->j ] = indexPair->i;
-		} else if ( contractedIndexMapping[ indexPair->j ] > indexPair->i ) {
-			contractedIndexMapping[ indexPair->j ] = indexPair->i;
+		bool contractionAppended = false;  // Boolean flag indicating whether we need to generate a new set.
+
+		// First, check if this contraction is a duplicate, that is, the two indices of the contraction already exist
+		// in the same set.
+		for ( vector< set<int> >::iterator groupingSet = contractionGroupings.begin(); groupingSet != contractionGroupings.end(); ++groupingSet ) {
+			if ( groupingSet->count( indexPair->i ) == 1 and groupingSet->count( indexPair->j ) == 1 ) {
+				contractionAppended = true;
+				break;
+			}
 		}
 
-		if ( contractedIndexMapping.count( indexPair->i ) == 0 ) {  // i has not been referenced before, add the mapping
-			contractedIndexMapping[ indexPair->i ] = indexPair->i;  // to itself. If j is contracted with another index
-		}															// less then i, this mapping will be updated next.
+		// Next, check if two separate sets containing indexPair->i and indexPair-j already exist, indicating that
+		// those two sets need to be joined together.
+		if ( not contractionAppended ) {
+			for ( vector< set<int> >::iterator firstGroupingSet = contractionGroupings.begin(); firstGroupingSet != contractionGroupings.end(); ++firstGroupingSet) {
+				if ( firstGroupingSet->count( indexPair->i ) == 1 ) {
+					for ( vector< set<int> >::iterator secondGroupingSet = contractionGroupings.begin(); secondGroupingSet != contractionGroupings.end(); ++secondGroupingSet) {
+						if ( secondGroupingSet->count( indexPair->j ) == 1 ) {
+							firstGroupingSet->insert( secondGroupingSet->begin(), secondGroupingSet->end() );
+							contractionGroupings.erase( secondGroupingSet );
+							contractionAppended = true;
+							break;
+						}
+					}
 
-		if ( contractedIndexMapping[ indexPair->j ] < indexPair->i ) {
-			contractedIndexMapping[ indexPair->i ] = contractedIndexMapping[ indexPair->j ];
+					if ( contractionAppended ) break;
+				} else if ( firstGroupingSet->count( indexPair->j ) == 1 ) {
+					for ( vector< set<int> >::iterator secondGroupingSet = contractionGroupings.begin(); secondGroupingSet != contractionGroupings.end(); ++secondGroupingSet) {
+						if ( secondGroupingSet->count( indexPair->i ) == 1 ) {
+							firstGroupingSet->insert( secondGroupingSet->begin(), secondGroupingSet->end() );
+							contractionGroupings.erase( secondGroupingSet );
+							contractionAppended = true;
+							break;
+						}
+					}
+
+					if ( contractionAppended ) break;
+				}
+			}
 		}
 
-		// Iterate over current contents of the index mapping dictionary and terminate all contractions.
-		for ( map<int, int>::iterator key = contractedIndexMapping.begin(); key != contractedIndexMapping.end(); ++key ) {
-			contractedIndexMapping[ key->first ] = getTerminatedContraction( contractedIndexMapping, key->second );
+		// If the contraction should be added to an existing set, append it.
+		if ( not contractionAppended ) {
+			for ( vector< set<int> >::iterator groupingSet = contractionGroupings.begin(); groupingSet != contractionGroupings.end(); ++groupingSet ) {
+				if ( groupingSet->count( indexPair->i ) == 1 ) {
+					groupingSet->insert( indexPair-> j );
+					contractionAppended = true;
+					break;
+				} else if ( groupingSet->count( indexPair->j ) == 1 ) {
+					groupingSet->insert( indexPair->i );
+					contractionAppended = true;
+					break;
+				}
+			}
+		}
+
+		// Finally, if no suitable set for this contraction exists, create it and add it to the vector of groupings.
+		if ( not contractionAppended ) {
+			set<int> newGroupingSet;
+			newGroupingSet.insert( indexPair->i );
+			newGroupingSet.insert( indexPair->j );
+
+			contractionGroupings.push_back( newGroupingSet );
+		}
+	}
+
+	for ( vector< set<int> >::iterator groupingSet = contractionGroupings.begin(); groupingSet != contractionGroupings.end(); ++groupingSet ) {
+		int smallestIndex = *( min_element( groupingSet->begin(), groupingSet->end() ) );
+
+		for ( set<int>::iterator index = groupingSet->begin(); index != groupingSet->end(); ++index ) {
+			contractedIndexMapping[ *index ] = smallestIndex;
 		}
 	}
 
@@ -1510,14 +1569,15 @@ Sum fourierTransformExpression( SymbolicTermPtr expr ) {
 
 		Product transformedProduct;
 		int orderInK = 0;
-		map<int, int> deltaMapping;
 		vector<IndexContraction> fourierIndices;
-		vector<IndexContraction> indexPairsToBeContracted;
+		DeltaContractionSet indexPairsToBeContracted;
 
 		for ( vector<SymbolicTermPtr>::iterator factor = castTerm->getIteratorBegin(); factor != castTerm->getIteratorEnd(); ++factor ) {
 			if ( (*factor)->getTermID() == TermTypes::MATRIX_K ) {
 				MatrixKPtr castFactor = static_pointer_cast<MatrixK>( *factor );
 				castFactor->fourierTransform();
+
+				// TODO: Update MatrixK indices with momentum-space index.
 
 				transformedProduct.addTerm( castFactor->copy() );
 				fourierIndices.push_back( IndexContraction( castFactor->getIndices()[0], castFactor->getIndices()[1] ) );
@@ -1526,13 +1586,29 @@ Sum fourierTransformExpression( SymbolicTermPtr expr ) {
 			} else if ( (*factor)->getTermID() == TermTypes::DELTA ) {
 				DeltaPtr castFactor = static_pointer_cast<Delta>( *factor );
 				if ( not castFactor->isDeltaBar() ) {
-					indexPairsToBeContracted.push_back( IndexContraction( castFactor->getIndices()[0], castFactor->getIndices()[1] ) );
+					indexPairsToBeContracted.addContraction( IndexContraction( castFactor->getIndices()[0], castFactor->getIndices()[1] ) );
 				}
 			} else {
 				transformedProduct.addTerm( (*factor)->copy() );
 			}
 		}
+
+		map<int, int> indexDictionary = constructContractionDictionary( indexPairsToBeContracted );
+		if ( orderInK > 0 ) {
+			for ( map<int, int>::iterator pair = indexDictionary.begin(); pair != indexDictionary.end(); ++pair ) {
+				for ( vector<IndexContraction>::iterator contraction = fourierIndices.begin(); contraction != fourierIndices.end(); ++contraction ) {
+					contraction->i = indexDictionary[ contraction->i ];
+					contraction->j = indexDictionary[ contraction->j ];
+				}
+			}
+
+			transformedProduct.addTerm( FourierSumPtr( new FourierSum( fourierIndices, orderInK ) ) );
+		}
+
+		transformedExpression.addTerm( transformedProduct.copy() );
 	}
+
+	return transformedExpression;
 }
 
 /*

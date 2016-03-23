@@ -968,6 +968,17 @@ string N06() {
 	return ss.str();
 }
 
+string N07() {
+	stringstream ss;
+	vector<IndexContraction> A;
+	A.push_back( IndexContraction( 0, 1 ) );
+	A.push_back( IndexContraction( 2, 3 ) );
+	A.push_back( IndexContraction( 4, 5 ) );
+	SymbolicTermPtr B = FourierSumPtr( new FourierSum( A, 3 ) );
+	ss << *B;
+	return ss.str();
+}
+
 string O01() {
 	stringstream ss;
 	Product A = Product();
@@ -2211,6 +2222,35 @@ string AI11() {
 	return ss.str();
 }
 
+string AI12() {
+	stringstream ss;
+	DeltaContractionSet A;
+	A.addContraction( IndexContraction( 1, 2 ) );
+	A.addContraction( IndexContraction( 3, 4 ) );
+	A.addContraction( IndexContraction( 5, 6 ) );
+	A.addContraction( IndexContraction( 7, 0 ) );
+	A.addContraction( IndexContraction( 2, 4 ) );
+	A.addContraction( IndexContraction( 6, 0 ) );
+	A.addContraction( IndexContraction( 4, 6 ) );
+	ss << A << "    " << constructContractionDictionary( A );
+	return ss.str();
+}
+
+string AJ01() {
+	stringstream ss;
+	Sum A;
+	Product B;
+	MatrixK C;
+	C.setIndices( 0, 1 );
+	B.addTerm( SymbolicTermPtr( C.copy() ) );
+	C.setIndices( 1, 0 );
+	B.addTerm( SymbolicTermPtr( C.copy() ) );
+	B.addTerm( DeltaPtr( new Delta( 0, 1 ) ) );
+	A.addTerm( B.copy() );
+	ss << A << "    " << fourierTransformExpression( A.copy() );
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -2455,6 +2495,8 @@ int main( int argc, char** argv ) {
 	UnitTest( "N05: FourierSum, operator== Overload IV", &N05, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]    FourierSum[ ( 0, 1 )  ( 4, 5 )  ( 3, 2 ) ]    0" );
 
 	UnitTest( "N06: FourierSum, operator== Overload V", &N06, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]    FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 )  ( 6, 7 ) ]    0" );
+
+	UnitTest( "N07: FourierSum, to_string()", N07, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]" );
 
 	/*
 	 * ********************************************************************
@@ -2734,6 +2776,14 @@ int main( int argc, char** argv ) {
 	UnitTest( "AI10: constructContractionDictionary() IX", &AI10, "[ ( 1, 2 )  ( 3, 4 )  ( 5, 6 )  ( 0, 7 )  ( 0, 4 )  ( 2, 6 ) ]    [ 0 : 0  1 : 1  2 : 1  3 : 0  4 : 0  5 : 1  6 : 1  7 : 0 ]" );
 
 	UnitTest( "AI11: constructContractionDictionary() X", &AI11, "[ ( 1, 2 )  ( 3, 4 )  ( 2, 6 )  ( 5, 6 )  ( 0, 7 )  ( 0, 4 ) ]    [ 0 : 0  1 : 1  2 : 1  3 : 0  4 : 0  5 : 1  6 : 1  7 : 0 ]" );
+
+	UnitTest( "AI12: constructContractionDictionary() XI", &AI12, "[ ( 1, 2 )  ( 3, 4 )  ( 5, 6 )  ( 7, 0 )  ( 2, 4 )  ( 6, 0 )  ( 4, 6 ) ]    [ 0 : 0  1 : 0  2 : 0  3 : 0  4 : 0  5 : 0  6 : 0  7 : 0 ]" );
+
+	/*
+	 * fourierTransformExpression()
+	 */
+
+	UnitTest( "AJ01: fourierTransformExpression() I", &AJ01, " {K__( 0, 1 )} {K__( 1, 0 )} {Delta( 0, 1 )}      {K__( 0, 1 )} {K__( 1, 0 )} {FourierSum[ ( 0, 0 )  ( 0, 0 ) ]} " );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

@@ -44,6 +44,7 @@ class TermA;
 class CoefficientFloat;
 class CoefficientFraction;
 class Delta;
+class FourierSum;
 class IndexContraction;
 class DeltaContractionSet;
 bool unpackTrivialExpression( std::shared_ptr<SymbolicTerm> & );
@@ -68,6 +69,7 @@ typedef std::shared_ptr<TermA> TermAPtr;
 typedef std::shared_ptr<Delta> DeltaPtr;
 typedef std::shared_ptr<CoefficientFloat> CoefficientFloatPtr;
 typedef std::shared_ptr<CoefficientFraction> CoefficientFractionPtr;
+typedef std::shared_ptr<FourierSum> FourierSumPtr;
 
 /*
  * ***********************************************************************
@@ -496,6 +498,8 @@ public:
 	~FourierSum();
 
 	const std::string to_string() const;
+
+	SymbolicTermPtr copy();
 
 	bool operator==( const FourierSum &other ) const;
 
