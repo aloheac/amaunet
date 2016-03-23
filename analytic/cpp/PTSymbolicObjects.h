@@ -89,7 +89,8 @@ enum class TermTypes : char {
 	SUM = 'S',
 	PRODUCT = 'P',
 	TRACE = 'T',
-	DELTA = 'd'
+	DELTA = 'd',
+	FOURIER_SUM = 'F'
 };
 
 /*
@@ -490,19 +491,17 @@ private:
 class FourierSum : public SymbolicTerm {
 public:
 
-	FourierSum( int* i, int Korder );
-
-	FourierSum( const FourierSum * fs );
+	FourierSum( std::vector<IndexContraction> i, int orderInK );
 
 	~FourierSum();
 
-	const std::string to_string();
+	const std::string to_string() const;
 
 	bool operator==( const FourierSum &other ) const;
 
 private:
 
-	int* indices;
+	std::vector<IndexContraction> indices;
 
 	int order;
 

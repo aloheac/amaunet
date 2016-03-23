@@ -48,7 +48,7 @@ int main( int argc, char** argv ) {
 	cout << VERSION_STRING << "\t\t" << BUILD_DATE << "\t\t" << COMMIT_ID << endl << endl;
 
 	// Load global system parameters.
-	int EXPANSION_ORDER_IN_A = 4;
+	int EXPANSION_ORDER_IN_A = 2;
 	int SPLIT_SUMS_BY_LINE = 1;
 
 	cout << "Loaded parameters:" << endl;

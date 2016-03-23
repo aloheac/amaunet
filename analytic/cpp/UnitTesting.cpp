@@ -876,6 +876,98 @@ string M02() {
 	return ss.str();
 }
 
+string N01() {
+	stringstream ss;
+	vector<IndexContraction> A;
+	A.push_back( IndexContraction( 0, 1 ) );
+	A.push_back( IndexContraction( 2, 3 ) );
+	A.push_back( IndexContraction( 4, 5 ) );
+	FourierSum B( A, 3 );
+	ss << B;
+	return ss.str();
+}
+
+string N02() {
+	stringstream ss;
+	vector<IndexContraction> A;
+	A.push_back( IndexContraction( 0, 1 ) );
+	A.push_back( IndexContraction( 2, 3 ) );
+	A.push_back( IndexContraction( 4, 5 ) );
+	FourierSum B( A, 3 );
+	vector<IndexContraction> C;
+	C.push_back( IndexContraction( 0, 1 ) );
+	C.push_back( IndexContraction( 2, 3 ) );
+	C.push_back( IndexContraction( 4, 5 ) );
+	FourierSum D( C, 3 );
+	ss << B << "    " << D << "    " << ( B == D );
+	return ss.str();
+}
+
+string N03() {
+	stringstream ss;
+	vector<IndexContraction> A;
+	A.push_back( IndexContraction( 0, 1 ) );
+	A.push_back( IndexContraction( 2, 3 ) );
+	A.push_back( IndexContraction( 4, 5 ) );
+	FourierSum B( A, 3 );
+	vector<IndexContraction> C;
+	C.push_back( IndexContraction( 0, 1 ) );
+	C.push_back( IndexContraction( 2, 3 ) );
+	C.push_back( IndexContraction( 7, 9 ) );
+	FourierSum D( C, 3 );
+	ss << B << "    " << D << "    " << ( B == D );
+	return ss.str();
+}
+
+string N04() {
+	stringstream ss;
+	vector<IndexContraction> A;
+	A.push_back( IndexContraction( 0, 1 ) );
+	A.push_back( IndexContraction( 2, 3 ) );
+	A.push_back( IndexContraction( 4, 5 ) );
+	FourierSum B( A, 3 );
+	vector<IndexContraction> C;
+	C.push_back( IndexContraction( 0, 1 ) );
+	C.push_back( IndexContraction( 4, 5 ) );
+	C.push_back( IndexContraction( 2, 3 ) );
+	FourierSum D( C, 3 );
+	ss << B << "    " << D << "    " << ( B == D );
+	return ss.str();
+}
+
+string N05() {
+	stringstream ss;
+	vector<IndexContraction> A;
+	A.push_back( IndexContraction( 0, 1 ) );
+	A.push_back( IndexContraction( 2, 3 ) );
+	A.push_back( IndexContraction( 4, 5 ) );
+	FourierSum B( A, 3 );
+	vector<IndexContraction> C;
+	C.push_back( IndexContraction( 0, 1 ) );
+	C.push_back( IndexContraction( 4, 5 ) );
+	C.push_back( IndexContraction( 3, 2 ) );
+	FourierSum D( C, 3 );
+	ss << B << "    " << D << "    " << ( B == D );
+	return ss.str();
+}
+
+string N06() {
+	stringstream ss;
+	vector<IndexContraction> A;
+	A.push_back( IndexContraction( 0, 1 ) );
+	A.push_back( IndexContraction( 2, 3 ) );
+	A.push_back( IndexContraction( 4, 5 ) );
+	FourierSum B( A, 3 );
+	vector<IndexContraction> C;
+	C.push_back( IndexContraction( 0, 1 ) );
+	C.push_back( IndexContraction( 2, 3 ) );
+	C.push_back( IndexContraction( 4, 5 ) );
+	C.push_back( IndexContraction( 6, 7 ) );
+	FourierSum D( C, 4 );
+	ss << B << "    " << D << "    " << ( B == D );
+	return ss.str();
+}
+
 string O01() {
 	stringstream ss;
 	Product A = Product();
@@ -2351,6 +2443,18 @@ int main( int argc, char** argv ) {
 	/*
 	 * N: FourierSum
 	 */
+
+	UnitTest( "N01: FourierSum, Constructor, operator<< Overload", &N01, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]" );
+
+	UnitTest( "N02: FourierSum, operator== Overload I", &N02, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]    FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]    1" );
+
+	UnitTest( "N03: FourierSum, operator== Overload II", &N03, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]    FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 7, 9 ) ]    0" );
+
+	UnitTest( "N04: FourierSum, operator== Overload III", &N04, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]    FourierSum[ ( 0, 1 )  ( 4, 5 )  ( 2, 3 ) ]    1" );
+
+	UnitTest( "N05: FourierSum, operator== Overload IV", &N05, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]    FourierSum[ ( 0, 1 )  ( 4, 5 )  ( 3, 2 ) ]    0" );
+
+	UnitTest( "N06: FourierSum, operator== Overload V", &N06, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]    FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 )  ( 6, 7 ) ]    0" );
 
 	/*
 	 * ********************************************************************

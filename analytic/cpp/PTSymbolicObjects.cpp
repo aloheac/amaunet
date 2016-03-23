@@ -1132,6 +1132,49 @@ bool Delta::isDeltaBar() {
  * FourierSum
  */
 
+FourierSum::FourierSum( vector<IndexContraction> i, int orderInK ) {
+	indices = i;
+	order = orderInK;
+	termID = TermTypes::FOURIER_SUM;
+}
+
+FourierSum::~FourierSum() {
+	indices.clear();
+}
+
+const string FourierSum::to_string() const {
+	stringstream ss;
+	ss << "FourierSum[";
+	for ( vector<IndexContraction>::const_iterator indexPair = indices.begin(); indexPair != indices.end(); ++indexPair ) {
+		ss << " ( " << indexPair->i << ", " << indexPair->j << " ) ";
+	}
+	ss << "]";
+
+	return ss.str();
+}
+
+bool FourierSum::operator==( const FourierSum &other ) const {
+	vector<IndexContraction> lhs( indices );
+	vector<IndexContraction> rhs( other.indices );
+
+	if ( lhs.size() != rhs.size() ) return false;
+
+	sort( lhs.begin(), lhs.end() );
+	sort( rhs.begin(), rhs.end() );
+
+	for ( int i = 0; i < lhs.size(); i++ ) {
+		if ( lhs[ i ].i != rhs[ i ].i or lhs[ i ].j != rhs[ i ].j ) return false;
+	}
+
+	return true;
+}
+
+/*
+ * ***********************************************************************
+ * GENERIC HELPER FUNCTIONS
+ * ***********************************************************************
+ */
+
 bool unpackTrivialExpression( SymbolicTermPtr& st ) {  // TODO: Separate out into helper.
 	if ( st->getTermID() == TermTypes::PRODUCT ) {
 		SymbolicTermPtr tmp;
