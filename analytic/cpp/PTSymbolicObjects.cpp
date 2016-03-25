@@ -493,7 +493,12 @@ CoefficientFloat::CoefficientFloat( const CoefficientFloat* f ) : SymbolicTerm()
 
 const string CoefficientFloat::to_string() const {
 	stringstream ss;
-	ss << value;
+	if ( abs( value ) < 1E-10 ) {
+		ss << "0";
+	} else {
+		ss << value;
+	}
+
 	return ss.str();
 }
 
@@ -548,7 +553,7 @@ Sum CoefficientFraction::getDerivative() {
 }
 
 double CoefficientFraction::eval() {
-	return num / den;
+	return (double)num / (double)den;
 }
 
 /*
@@ -721,6 +726,15 @@ void Sum::setAsNonInteracting() {
 
 bool Sum::operator==( const Sum &other ) const {
 	return false; // TODO
+}
+
+void Sum::reduceFourierSumIndices() {
+	for ( vector<SymbolicTermPtr>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
+		if ( (*iter)->getTermID() == TermTypes::PRODUCT ) {
+			ProductPtr castTerm = static_pointer_cast<Product>( *iter );
+			castTerm->reduceFourierSumIndices();
+		}
+	}
 }
 
 vector<SymbolicTermPtr>::iterator Sum::getIteratorBegin() {
@@ -1010,6 +1024,21 @@ bool Product::containsSum() {
 	return false;
 }
 
+void Product::zero() {
+	vector<SymbolicTermPtr> zero;
+	zero.push_back( CoefficientFloatPtr( new CoefficientFloat( 0.0 ) ) );
+	terms = zero;
+}
+
+void Product::reduceFourierSumIndices() {
+	for ( vector<SymbolicTermPtr>::iterator factor = terms.begin(); factor != terms.end(); ++factor ) {
+		if ( (*factor)->getTermID() == TermTypes::FOURIER_SUM ) {
+			FourierSumPtr castFactor = static_pointer_cast<FourierSum>( *factor );
+			castFactor->reduceDummyIndices();
+		}
+	}
+}
+
 vector<SymbolicTermPtr>::const_iterator Product::getIteratorBegin() const {
 	return terms.begin();
 }
@@ -1158,6 +1187,26 @@ SymbolicTermPtr FourierSum::copy() {
 	return FourierSumPtr( new FourierSum( indices, order ) );
 }
 
+void FourierSum::reduceDummyIndices() {
+	set<int> presentIndices;
+	for ( vector<IndexContraction>::iterator indexPair = indices.begin(); indexPair != indices.end(); ++indexPair ) {
+		presentIndices.insert( indexPair->i );
+		presentIndices.insert( indexPair->j );
+	}
+
+	map<int, int> reducedIndexMapping;
+	int mappedIndex = 0;
+	for ( set<int>::iterator dummyIndex = presentIndices.begin(); dummyIndex != presentIndices.end(); ++dummyIndex ) {
+		reducedIndexMapping[ *dummyIndex ] = mappedIndex;
+		mappedIndex++;
+	}
+
+	for ( vector<IndexContraction>::iterator indexPair = indices.begin(); indexPair != indices.end(); ++indexPair ) {
+		indexPair->i = reducedIndexMapping[ indexPair->i ];
+		indexPair->j = reducedIndexMapping[ indexPair->j ];
+	}
+}
+
 bool FourierSum::operator==( const FourierSum &other ) const {
 	vector<IndexContraction> lhs( indices );
 	vector<IndexContraction> rhs( other.indices );
@@ -1232,6 +1281,23 @@ bool isZeroTrace( SymbolicTermPtr tr ) {
 	}
 
 	return false;
+}
+
+int getProductAOrder( SymbolicTermPtr prod ) {
+	if ( prod->getTermID() != TermTypes::PRODUCT ) {
+		return false;  // TODO: Throw exception.
+	}
+
+	ProductPtr castTerm = static_pointer_cast<Product>( prod );
+
+	int orderInA = 0;
+
+
+	for ( vector<SymbolicTermPtr>::iterator factor = castTerm->getIteratorBegin(); factor != castTerm->getIteratorEnd(); ++factor ) {
+		if ( (*factor)->getTermID() == TermTypes::TERM_A ) orderInA++;
+	}
+
+	return orderInA;
 }
 
 int getTerminatedContraction( map<int, int> contractedIndexMapping, int index ) {
@@ -1325,6 +1391,44 @@ map<int, int> constructContractionDictionary( DeltaContractionSet contractions )
 	}
 
 	return contractedIndexMapping;
+}
+
+bool areTermsCommon( SymbolicTermPtr termA, SymbolicTermPtr termB ) {
+	if ( termA->getTermID() != TermTypes::PRODUCT or termB->getTermID() != TermTypes::PRODUCT ) {
+		return false;  // TODO: Raise exception.
+	}
+
+	// Check if order in A in both terms are the same.
+	if ( getProductAOrder( termA ) != getProductAOrder( termB ) ) return false;
+
+	// Check if FourierSum signatures for both terms are the same.
+	SymbolicTermPtr termAFourierSum, termBFourierSum;
+	ProductPtr castTermA = static_pointer_cast<Product>( termA );
+	ProductPtr castTermB = static_pointer_cast<Product>( termB );
+
+	for ( vector<SymbolicTermPtr>::iterator factor = castTermA->getIteratorBegin(); factor != castTermA->getIteratorEnd(); ++factor ) {
+		if ( (*factor)->getTermID() == TermTypes::FOURIER_SUM ) {
+			termAFourierSum = *factor;
+			break;
+		}
+	}
+
+	for ( vector<SymbolicTermPtr>::iterator factor = castTermB->getIteratorBegin(); factor != castTermB->getIteratorEnd(); ++factor ) {
+		if ( (*factor)->getTermID() == TermTypes::FOURIER_SUM ) {
+			termBFourierSum = *factor;
+			break;
+		}
+	}
+
+	// Make sure we have valid pointers for FourierSum objects.
+	if ( termAFourierSum == nullptr or termBFourierSum == nullptr or termAFourierSum->getTermID() != TermTypes::FOURIER_SUM or termBFourierSum->getTermID() != TermTypes::FOURIER_SUM ) return false;
+
+	FourierSumPtr castTermAFourierSum = static_pointer_cast<FourierSum>( termAFourierSum );
+	FourierSumPtr castTermBFourierSum = static_pointer_cast<FourierSum>( termBFourierSum );
+
+	if ( not( *castTermAFourierSum == *castTermBFourierSum ) ) return false;
+
+	return true;
 }
 
 Sum distributeTrace( SymbolicTermPtr tr ) {
@@ -1609,6 +1713,68 @@ Sum fourierTransformExpression( SymbolicTermPtr expr ) {
 	}
 
 	return transformedExpression;
+}
+
+Sum combineLikeTerms( Sum &expr ) {
+	Sum reducedSum;
+
+	for ( vector<SymbolicTermPtr>::iterator term = expr.getIteratorBegin(); term != expr.getIteratorEnd(); ++term ) {
+		double runningLikeTermsCoefficient = 0.0;
+
+		double termATotalCoefficient = 1.0;
+		Product combinedFactorA;
+
+		if ( (*term)->getTermID() != TermTypes::PRODUCT ) {
+			return Sum();  // TODO: Throw exception.
+		}
+
+		ProductPtr castTerm = static_pointer_cast<Product>( *term );
+
+		for ( vector<SymbolicTermPtr>::iterator factor = castTerm->getIteratorBegin(); factor != castTerm->getIteratorEnd(); ++factor ) {
+			if ( (*factor)->getTermID() == TermTypes::COEFFICIENT_FLOAT ) {
+				CoefficientFloatPtr castFactor = static_pointer_cast<CoefficientFloat>( *factor );
+				termATotalCoefficient *= castFactor->eval();
+			} else if ( (*factor)->getTermID() == TermTypes::COEFFICIENT_FRACTION ) {
+				CoefficientFractionPtr castFactor = static_pointer_cast<CoefficientFraction>( *factor );
+				termATotalCoefficient *= castFactor->eval();
+			} else {
+				combinedFactorA.addTerm( (*factor)->copy() );
+			}
+		}
+
+		runningLikeTermsCoefficient += termATotalCoefficient;
+
+		for ( vector<SymbolicTermPtr>::iterator secondTerm = expr.getIteratorBegin(); secondTerm != expr.getIteratorEnd(); ++secondTerm ) {
+
+			if ( (*secondTerm)->getTermID() != TermTypes::PRODUCT ) {
+				return Sum();  // TODO: Throw exception.
+			}
+
+			ProductPtr castSecondTerm = static_pointer_cast<Product>( *secondTerm );
+
+			if ( term != secondTerm and areTermsCommon( *term, *secondTerm ) ) {
+				double termBCoefficient = 1.0;
+
+				for ( vector<SymbolicTermPtr>::iterator secondFactor = castSecondTerm->getIteratorBegin(); secondFactor != castSecondTerm->getIteratorEnd(); ++secondFactor ) {
+					if ( (*secondFactor)->getTermID() == TermTypes::COEFFICIENT_FLOAT ) {
+						CoefficientFloatPtr castSecondFactor = static_pointer_cast<CoefficientFloat>( *secondFactor );
+						termBCoefficient *= castSecondFactor->eval();
+					} else if ( (*secondFactor)->getTermID() == TermTypes::COEFFICIENT_FRACTION ) {
+						CoefficientFractionPtr castSecondFactor = static_pointer_cast<CoefficientFraction>( *secondFactor );
+						termBCoefficient *= castSecondFactor->eval();
+					}
+				}
+
+				runningLikeTermsCoefficient += termBCoefficient;
+				(*castSecondTerm).zero();
+			}
+		}
+
+		combinedFactorA.addTerm( CoefficientFloatPtr( new CoefficientFloat( runningLikeTermsCoefficient ) ) );
+		reducedSum.addTerm( combinedFactorA.copy() );
+	}
+
+	return reducedSum;
 }
 
 /*

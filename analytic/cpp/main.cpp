@@ -48,7 +48,7 @@ int main( int argc, char** argv ) {
 	cout << VERSION_STRING << "\t\t" << BUILD_DATE << "\t\t" << COMMIT_ID << endl << endl;
 
 	// Load global system parameters.
-	int EXPANSION_ORDER_IN_A = 2;
+	int EXPANSION_ORDER_IN_A = 4;
 	int SPLIT_SUMS_BY_LINE = 1;
 
 	cout << "Loaded parameters:" << endl;
@@ -152,6 +152,7 @@ int main( int argc, char** argv ) {
 	if ( EXPANSION_ORDER_IN_A >= 4 ) {
 		Product P3;
 		P3.addTerm( SymbolicTermPtr( new CoefficientFraction( 1, 6 ) ) );
+		P3.addTerm( SymbolicTermPtr( new TermA() ) );
 		P3.addTerm( SymbolicTermPtr( new TermA() ) );
 		P3.addTerm( SymbolicTermPtr( new TermA() ) );
 		P3.addTerm( D3.copy() );
@@ -295,6 +296,15 @@ int main( int argc, char** argv ) {
 
 	cout << "Computing analytic Fourier transform of expression..." << endl;
 	pathIntegral = fourierTransformExpression( pathIntegral.copy() );
+
+	cout << "Reducing dummy indices of Fourier transformation..." << endl;
+	pathIntegral.reduceFourierSumIndices();
+
+	cout << "Combining like terms..." << endl;
+	pathIntegral = combineLikeTerms( pathIntegral );
+
+	cout << "Performing trivial mathematical simplification..." << endl;
+	pathIntegral.simplify();
 
 	cout << pathIntegral << endl;
 

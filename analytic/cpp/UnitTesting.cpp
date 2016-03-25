@@ -817,6 +817,18 @@ string K17() {
 	return ss.str();
 }
 
+string K18() {
+	stringstream ss;
+	Product A;
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm( 0, 0 ) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm( 1, 0 ) ) );
+	A.addTerm( GenericTestTermPtr( new GenericTestTerm( 2, 0 ) ) );
+	ss << A << "    ";
+	A.zero();
+	ss << A;
+	return ss.str();
+}
+
 string L01() {
 	stringstream ss;
 	SymbolicTermPtr term = GenericTestTermPtr( new GenericTestTerm(0,0) );
@@ -976,6 +988,19 @@ string N07() {
 	A.push_back( IndexContraction( 4, 5 ) );
 	SymbolicTermPtr B = FourierSumPtr( new FourierSum( A, 3 ) );
 	ss << *B;
+	return ss.str();
+}
+
+string N08() {
+	stringstream ss;
+	vector<IndexContraction> A;
+	A.push_back( IndexContraction( 0, 1 ) );
+	A.push_back( IndexContraction( 3, 3 ) );
+	A.push_back( IndexContraction( 0, 0 ) );
+	FourierSum B = FourierSum( A, 3 );
+	ss << B << "    ";
+	B.reduceDummyIndices();
+	ss << B;
 	return ss.str();
 }
 
@@ -2251,6 +2276,117 @@ string AJ01() {
 	return ss.str();
 }
 
+string AK01() {
+	stringstream ss;
+	Product A;
+	A.addTerm( TermAPtr( new TermA() ) );
+	A.addTerm( TermAPtr( new TermA() ) );
+	vector<IndexContraction> B;
+	B.push_back( IndexContraction( 0, 1 ) );
+	B.push_back( IndexContraction( 2, 3 ) );
+	B.push_back( IndexContraction( 4, 5 ) );
+	A.addTerm( FourierSumPtr( new FourierSum( B, 3 ) ) );
+	Product C;
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( FourierSumPtr( new FourierSum( B, 3 ) ) );
+	ss << A << "    " << C << "    " << areTermsCommon( A.copy(), C.copy() );
+	return ss.str();
+}
+
+string AK02() {
+	stringstream ss;
+	Product A;
+	A.addTerm( TermAPtr( new TermA() ) );
+	A.addTerm( TermAPtr( new TermA() ) );
+	A.addTerm( TermAPtr( new TermA() ) );
+	vector<IndexContraction> B;
+	B.push_back( IndexContraction( 0, 1 ) );
+	B.push_back( IndexContraction( 2, 3 ) );
+	B.push_back( IndexContraction( 4, 5 ) );
+	A.addTerm( FourierSumPtr( new FourierSum( B, 3 ) ) );
+	Product C;
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( FourierSumPtr( new FourierSum( B, 3 ) ) );
+	ss << A << "    " << C << "    " << areTermsCommon( A.copy(), C.copy() );
+	return ss.str();
+}
+
+string AK03() {
+	stringstream ss;
+	Product A;
+	A.addTerm( TermAPtr( new TermA() ) );
+	A.addTerm( TermAPtr( new TermA() ) );
+	A.addTerm( TermAPtr( new TermA() ) );
+	vector<IndexContraction> B;
+	B.push_back( IndexContraction( 0, 1 ) );
+	B.push_back( IndexContraction( 2, 3 ) );
+	B.push_back( IndexContraction( 4, 5 ) );
+	A.addTerm( FourierSumPtr( new FourierSum( B, 3 ) ) );
+	Product C;
+	vector<IndexContraction> D;
+	D.push_back( IndexContraction( 0, 1 ) );
+	D.push_back( IndexContraction( 2, 3 ) );
+	D.push_back( IndexContraction( 6, 7 ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( FourierSumPtr( new FourierSum( D, 3 ) ) );
+	ss << A << "    " << C << "    " << areTermsCommon( A.copy(), C.copy() );
+	return ss.str();
+}
+
+string AL01() {
+	stringstream ss;
+	Product A;
+	A.addTerm( TermAPtr( new TermA() ) );
+	A.addTerm( TermAPtr( new TermA() ) );
+	vector<IndexContraction> B;
+	B.push_back( IndexContraction( 0, 1 ) );
+	B.push_back( IndexContraction( 2, 3 ) );
+	B.push_back( IndexContraction( 4, 5 ) );
+	A.addTerm( FourierSumPtr( new FourierSum( B, 3 ) ) );
+	Product C;
+	vector<IndexContraction> D;
+	D.push_back( IndexContraction( 0, 1 ) );
+	D.push_back( IndexContraction( 2, 3 ) );
+	D.push_back( IndexContraction( 6, 7 ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( FourierSumPtr( new FourierSum( D, 3 ) ) );
+	Sum E;
+	E.addTerm( A.copy() );
+	E.addTerm( C.copy() );
+	ss << E << "    ";
+	ss << combineLikeTerms( E );
+	return ss.str();
+}
+
+string AL02() {
+	stringstream ss;
+	Product A;
+	A.addTerm( TermAPtr( new TermA() ) );
+	A.addTerm( TermAPtr( new TermA() ) );
+	vector<IndexContraction> B;
+	B.push_back( IndexContraction( 0, 1 ) );
+	B.push_back( IndexContraction( 2, 3 ) );
+	B.push_back( IndexContraction( 4, 5 ) );
+	A.addTerm( FourierSumPtr( new FourierSum( B, 3 ) ) );
+	Product C;
+	vector<IndexContraction> D;
+	D.push_back( IndexContraction( 0, 1 ) );
+	D.push_back( IndexContraction( 2, 3 ) );
+	D.push_back( IndexContraction( 6, 7 ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( FourierSumPtr( new FourierSum( D, 3 ) ) );
+	Sum E;
+	E.addTerm( A.copy() );
+	E.addTerm( C.copy() );
+	ss << E << "    " << combineLikeTerms( E );
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -2460,6 +2596,8 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "K17: Product, simplify() IV, Seg Fault Check, Ending One", &K17, " {GT_0^0} " );
 
+	UnitTest( "K18: Product, zero()", &K18, " {GT_0^0} {GT_1^0} {GT_2^0}      {0} " );
+
 	/*
 	 * L: Trace
 	 */
@@ -2497,6 +2635,8 @@ int main( int argc, char** argv ) {
 	UnitTest( "N06: FourierSum, operator== Overload V", &N06, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]    FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 )  ( 6, 7 ) ]    0" );
 
 	UnitTest( "N07: FourierSum, to_string()", N07, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]" );
+
+	UnitTest( "N08: FourierSum, reduceDummyIndices() I", N08, "FourierSum[ ( 0, 1 )  ( 3, 3 )  ( 0, 0 ) ]    FourierSum[ ( 0, 1 )  ( 2, 2 )  ( 0, 0 ) ]" );
 
 	/*
 	 * ********************************************************************
@@ -2784,6 +2924,22 @@ int main( int argc, char** argv ) {
 	 */
 
 	UnitTest( "AJ01: fourierTransformExpression() I", &AJ01, " {K__( 0, 1 )} {K__( 1, 0 )} {Delta( 0, 1 )}      {K__( 0, 1 )} {K__( 1, 0 )} {FourierSum[ ( 0, 0 )  ( 0, 0 ) ]} " );
+
+	/*
+	 * areTermsCommon(),
+	 */
+
+	UnitTest( "AK01: areTermsCommon() I", &AK01, " {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}      {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}     1" );
+
+	UnitTest( "AK02: areTermsCommon() II", &AK02, " {A} {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}      {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}     0" );
+
+	UnitTest( "AK03: areTermsCommon() III", &AK03, " {A} {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}      {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]}     0" );
+
+	/*
+	 * combineLikeTerms()
+	 */
+
+	UnitTest( "AL01: combineLikeTerms() I", &AL01, " {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}  +  {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]}      {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]} {1}  +  {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]} {1} " );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

@@ -365,6 +365,8 @@ public:
 
 	bool operator==( const Sum &other ) const;
 
+	void reduceFourierSumIndices();
+
 	std::vector<SymbolicTermPtr>::const_iterator getIteratorBegin() const;
 
 	std::vector<SymbolicTermPtr>::const_iterator getIteratorEnd() const;
@@ -419,6 +421,10 @@ public:
 	bool operator==( const Sum &other ) const;
 
 	bool containsSum();
+
+	void zero();
+
+	void reduceFourierSumIndices();
 
 	std::vector<SymbolicTermPtr>::const_iterator getIteratorBegin() const;
 
@@ -503,6 +509,8 @@ public:
 
 	bool operator==( const FourierSum &other ) const;
 
+	void reduceDummyIndices();
+
 private:
 
 	std::vector<IndexContraction> indices;
@@ -521,13 +529,15 @@ bool unpackTrivialExpression( SymbolicTermPtr& expr );
 
 bool isZeroTrace( SymbolicTermPtr tr );
 
-int getProductAOrder( Product &prod );
+int getProductAOrder( SymbolicTermPtr prod );
 
 int getDualProductAOrder( Product &prodA, Product &prodB );
 
 int getTerminatedContraction( std::map<int, int> contractedIndexMapping, int index );
 
 std::map<int,int> constructContractionDictionary( DeltaContractionSet contractions );
+
+bool areTermsCommon( SymbolicTermPtr termA, SymbolicTermPtr termB );
 
 /*
  * ***********************************************************************
@@ -548,6 +558,8 @@ void rewriteSumInKSFormalism( SymbolicTermPtr expr );
 void indexExpression( SymbolicTermPtr expr );
 
 Sum fourierTransformExpression( SymbolicTermPtr expr );
+
+Sum combineLikeTerms( Sum &expr );
 
 /*
  * ***********************************************************************
