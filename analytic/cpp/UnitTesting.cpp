@@ -1388,6 +1388,31 @@ string T02() {
 	return ss.str();
 }
 
+string T03() {
+	stringstream ss;
+	Product A;
+	A.addTerm( SymbolicTermPtr( new MatrixB( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixB( "dn" ) ) );
+	A.addTerm( SymbolicTermPtr( new MatrixM( "dn" ) ) );
+	Trace B( A.copy() );
+	Product C;
+	C.addTerm( B.copy() );
+	Product D;
+	D.addTerm( SymbolicTermPtr( new MatrixB( "up" ) ) );
+	D.addTerm( SymbolicTermPtr( new MatrixM( "up" ) ) );
+	Trace E( D.copy() );
+	C.addTerm( E.copy() );
+	Sum F;
+	F.addTerm( C.copy() );
+	ss << F << "    ";
+	SymbolicTermPtr G = F.copy();
+	rewriteSumInKSFormalism( G );
+	indexExpression( G );
+	ss << *G;
+	return ss.str();
+}
+
 string U01() {
 	stringstream ss;
 	IndexContraction A;
@@ -2715,6 +2740,8 @@ int main( int argc, char** argv ) {
 	UnitTest( "T01: indexExpression() I", &T01, " {Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]}      { {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 0)} } " );
 
 	UnitTest( "T02: indexExpression() II", &T02, " {Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]}  +  {Trace[  {B_up} {M_up} {B_dn} {M_dn} {B_md} {M_md}  ]}      { {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 0)} }  +  { {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 4)} {K_md_( 4, 5 )} {S_(5, 0)} } " );
+
+	UnitTest( "T03: indexExpression() III", &T03, " {Trace[  {B_up} {M_up} {B_dn} {M_dn}  ]} {Trace[  {B_up} {M_up}  ]}      { {K_up_( 0, 1 )} {S_(1, 2)} {K_dn_( 2, 3 )} {S_(3, 0)} } { {K_up_( 4, 5 )} {S_(5, 4)} } " );
 
 	/*
 	 * U: IndexContraction

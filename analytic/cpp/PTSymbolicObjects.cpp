@@ -1646,7 +1646,7 @@ void indexExpression( SymbolicTermPtr expr ) {
 						castTraceExpr->terms[ i ]->setIndices( nextIndex + i, nextIndex + i + 1 );
 					}
 					castTraceExpr->terms[ castTraceExpr->getNumberOfTerms() - 1 ]->setIndices( nextIndex + castTraceExpr->getNumberOfTerms() - 1, nextIndex);
-					nextIndex += castTraceExpr->getNumberOfTerms() + 1;
+					nextIndex += castTraceExpr->getNumberOfTerms();
 
 					*factor = SymbolicTermPtr( castTraceExpr );
 				}
