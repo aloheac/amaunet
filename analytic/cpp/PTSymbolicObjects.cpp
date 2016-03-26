@@ -1777,6 +1777,38 @@ Sum combineLikeTerms( Sum &expr ) {
 	return reducedSum;
 }
 
+Sum combineLikeTerms( Sum &expr, int groupSize ) {
+	Sum simplifiedExpression;
+
+	if ( expr.getNumberOfTerms() <= groupSize ) {
+		simplifiedExpression = combineLikeTerms( expr );
+		simplifiedExpression.simplify();
+		return simplifiedExpression;
+	} else {
+		int i = 0;
+		while ( i < expr.getNumberOfTerms() ) {
+			cout << ">> Processing term batch range " << i << " to " << i + groupSize << "." << endl;
+
+			vector<SymbolicTermPtr>::iterator endingIterator;
+			if ( i + groupSize > expr.getNumberOfTerms() ) {
+				endingIterator = expr.getIteratorEnd();
+			} else {
+				endingIterator = expr.getIteratorBegin();
+				endingIterator += i + groupSize;
+			}
+
+			vector<SymbolicTermPtr> nextGroupOfTerms( expr.getIteratorBegin() += i, endingIterator );
+			Sum nextGroup( nextGroupOfTerms );
+			simplifiedExpression.addTerm( combineLikeTerms( nextGroup, groupSize ).copy() );
+			i += groupSize;
+		}
+
+		simplifiedExpression.reduceTree();
+		simplifiedExpression.simplify();
+		return combineLikeTerms( simplifiedExpression, groupSize );
+	}
+}
+
 /*
  * ***********************************************************************
  * INPUT REDIRECTION OPERATOR OVERLOADS

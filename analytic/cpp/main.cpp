@@ -301,7 +301,7 @@ int main( int argc, char** argv ) {
 	pathIntegral.reduceFourierSumIndices();
 
 	cout << "Combining like terms..." << endl;
-	pathIntegral = combineLikeTerms( pathIntegral );
+	pathIntegral = combineLikeTerms( pathIntegral, 500 );
 
 	cout << "Performing trivial mathematical simplification..." << endl;
 	pathIntegral.simplify();

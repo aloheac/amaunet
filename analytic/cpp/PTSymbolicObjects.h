@@ -561,6 +561,8 @@ Sum fourierTransformExpression( SymbolicTermPtr expr );
 
 Sum combineLikeTerms( Sum &expr );
 
+Sum combineLikeTerms( Sum &expr, int groupSize );
+
 /*
  * ***********************************************************************
  * INPUT REDIRECTION OPERATOR OVERLOADS
