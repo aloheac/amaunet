@@ -704,6 +704,8 @@ Sum Sum::getExpandedExpr() {
 		} else if ( (*iter)->getTermID() == TermTypes::PRODUCT ) {
 			ProductPtr prod = dynamic_pointer_cast<Product>( *iter );
 			expandedSum.addTerm( prod->getExpandedExpr().copy() );
+		} else {
+			expandedSum.addTerm( (*iter)->copy() );
 		}
 	}
 
@@ -722,6 +724,10 @@ void Sum::setAsNonInteracting() {
 	for ( vector<SymbolicTermPtr>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
 		(*iter)->setAsNonInteracting();
 	}
+}
+
+void Sum::clear() {
+	terms.clear();
 }
 
 bool Sum::operator==( const Sum &other ) const {
@@ -1028,6 +1034,10 @@ void Product::zero() {
 	vector<SymbolicTermPtr> zero;
 	zero.push_back( CoefficientFloatPtr( new CoefficientFloat( 0.0 ) ) );
 	terms = zero;
+}
+
+void Product::clear() {
+	terms.clear();
 }
 
 void Product::reduceFourierSumIndices() {

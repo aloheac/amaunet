@@ -19,6 +19,7 @@
 #include <memory>
 #include "PTSymbolicObjects.h"
 #include "PathIntegration.h"
+#include "Multithreading.h"
 
 using namespace std;
 
@@ -249,12 +250,12 @@ int main( int argc, char** argv ) {
 		Zup->addTerm( P10.copy() );
 	}
 
+	cout << "Expanding flavor determinants..." << endl;
+	Zup = static_pointer_cast<Sum>( Zup->getExpandedExpr().copy() );
+
 	cout << "Expanding full determinant..." << endl;
-	ProductPtr ZProduct( new Product() );
 	SumPtr Z;
-	ZProduct->addTerm( Zup->copy() );
-	ZProduct->addTerm( Zup->copy() );
-	Z = static_pointer_cast<Sum>( ZProduct->getExpandedExpr().copy() );
+	Z = static_pointer_cast<Sum>( getDualExpansionByParts( static_pointer_cast<Sum>( Zup->copy() ), static_pointer_cast<Sum>( Zup->copy() ) ).copy() );
 
 	cout << "Reducing expression tree..." << endl;
 	Z->reduceTree();

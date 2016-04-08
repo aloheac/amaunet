@@ -23,7 +23,6 @@
 
 using namespace std;
 
-
 class UnitTest {
 public:
 	UnitTest( string name, string (*tst)(), string result ) {
