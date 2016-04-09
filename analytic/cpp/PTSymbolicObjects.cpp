@@ -1797,7 +1797,7 @@ Sum combineLikeTerms( Sum &expr, int groupSize ) {
 	} else {
 		int i = 0;
 		while ( i < expr.getNumberOfTerms() ) {
-			cout << ">> Processing term batch range " << i << " to " << i + groupSize << "." << endl;
+			cout << ">> Combining like terms for batch range " << i << " to " << i + groupSize << " of " << expr.getNumberOfTerms() << "." << endl;
 
 			vector<SymbolicTermPtr>::iterator endingIterator;
 			if ( i + groupSize > expr.getNumberOfTerms() ) {

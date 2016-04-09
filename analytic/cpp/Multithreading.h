@@ -23,4 +23,10 @@
 
 Sum getDualExpansionByParts( SumPtr exprA, SumPtr exprB );
 
+SymbolicTermPtr fullyEvaluatePartialExpression( SumPtr expr, int EXPANSION_ORDER_IN_A, int POOL_SIZE );
+
+SumPtr fullyEvaluateExpressionByParts( SumPtr expr, int EXPANSION_ORDER_IN_A, int POOL_SIZE );
+
+SumPtr expandAndEvaluateExpressionByParts( SumPtr exprA, SumPtr exprB, int EXPANSION_ORDER_IN_A, int POOL_SIZE );
+
 #endif //AMAUNETC_MULTITHREADING_H

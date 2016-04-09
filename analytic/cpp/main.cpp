@@ -51,6 +51,7 @@ int main( int argc, char** argv ) {
 	// Load global system parameters.
 	int EXPANSION_ORDER_IN_A = 4;
 	int SPLIT_SUMS_BY_LINE = 1;
+	int EVAL_BY_PARTS = 1;
 
 	cout << "Loaded parameters:" << endl;
 	cout << "\tExpansion order in A:\t\t" << EXPANSION_ORDER_IN_A << endl;
@@ -253,60 +254,68 @@ int main( int argc, char** argv ) {
 	cout << "Expanding flavor determinants..." << endl;
 	Zup = static_pointer_cast<Sum>( Zup->getExpandedExpr().copy() );
 
-	cout << "Expanding full determinant..." << endl;
-	SumPtr Z;
-	Z = static_pointer_cast<Sum>( getDualExpansionByParts( static_pointer_cast<Sum>( Zup->copy() ), static_pointer_cast<Sum>( Zup->copy() ) ).copy() );
+	SumPtr pathIntegral;
+	if ( not EVAL_BY_PARTS ) {
+		cout << "Expanding full determinant..." << endl;
+		SumPtr Z;
+		Z = static_pointer_cast<Sum>(getDualExpansionByParts(static_pointer_cast<Sum>(Zup->copy()),
+															 static_pointer_cast<Sum>(Zup->copy())).copy());
 
-	cout << "Reducing expression tree..." << endl;
-	Z->reduceTree();
+		cout << "Reducing expression tree..." << endl;
+		Z->reduceTree();
 
-	cout << "Truncating high orders in A of expansion..." << endl;
-	Z = static_pointer_cast<Sum>( truncateAOrder( Z, EXPANSION_ORDER_IN_A ).copy() );
+		cout << "Truncating high orders in A of expansion..." << endl;
+		Z = static_pointer_cast<Sum>(truncateAOrder(Z, EXPANSION_ORDER_IN_A).copy());
 
-	cout << "Truncating odd orders in A of expansion..." << endl;
-	Z = static_pointer_cast<Sum>( truncateOddOrders( Z ).copy() );
+		cout << "Truncating odd orders in A of expansion..." << endl;
+		Z = static_pointer_cast<Sum>(truncateOddOrders(Z).copy());
 
-	cout << "Setting all objects in expansion as non-interacting..." << endl;
-	Z->setAsNonInteracting();
+		cout << "Setting all objects in expansion as non-interacting..." << endl;
+		Z->setAsNonInteracting();
 
-	cout << "Rewriting expansion in terms of KS formalism..." << endl;
-	rewriteSumInKSFormalism( Z );
+		cout << "Rewriting expansion in terms of KS formalism..." << endl;
+		rewriteSumInKSFormalism(Z);
 
-	cout << "Indexing terms in expansion..." << endl;
-	indexExpression( Z );
+		cout << "Indexing terms in expansion..." << endl;
+		indexExpression(Z);
 
-	cout << "Reducing expression tree..." << endl;
-	Z->reduceTree();
+		cout << "Reducing expression tree..." << endl;
+		Z->reduceTree();
 
-	cout << "Computing path integral of expression..." << endl;
-	Sum pathIntegral;
-	pathIntegral = pathIntegrateExpression( Z );
-	Z.reset();
+		cout << "Computing path integral of expression..." << endl;
+		Sum interimPathIntegral;
+		interimPathIntegral = pathIntegrateExpression(Z);
+		Z.reset();
 
-	cout << "Reducing expression tree..." << endl;
-	pathIntegral.reduceTree();
+		cout << "Reducing expression tree..." << endl;
+		interimPathIntegral.reduceTree();
 
-	cout << "Performing trivial mathematical simplification..." << endl;
-	pathIntegral.simplify();
+		cout << "Performing trivial mathematical simplification..." << endl;
+		interimPathIntegral.simplify();
 
-	cout << "Expanding integrated expression..." << endl;
-	pathIntegral = pathIntegral.getExpandedExpr();
+		cout << "Expanding integrated expression..." << endl;
+		interimPathIntegral = interimPathIntegral.getExpandedExpr();
 
-	cout << "Reducing expression tree..." << endl;
-	pathIntegral.reduceTree();
+		cout << "Reducing expression tree..." << endl;
+		interimPathIntegral.reduceTree();
 
-	cout << "Computing analytic Fourier transform of expression..." << endl;
-	pathIntegral = fourierTransformExpression( pathIntegral.copy() );
+		cout << "Computing analytic Fourier transform of expression..." << endl;
+		interimPathIntegral = fourierTransformExpression(interimPathIntegral.copy());
 
-	cout << "Reducing dummy indices of Fourier transformation..." << endl;
-	pathIntegral.reduceFourierSumIndices();
+		cout << "Reducing dummy indices of Fourier transformation..." << endl;
+		interimPathIntegral.reduceFourierSumIndices();
 
-	cout << "Combining like terms..." << endl;
-	pathIntegral = combineLikeTerms( pathIntegral, 500 );
+		cout << "Combining like terms..." << endl;
+		interimPathIntegral = combineLikeTerms(interimPathIntegral, 500);
 
-	cout << "Performing trivial mathematical simplification..." << endl;
-	pathIntegral.simplify();
+		cout << "Performing trivial mathematical simplification..." << endl;
+		interimPathIntegral.simplify();
 
-	cout << pathIntegral << endl;
+		pathIntegral = static_pointer_cast<Sum>( interimPathIntegral.copy() );
 
+	} else {
+		pathIntegral = expandAndEvaluateExpressionByParts( Zup, Zup, EXPANSION_ORDER_IN_A, 1000 );
+	}
+
+	cout << *pathIntegral << endl;
 }
