@@ -556,6 +556,13 @@ double CoefficientFraction::eval() {
 	return (double)num / (double)den;
 }
 
+
+void CoefficientFraction::reduce() {
+	int thisGCD = gcd( num, den );
+	num /= thisGCD;
+	den /= thisGCD;
+}
+
 /*
  * ***********************************************************************
  * TERM DERIVED CLASSES - EXPRESSION CLASSES
@@ -1818,6 +1825,15 @@ Sum combineLikeTerms( Sum &expr, int groupSize ) {
 		return combineLikeTerms( simplifiedExpression, groupSize );
 	}
 }
+
+int gcd( int a, int b ) {
+	if ( a == 0 ) {
+		return b;
+	} else {
+		return gcd( b % a, a );
+	}
+}
+
 
 /*
  * ***********************************************************************

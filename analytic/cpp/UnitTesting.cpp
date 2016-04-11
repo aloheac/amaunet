@@ -424,6 +424,24 @@ string I03() {
 	return ss.str();
 }
 
+string I04() {
+	stringstream ss;
+	CoefficientFraction A( 4, 8 );
+	ss << A << "    ";
+	A.reduce();
+	ss << A;
+	return ss.str();
+}
+
+string I05() {
+	stringstream ss;
+	CoefficientFraction A( 84, 174 );
+	ss << A << "    ";
+	A.reduce();
+	ss << A;
+	return ss.str();
+}
+
 string J01() {
 	stringstream ss;
 	Sum A = Sum( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
@@ -2411,6 +2429,30 @@ string AL02() {
 	return ss.str();
 }
 
+string AM01() {
+	stringstream ss;
+	ss << gcd( 6, 4 );
+	return ss.str();
+}
+
+string AM02() {
+	stringstream ss;
+	ss << gcd( 3, 12 );
+	return ss.str();
+}
+
+string AM03() {
+	stringstream ss;
+	ss << gcd( 3, 7 );
+	return ss.str();
+}
+
+string AM04() {
+	stringstream ss;
+	ss << gcd( 164, 88 );
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -2553,6 +2595,10 @@ int main( int argc, char** argv ) {
 	UnitTest( "I02: CoefficientFraction, getDerivative()", &I02, "5 / 9    0" );
 
 	UnitTest( "I03: CoefficientFraction, Sum, getDerivative(), simplify()", &I03, "GT_0^0 + 3 / 7    GT_0^1    GT_0^1" );
+
+	UnitTest( "I04: CoefficientFraction, reduce() I", &I04, "4 / 8    1 / 2" );
+
+	UnitTest( "I05: CoefficientFraction, reduce() II", &I05, "84 / 174    14 / 29" );
 
 	/*
 	 * J: Sum
@@ -2966,6 +3012,18 @@ int main( int argc, char** argv ) {
 	 */
 
 	UnitTest( "AL01: combineLikeTerms() I", &AL01, " {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}  +  {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]}      {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]} {1}  +  {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]} {1} " );
+
+	/*
+	 * gcd()
+	 */
+
+	UnitTest( "AM01: gcd() I", &AM01, "2" );
+
+	UnitTest( "AM02: gcd() II", &AM02, "3" );
+
+	UnitTest( "AM03: gcd() III", &AM03, "1" );
+
+	UnitTest( "AM04: gcd() IV", &AM04, "4" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

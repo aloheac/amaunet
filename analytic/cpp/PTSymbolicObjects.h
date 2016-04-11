@@ -312,6 +312,8 @@ public:
 
 	double eval();
 
+	void reduce();
+
 private:
 
 	int num, den;
@@ -542,6 +544,8 @@ int getTerminatedContraction( std::map<int, int> contractedIndexMapping, int ind
 std::map<int,int> constructContractionDictionary( DeltaContractionSet contractions );
 
 bool areTermsCommon( SymbolicTermPtr termA, SymbolicTermPtr termB );
+
+int gcd( int a, int b );
 
 /*
  * ***********************************************************************

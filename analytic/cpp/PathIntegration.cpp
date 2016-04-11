@@ -566,6 +566,7 @@ ostream& operator<<( std::ostream& os, const vector< vector<int> > &obj ) {
         os << " ] ";
     }
     os << "]";
+    return os;
 }
 
 ostream& operator<<( std::ostream& os, const vector<DeltaContractionSet> &obj ) {
@@ -578,6 +579,7 @@ ostream& operator<<( std::ostream& os, const vector<DeltaContractionSet> &obj ) 
         os << " ] ";
     }
     os << "]";
+    return os;
 }
 
 ostream& operator<<( ostream& os, const vector<TotalSignature> &obj ) {
@@ -586,4 +588,5 @@ ostream& operator<<( ostream& os, const vector<TotalSignature> &obj ) {
         os << " { " << vec->deltas << " | " << vec->deltaBars << " } ";
     }
     os << "]";
+    return os;
 }
