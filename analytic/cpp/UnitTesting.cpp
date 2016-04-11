@@ -442,6 +442,47 @@ string I05() {
 	return ss.str();
 }
 
+string I06() {
+	stringstream ss;
+	CoefficientFraction A( 3, 7 );
+	ss << A << "    ";
+	A.reduce();
+	ss << A;
+	return ss.str();
+}
+
+string I07() {
+	stringstream ss;
+	CoefficientFraction A( 3, 7 );
+	CoefficientFraction B( 4, 9 );
+	ss << A << "    " << B << "    " << A * B;
+	return ss.str();
+}
+
+string I08() {
+	stringstream ss;
+	CoefficientFraction A( 1, 2 );
+	CoefficientFraction B( 1, 4 );
+	ss << A << "    " << B << "    " << A + B;
+	return ss.str();
+}
+
+string I09() {
+	stringstream ss;
+	CoefficientFraction A( 5, 3 );
+	CoefficientFraction B( 8, 3 );
+	ss << A << "    " << B << "    " << A + B;
+	return ss.str();
+}
+
+string I10() {
+	stringstream ss;
+	CoefficientFraction A( 7, 2 );
+	CoefficientFraction B( 8, 4 );
+	ss << A << "    " << B << "    " << A + B;
+	return ss.str();
+}
+
 string J01() {
 	stringstream ss;
 	Sum A = Sum( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
@@ -2599,6 +2640,16 @@ int main( int argc, char** argv ) {
 	UnitTest( "I04: CoefficientFraction, reduce() I", &I04, "4 / 8    1 / 2" );
 
 	UnitTest( "I05: CoefficientFraction, reduce() II", &I05, "84 / 174    14 / 29" );
+
+	UnitTest( "I06: CoefficientFraction, reduce() III", &I06, "3 / 7    3 / 7" );
+
+	UnitTest( "I07: CoefficientFraction, operator* Overload", &I07, "3 / 7    4 / 9    4 / 21" );
+
+	UnitTest( "I08: CoefficientFraction, operator+ Overload I", &I08, "1 / 2    1 / 4    3 / 4" );
+
+	UnitTest( "I09: CoefficientFraction, operator+ Overload II", &I09, "5 / 3    8 / 3    13 / 3" );
+
+	UnitTest( "I10: CoefficientFraction, operator+ Overload III", &I10, "7 / 2    8 / 4    11 / 2" );
 
 	/*
 	 * J: Sum

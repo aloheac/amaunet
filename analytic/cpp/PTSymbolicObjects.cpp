@@ -543,6 +543,18 @@ const string CoefficientFraction::to_string() const {
 	return ss.str();
 }
 
+CoefficientFraction CoefficientFraction::operator*( const CoefficientFraction& obj ) {
+	CoefficientFraction product( num * obj.num, den * obj.den );
+	product.reduce();
+	return product;
+}
+
+CoefficientFraction CoefficientFraction::operator+( const CoefficientFraction& obj ) {
+	CoefficientFraction sum( num * obj.den + den * obj.num, den * obj.den );
+	sum.reduce();
+	return sum;
+}
+
 SymbolicTermPtr CoefficientFraction::copy() {
 	SymbolicTermPtr cpy( new CoefficientFraction( num, den ) );
 	return cpy;

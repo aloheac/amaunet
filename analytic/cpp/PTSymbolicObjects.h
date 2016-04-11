@@ -306,6 +306,10 @@ public:
 
 	const std::string to_string() const;
 
+	CoefficientFraction operator*( const CoefficientFraction& obj );
+
+	CoefficientFraction operator+( const CoefficientFraction& obj );
+
 	SymbolicTermPtr copy();
 
 	Sum getDerivative();
