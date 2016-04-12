@@ -276,6 +276,9 @@ public:
 };
 
 class CoefficientFloat : public SymbolicTerm {
+
+	friend class CoefficientFraction; // TODO: Replace friend declaration with making eval() const.
+
 public:
 
 	CoefficientFloat( double val );
@@ -300,7 +303,7 @@ public:
 
 	CoefficientFraction();
 
-	CoefficientFraction( int n, int d );
+	CoefficientFraction( double n, double d );
 
 	CoefficientFraction( CoefficientFraction* f );
 
@@ -309,6 +312,10 @@ public:
 	CoefficientFraction operator*( const CoefficientFraction& obj );
 
 	CoefficientFraction operator+( const CoefficientFraction& obj );
+
+	CoefficientFraction operator*( const CoefficientFloat& obj );
+
+	CoefficientFraction operator+( const CoefficientFloat& obj );
 
 	SymbolicTermPtr copy();
 
@@ -320,7 +327,7 @@ public:
 
 private:
 
-	int num, den;
+	double num, den;
 };
 
 /*

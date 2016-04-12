@@ -525,7 +525,7 @@ CoefficientFraction::CoefficientFraction() : SymbolicTerm() {
 	termID = TermTypes::COEFFICIENT_FRACTION;
 }
 
-CoefficientFraction::CoefficientFraction( int n, int d ) : SymbolicTerm() {
+CoefficientFraction::CoefficientFraction( double n, double d ) : SymbolicTerm() {
 	num = n;
 	den = d;
 	termID = TermTypes::COEFFICIENT_FRACTION;
@@ -555,6 +555,18 @@ CoefficientFraction CoefficientFraction::operator+( const CoefficientFraction& o
 	return sum;
 }
 
+CoefficientFraction CoefficientFraction::operator*( const CoefficientFloat& obj ) {
+	CoefficientFraction product( num * obj.value, den );
+	product.reduce();
+	return product;
+}
+
+CoefficientFraction CoefficientFraction::operator+( const CoefficientFloat& obj ) {
+	CoefficientFraction sum( num + obj.value * den, den );
+	sum.reduce();
+	return sum;
+}
+
 SymbolicTermPtr CoefficientFraction::copy() {
 	SymbolicTermPtr cpy( new CoefficientFraction( num, den ) );
 	return cpy;
@@ -565,14 +577,16 @@ Sum CoefficientFraction::getDerivative() {
 }
 
 double CoefficientFraction::eval() {
-	return (double)num / (double)den;
+	return num / den;
 }
 
 
 void CoefficientFraction::reduce() {
-	int thisGCD = gcd( num, den );
-	num /= thisGCD;
-	den /= thisGCD;
+	if ( abs( floor( num ) - num ) == 0 and abs( floor( den ) - den ) == 0 ) {
+		double thisGCD = (double)gcd( (int)abs( num ), (int)abs( den ) );
+		num /= thisGCD;
+		den /= thisGCD;
+	}
 }
 
 /*

@@ -483,6 +483,84 @@ string I10() {
 	return ss.str();
 }
 
+string I11() {
+	stringstream ss;
+	CoefficientFraction A( 5.4, 7.9 );
+	ss << A << "    ";
+	A.reduce();
+	ss << A;
+	return ss.str();
+}
+
+string I12() {
+	stringstream ss;
+	CoefficientFraction A( 1, 3 );
+	CoefficientFloat B( 5 );
+	ss << A << "    " << B << "    " << A * B;
+	return ss.str();
+}
+
+string I13() {
+	stringstream ss;
+	CoefficientFraction A( 5, 8 );
+	CoefficientFloat B( 2 );
+	CoefficientFraction C = A * B;
+	C.reduce();
+	ss << A << "    " << B << "    " << C;
+	return ss.str();
+}
+
+string I14() {
+	stringstream ss;
+	CoefficientFraction A( 5, 8 );
+	CoefficientFloat B( -2 );
+	CoefficientFraction C = A * B;
+	C.reduce();
+	ss << A << "    " << B << "    " << C;
+	return ss.str();
+}
+
+string I15() {
+	stringstream ss;
+	CoefficientFraction A( 1, 2 );
+	CoefficientFloat B( -1 );
+	CoefficientFraction C = A * B;
+	C.reduce();
+	ss << A << "    " << B << "    " << C << "    " << C * B;
+	return ss.str();
+}
+
+string I16() {
+	stringstream ss;
+	CoefficientFraction A( 1, 2 );
+	CoefficientFloat B( 1 );
+	CoefficientFraction C = A + B;
+	C.reduce();
+	ss << A << "    " << B << "    " << C;
+	return ss.str();
+}
+
+string I17() {
+	stringstream ss;
+	CoefficientFraction A( 1, 2 );
+	CoefficientFloat B( -1 );
+	CoefficientFraction C = A + B;
+	C.reduce();
+	ss << A << "    " << B << "    " << C;
+	return ss.str();
+}
+
+string I18() {
+	stringstream ss;
+	CoefficientFraction A( 2, 8 );
+	CoefficientFloat B( -1 );
+	CoefficientFraction C = A + B;
+	C.reduce();
+	ss << A << "    " << B << "    " << C;
+	return ss.str();
+}
+
+
 string J01() {
 	stringstream ss;
 	Sum A = Sum( GenericTestTermPtr( new GenericTestTerm(0,0) ) );
@@ -2650,6 +2728,22 @@ int main( int argc, char** argv ) {
 	UnitTest( "I09: CoefficientFraction, operator+ Overload II", &I09, "5 / 3    8 / 3    13 / 3" );
 
 	UnitTest( "I10: CoefficientFraction, operator+ Overload III", &I10, "7 / 2    8 / 4    11 / 2" );
+
+	UnitTest( "I11: CoefficientFraction, reduce() IV, double", &I11, "5.4 / 7.9    5.4 / 7.9" );
+
+	UnitTest( "I12: CoefficientFraction, operator*( CoefficientFloat ) Overload I", &I12, "1 / 3    5    5 / 3" );
+
+	UnitTest( "I13: CoefficientFraction, operator*( CoefficientFloat ) Overload II", &I13, "5 / 8    2    5 / 4" );
+
+	UnitTest( "I14: CoefficientFraction, operator*( CoefficientFloat ) Overload III", &I14, "5 / 8    -2    -5 / 4" );
+
+	UnitTest( "I15: CoefficientFraction, operator*( CoefficientFloat ) Overload IV", &I15, "1 / 2    -1    -1 / 2    1 / 2" );
+
+	UnitTest( "I16: CoefficientFraction, operator+( CoefficientFloat ) Overload I", &I16, "1 / 2    1    3 / 2" );
+
+	UnitTest( "I17: CoefficientFraction, operator+( CoefficientFloat ) Overload II", &I17, "1 / 2    -1    -1 / 2" );
+
+	UnitTest( "I18: CoefficientFraction, operator+( CoefficientFloat ) Overload III", &I18, "2 / 8    -1    -3 / 4" );
 
 	/*
 	 * J: Sum
