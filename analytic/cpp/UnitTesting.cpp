@@ -257,6 +257,38 @@ string D02() {
 	return ss.str();
 }
 
+string D03() {
+	stringstream ss;
+	CoefficientFloat A( 3 );
+	CoefficientFloat B( 5 );
+	ss << A << "    " << B << "    " << A + B;
+	return ss.str();
+}
+
+string D04() {
+	stringstream ss;
+	CoefficientFloat A( 3 );
+	CoefficientFloat B( -5 );
+	ss << A << "    " << B << "    " << A * B;
+	return ss.str();
+}
+
+string D05() {
+	stringstream ss;
+	CoefficientFloat A( 3 );
+	CoefficientFraction B( 1, 2 );
+	ss << A << "    " << B << "    " << A + B;
+	return ss.str();
+}
+
+string D06() {
+	stringstream ss;
+	CoefficientFloat A( 4 );
+	CoefficientFraction B( 1, 2 );
+	ss << A << "    " << B << "    " << A * B;
+	return ss.str();
+}
+
 string E01() {
 	stringstream ss;
 	MatrixB A = MatrixB();
@@ -2654,6 +2686,14 @@ int main( int argc, char** argv ) {
 	UnitTest( "D01: CoefficientFloat, to_string(), Constructor", &D01, "0" );
 
 	UnitTest( "D02: CoefficientFloat, getDerivative()", &D02, "3    0" );
+
+	UnitTest( "D03: CoefficientFloat, operator+ Overload", &D03, "3    5    8" );
+
+	UnitTest( "D04: CoefficientFloat, operator* Overload", &D04, "3    -5    -15" );
+
+	UnitTest( "D05: CoefficientFloat, operator+( CoefficientFraction ) Overload", &D05, "3    1 / 2    7 / 2" );
+
+	UnitTest( "D06: CoefficientFloat, operator*( CoefficientFraction ) Overload", &D06, "4    1 / 2    2 / 1" );
 
 	/*
 	 * E: MatrixB

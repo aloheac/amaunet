@@ -275,29 +275,6 @@ public:
 	SymbolicTermPtr copy();
 };
 
-class CoefficientFloat : public SymbolicTerm {
-
-	friend class CoefficientFraction; // TODO: Replace friend declaration with making eval() const.
-
-public:
-
-	CoefficientFloat( double val );
-
-	CoefficientFloat( const CoefficientFloat* f );
-
-	const std::string to_string() const;
-
-	SymbolicTermPtr copy();
-
-	Sum getDerivative();
-
-	double eval();
-
-private:
-
-	double value;
-};
-
 class CoefficientFraction : public SymbolicTerm {
 public:
 
@@ -309,13 +286,13 @@ public:
 
 	const std::string to_string() const;
 
-	CoefficientFraction operator*( const CoefficientFraction& obj );
+	CoefficientFraction operator*( const CoefficientFraction& obj ) const;
 
-	CoefficientFraction operator+( const CoefficientFraction& obj );
+	CoefficientFraction operator+( const CoefficientFraction& obj ) const;
 
-	CoefficientFraction operator*( const CoefficientFloat& obj );
+	CoefficientFraction operator*( const CoefficientFloat& obj ) const;
 
-	CoefficientFraction operator+( const CoefficientFloat& obj );
+	CoefficientFraction operator+( const CoefficientFloat& obj ) const;
 
 	SymbolicTermPtr copy();
 
@@ -328,6 +305,37 @@ public:
 private:
 
 	double num, den;
+};
+
+class CoefficientFloat : public SymbolicTerm {
+
+	friend class CoefficientFraction; // TODO: Replace friend declaration with making eval() const.
+
+public:
+
+	CoefficientFloat( double val );
+
+	CoefficientFloat( const CoefficientFloat* f );
+
+	const std::string to_string() const;
+
+	CoefficientFloat operator*( const CoefficientFloat& obj ) const;
+
+	CoefficientFloat operator+( const CoefficientFloat& obj ) const;
+
+	CoefficientFraction operator*( const CoefficientFraction& obj ) const;
+
+	CoefficientFraction operator+( const CoefficientFraction& obj ) const;
+
+	SymbolicTermPtr copy();
+
+	Sum getDerivative();
+
+	double eval();
+
+private:
+
+	double value;
 };
 
 /*

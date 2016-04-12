@@ -502,6 +502,22 @@ const string CoefficientFloat::to_string() const {
 	return ss.str();
 }
 
+CoefficientFloat CoefficientFloat::operator*( const CoefficientFloat& obj ) const {
+	return CoefficientFloat( value * obj.value );
+}
+
+CoefficientFloat CoefficientFloat::operator+( const CoefficientFloat& obj ) const {
+	return CoefficientFloat( value + obj.value );
+}
+
+CoefficientFraction CoefficientFloat::operator*( const CoefficientFraction& obj ) const {
+	return obj * (*this);
+}
+
+CoefficientFraction CoefficientFloat::operator+( const CoefficientFraction& obj ) const {
+	return obj + (*this);
+}
+
 SymbolicTermPtr CoefficientFloat::copy() {
 	SymbolicTermPtr cpy( new CoefficientFloat( value ) );
 	return cpy;
@@ -543,25 +559,25 @@ const string CoefficientFraction::to_string() const {
 	return ss.str();
 }
 
-CoefficientFraction CoefficientFraction::operator*( const CoefficientFraction& obj ) {
+CoefficientFraction CoefficientFraction::operator*( const CoefficientFraction& obj ) const {
 	CoefficientFraction product( num * obj.num, den * obj.den );
 	product.reduce();
 	return product;
 }
 
-CoefficientFraction CoefficientFraction::operator+( const CoefficientFraction& obj ) {
+CoefficientFraction CoefficientFraction::operator+( const CoefficientFraction& obj ) const {
 	CoefficientFraction sum( num * obj.den + den * obj.num, den * obj.den );
 	sum.reduce();
 	return sum;
 }
 
-CoefficientFraction CoefficientFraction::operator*( const CoefficientFloat& obj ) {
+CoefficientFraction CoefficientFraction::operator*( const CoefficientFloat& obj ) const {
 	CoefficientFraction product( num * obj.value, den );
 	product.reduce();
 	return product;
 }
 
-CoefficientFraction CoefficientFraction::operator+( const CoefficientFloat& obj ) {
+CoefficientFraction CoefficientFraction::operator+( const CoefficientFloat& obj ) const {
 	CoefficientFraction sum( num + obj.value * den, den );
 	sum.reduce();
 	return sum;
