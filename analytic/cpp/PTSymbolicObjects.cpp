@@ -518,6 +518,16 @@ CoefficientFraction CoefficientFloat::operator+( const CoefficientFraction& obj 
 	return obj + (*this);
 }
 
+CoefficientFloat& CoefficientFloat::operator*=( const CoefficientFloat& obj ) {
+	this->value *= obj.value;
+	return *this;
+}
+
+CoefficientFloat& CoefficientFloat::operator+=( const CoefficientFloat& obj ) {
+	this->value += obj.value;
+	return *this;
+}
+
 SymbolicTermPtr CoefficientFloat::copy() {
 	SymbolicTermPtr cpy( new CoefficientFloat( value ) );
 	return cpy;
@@ -581,6 +591,22 @@ CoefficientFraction CoefficientFraction::operator+( const CoefficientFloat& obj 
 	CoefficientFraction sum( num + obj.value * den, den );
 	sum.reduce();
 	return sum;
+}
+
+CoefficientFraction& CoefficientFraction::operator*=( const CoefficientFraction& obj ) {
+	CoefficientFraction product = (*this) * obj;
+	this->num = product.num;
+	this->den = product.den;
+
+	return (*this);
+}
+
+CoefficientFraction& CoefficientFraction::operator+=( const CoefficientFraction& obj ) {
+	CoefficientFraction sum = (*this) + obj;
+	this->num = sum.num;
+	this->den = sum.den;
+
+	return (*this);
 }
 
 SymbolicTermPtr CoefficientFraction::copy() {
@@ -689,7 +715,7 @@ void Sum::simplify() {
 		unpackTrivialExpression( (*iter) );
 		string trimmedRepresentation = (*iter)->to_string();  // To be trimmed on next statement.
 		boost::trim( trimmedRepresentation );
-		if ( trimmedRepresentation == "0" or trimmedRepresentation == "{0}" or isZeroTrace( *iter ) ) {
+		if ( trimmedRepresentation == "0" or trimmedRepresentation == "{0}" or trimmedRepresentation == "0 / 1" or trimmedRepresentation == "{0 / 1}" or isZeroTrace( *iter ) ) {
 			(*iter).reset();  // Verify.
 			iter = terms.erase( iter );  // Note that we shouldn't need to check for a break condition as we do for
 		} else {                         // Product::simplify() since the for loop doesn't advance the iterator; we
@@ -876,14 +902,14 @@ void Product::simplify() {
 		string trimmedRepresentation = (*iter)->to_string();  // To be trimmed on next statement.
 		boost::trim( trimmedRepresentation );
 
-		if ( trimmedRepresentation == "0" or trimmedRepresentation == "-0" or isZeroTrace( *iter ) ) {
+		if ( trimmedRepresentation == "0" or trimmedRepresentation == "-0" or trimmedRepresentation == "0 / 1" or isZeroTrace( *iter ) ) {
 			CoefficientFloatPtr zero( new CoefficientFloat( 0.0 ) );
 			vector<SymbolicTermPtr> zeroVector;
 			zeroVector.push_back( zero );
 			// delete terms?
 			terms = zeroVector;
 			return;
-		} else if ( trimmedRepresentation == "1" ) {
+		} else if ( trimmedRepresentation == "1" or trimmedRepresentation == "1 / 1" ) {
 			(*iter).reset(); // Verify.
 			iter = terms.erase( iter );
 
@@ -1778,9 +1804,9 @@ Sum combineLikeTerms( Sum &expr ) {
 	Sum reducedSum;
 
 	for ( vector<SymbolicTermPtr>::iterator term = expr.getIteratorBegin(); term != expr.getIteratorEnd(); ++term ) {
-		double runningLikeTermsCoefficient = 0.0;
+		CoefficientFraction runningLikeTermsCoefficient( 0, 1 );
 
-		double termATotalCoefficient = 1.0;
+		CoefficientFraction termATotalCoefficient( 1, 1 );
 		Product combinedFactorA;
 
 		if ( (*term)->getTermID() != TermTypes::PRODUCT ) {
@@ -1792,16 +1818,16 @@ Sum combineLikeTerms( Sum &expr ) {
 		for ( vector<SymbolicTermPtr>::iterator factor = castTerm->getIteratorBegin(); factor != castTerm->getIteratorEnd(); ++factor ) {
 			if ( (*factor)->getTermID() == TermTypes::COEFFICIENT_FLOAT ) {
 				CoefficientFloatPtr castFactor = static_pointer_cast<CoefficientFloat>( *factor );
-				termATotalCoefficient *= castFactor->eval();
+				termATotalCoefficient *= CoefficientFraction( castFactor->eval(), 1 );
 			} else if ( (*factor)->getTermID() == TermTypes::COEFFICIENT_FRACTION ) {
 				CoefficientFractionPtr castFactor = static_pointer_cast<CoefficientFraction>( *factor );
-				termATotalCoefficient *= castFactor->eval();
+				termATotalCoefficient *= (*castFactor);
 			} else {
 				combinedFactorA.addTerm( (*factor)->copy() );
 			}
 		}
 
-		runningLikeTermsCoefficient += termATotalCoefficient;
+		runningLikeTermsCoefficient = runningLikeTermsCoefficient + termATotalCoefficient;
 
 		for ( vector<SymbolicTermPtr>::iterator secondTerm = expr.getIteratorBegin(); secondTerm != expr.getIteratorEnd(); ++secondTerm ) {
 
@@ -1812,15 +1838,15 @@ Sum combineLikeTerms( Sum &expr ) {
 			ProductPtr castSecondTerm = static_pointer_cast<Product>( *secondTerm );
 
 			if ( term != secondTerm and areTermsCommon( *term, *secondTerm ) ) {
-				double termBCoefficient = 1.0;
+				CoefficientFraction termBCoefficient( 1, 1 );
 
 				for ( vector<SymbolicTermPtr>::iterator secondFactor = castSecondTerm->getIteratorBegin(); secondFactor != castSecondTerm->getIteratorEnd(); ++secondFactor ) {
 					if ( (*secondFactor)->getTermID() == TermTypes::COEFFICIENT_FLOAT ) {
 						CoefficientFloatPtr castSecondFactor = static_pointer_cast<CoefficientFloat>( *secondFactor );
-						termBCoefficient *= castSecondFactor->eval();
+						termBCoefficient *= CoefficientFraction( castSecondFactor->eval(), 1 );
 					} else if ( (*secondFactor)->getTermID() == TermTypes::COEFFICIENT_FRACTION ) {
 						CoefficientFractionPtr castSecondFactor = static_pointer_cast<CoefficientFraction>( *secondFactor );
-						termBCoefficient *= castSecondFactor->eval();
+						termBCoefficient *= (*castSecondFactor);
 					}
 				}
 
@@ -1829,7 +1855,7 @@ Sum combineLikeTerms( Sum &expr ) {
 			}
 		}
 
-		combinedFactorA.addTerm( CoefficientFloatPtr( new CoefficientFloat( runningLikeTermsCoefficient ) ) );
+		combinedFactorA.addTerm( runningLikeTermsCoefficient.copy() );
 		reducedSum.addTerm( combinedFactorA.copy() );
 	}
 
@@ -1904,4 +1930,5 @@ std::ostream& operator<<( std::ostream& os, const map<int, int> &obj ) {
 		os << " " << pair->first << " : " << pair->second << " ";
 	}
 	os << "]";
+	return os;
 }

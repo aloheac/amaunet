@@ -289,6 +289,26 @@ string D06() {
 	return ss.str();
 }
 
+string D07() {
+	stringstream ss;
+	CoefficientFloat A( 4 );
+	CoefficientFloat B( 7 );
+	ss << A << "    " << B << "    ";
+	A *= B;
+	ss << A;
+	return ss.str();
+}
+
+string D08() {
+	stringstream ss;
+	CoefficientFloat A( 4 );
+	CoefficientFloat B( 7 );
+	ss << A << "    " << B << "    ";
+	A += B;
+	ss << A;
+	return ss.str();
+}
+
 string E01() {
 	stringstream ss;
 	MatrixB A = MatrixB();
@@ -592,6 +612,25 @@ string I18() {
 	return ss.str();
 }
 
+string I19() {
+	stringstream ss;
+	CoefficientFraction A( 2, 8 );
+	CoefficientFraction B( 1, 2 );
+	ss << A << "    " << B << "    ";
+	A += B;
+	ss << A;
+	return ss.str();
+}
+
+string I20() {
+	stringstream ss;
+	CoefficientFraction A( 2, 8 );
+	CoefficientFraction B( 1, 2 );
+	ss << A << "    " << B << "    ";
+	A *= B;
+	ss << A;
+	return ss.str();
+}
 
 string J01() {
 	stringstream ss;
@@ -2695,6 +2734,10 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "D06: CoefficientFloat, operator*( CoefficientFraction ) Overload", &D06, "4    1 / 2    2 / 1" );
 
+	UnitTest( "D07: CoefficientFloat, operator*= Overload", &D07, "4    7    28" );
+
+	UnitTest( "D08: CoefficientFloat, operator+= Overload", &D08, "4    7    11" );
+
 	/*
 	 * E: MatrixB
 	 */
@@ -2784,6 +2827,10 @@ int main( int argc, char** argv ) {
 	UnitTest( "I17: CoefficientFraction, operator+( CoefficientFloat ) Overload II", &I17, "1 / 2    -1    -1 / 2" );
 
 	UnitTest( "I18: CoefficientFraction, operator+( CoefficientFloat ) Overload III", &I18, "2 / 8    -1    -3 / 4" );
+
+	UnitTest( "I19: CoefficientFraction, operator+= Overload", &I19, "2 / 8    1 / 2    3 / 4" );
+
+	UnitTest( "I20: CoefficientFraction, operator*= Overload", &I20, "2 / 8    1 / 2    1 / 8" );
 
 	/*
 	 * J: Sum
@@ -3196,7 +3243,7 @@ int main( int argc, char** argv ) {
 	 * combineLikeTerms()
 	 */
 
-	UnitTest( "AL01: combineLikeTerms() I", &AL01, " {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}  +  {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]}      {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]} {1}  +  {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]} {1} " );
+	UnitTest( "AL01: combineLikeTerms() I", &AL01, " {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}  +  {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]}      {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]} {1 / 1}  +  {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]} {1 / 1} " );
 
 	/*
 	 * gcd()

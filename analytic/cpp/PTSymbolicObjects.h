@@ -294,6 +294,10 @@ public:
 
 	CoefficientFraction operator+( const CoefficientFloat& obj ) const;
 
+	CoefficientFraction& operator*=( const CoefficientFraction& obj );
+
+	CoefficientFraction& operator+=( const CoefficientFraction& obj );
+
 	SymbolicTermPtr copy();
 
 	Sum getDerivative();
@@ -326,6 +330,10 @@ public:
 	CoefficientFraction operator*( const CoefficientFraction& obj ) const;
 
 	CoefficientFraction operator+( const CoefficientFraction& obj ) const;
+
+	CoefficientFloat& operator*=( const CoefficientFloat& obj );
+
+	CoefficientFloat& operator+=( const CoefficientFloat& obj );
 
 	SymbolicTermPtr copy();
 
