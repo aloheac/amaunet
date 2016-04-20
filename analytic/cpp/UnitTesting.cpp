@@ -1211,6 +1211,19 @@ string N08() {
 	return ss.str();
 }
 
+string N09() {
+	stringstream ss;
+	vector<IndexContraction> A;
+	A.push_back( IndexContraction( 0, 1 ) );
+	A.push_back( IndexContraction( 3, 4 ) );
+	A.push_back( IndexContraction( 0, 0 ) );
+	FourierSum B = FourierSum( A, 3 );
+	ss << B << "    ";
+	B.reduceDummyIndices();
+	ss << B;
+	return ss.str();
+}
+
 string O01() {
 	stringstream ss;
 	Product A = Product();
@@ -2950,9 +2963,11 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "N06: FourierSum, operator== Overload V", &N06, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]    FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 )  ( 6, 7 ) ]    0" );
 
-	UnitTest( "N07: FourierSum, to_string()", N07, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]" );
+	UnitTest( "N07: FourierSum, to_string()", &N07, "FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]" );
 
-	UnitTest( "N08: FourierSum, reduceDummyIndices() I", N08, "FourierSum[ ( 0, 1 )  ( 3, 3 )  ( 0, 0 ) ]    FourierSum[ ( 0, 1 )  ( 2, 2 )  ( 0, 0 ) ]" );
+	UnitTest( "N08: FourierSum, reduceDummyIndices() I", &N08, "FourierSum[ ( 0, 1 )  ( 3, 3 )  ( 0, 0 ) ]    FourierSum[ ( 0, 1 )  ( 0, 0 )  ( 0, 0 ) ]" );
+
+	UnitTest( "N09: FourierSum, reduceDummyIndices() II", &N09, "FourierSum[ ( 0, 1 )  ( 3, 4 )  ( 0, 0 ) ]    FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 0, 0 ) ]" );
 
 	/*
 	 * ********************************************************************

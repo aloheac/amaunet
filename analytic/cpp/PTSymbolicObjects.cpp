@@ -1273,6 +1273,14 @@ SymbolicTermPtr FourierSum::copy() {
 }
 
 void FourierSum::reduceDummyIndices() {
+	// Reduce all single loop contractions (a, a) to (0, 0).
+	for ( vector<IndexContraction>::iterator indexPair = indices.begin(); indexPair != indices.end(); ++indexPair ) {
+		if ( indexPair->i == indexPair->j ) {
+			indexPair->i = 0;
+			indexPair->j = 0;
+		}
+	}
+
 	set<int> presentIndices;
 	for ( vector<IndexContraction>::iterator indexPair = indices.begin(); indexPair != indices.end(); ++indexPair ) {
 		presentIndices.insert( indexPair->i );
