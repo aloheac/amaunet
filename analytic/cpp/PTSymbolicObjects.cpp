@@ -1803,6 +1803,8 @@ Sum fourierTransformExpression( SymbolicTermPtr expr ) {
 Sum combineLikeTerms( Sum &expr ) {
 	Sum reducedSum;
 
+	expr.simplify();
+
 	for ( vector<SymbolicTermPtr>::iterator term = expr.getIteratorBegin(); term != expr.getIteratorEnd(); ++term ) {
 		CoefficientFraction runningLikeTermsCoefficient( 0, 1 );
 
@@ -1810,7 +1812,14 @@ Sum combineLikeTerms( Sum &expr ) {
 		Product combinedFactorA;
 
 		if ( (*term)->getTermID() != TermTypes::PRODUCT ) {
-			return Sum();  // TODO: Throw exception.
+			// Under the current perturbation theory formalism, an expanded expression in standard form should always
+			// be a Sum of Product instances, except for the case where the expression is identically zero. We consider
+			// and account for that case here. The expression was mathematically simplified before entering the loop.
+			if ( (*term)->to_string() != "0" ) {
+				cout << "***WARNING: (WA1) A non-zero term other then a product was encountered when combining like terms. The solution may still be correct, but should be inspected." << endl;
+			}
+
+			(*term) = Product( *term ).copy();
 		}
 
 		ProductPtr castTerm = static_pointer_cast<Product>( *term );
@@ -1832,7 +1841,14 @@ Sum combineLikeTerms( Sum &expr ) {
 		for ( vector<SymbolicTermPtr>::iterator secondTerm = expr.getIteratorBegin(); secondTerm != expr.getIteratorEnd(); ++secondTerm ) {
 
 			if ( (*secondTerm)->getTermID() != TermTypes::PRODUCT ) {
-				return Sum();  // TODO: Throw exception.
+				// Under the current perturbation theory formalism, an expanded expression in standard form should always
+				// be a Sum of Product instances, except for the case where the expression is identically zero. We consider
+				// and account for that case here. The expression was mathematically simplified before entering the loop.
+				if ( (*secondTerm)->to_string() != "0" ) {
+					cout << "***WARNING: (WA2) A non-zero term other then a product was encountered when combining like terms. The solution may still be correct, but should be inspected." << endl;
+				}
+
+				(*term) = Product( *term ).copy();
 			}
 
 			ProductPtr castSecondTerm = static_pointer_cast<Product>( *secondTerm );
@@ -1863,6 +1879,8 @@ Sum combineLikeTerms( Sum &expr ) {
 }
 
 Sum combineLikeTerms( Sum &expr, int groupSize ) {
+	expr.simplify();  // Remove any zero terms in the sum before proceeding.
+
 	Sum simplifiedExpression;
 
 	if ( expr.getNumberOfTerms() <= groupSize ) {

@@ -2589,7 +2589,7 @@ string AL01() {
 	Sum E;
 	E.addTerm( A.copy() );
 	E.addTerm( C.copy() );
-	ss << E << "    ";
+	ss << E.to_string() << "    ";
 	ss << combineLikeTerms( E );
 	return ss.str();
 }
@@ -2604,18 +2604,32 @@ string AL02() {
 	B.push_back( IndexContraction( 2, 3 ) );
 	B.push_back( IndexContraction( 4, 5 ) );
 	A.addTerm( FourierSumPtr( new FourierSum( B, 3 ) ) );
-	Product C;
-	vector<IndexContraction> D;
-	D.push_back( IndexContraction( 0, 1 ) );
-	D.push_back( IndexContraction( 2, 3 ) );
-	D.push_back( IndexContraction( 6, 7 ) );
-	C.addTerm( TermAPtr( new TermA() ) );
-	C.addTerm( TermAPtr( new TermA() ) );
-	C.addTerm( FourierSumPtr( new FourierSum( D, 3 ) ) );
 	Sum E;
 	E.addTerm( A.copy() );
+	CoefficientFloat C( 0.0 );
 	E.addTerm( C.copy() );
-	ss << E << "    " << combineLikeTerms( E );
+	ss << E.to_string();
+	ss << "    " << combineLikeTerms( E );
+	return ss.str();
+}
+
+string AL03() {
+	stringstream ss;
+	Product A;
+	A.addTerm( TermAPtr( new TermA() ) );
+	A.addTerm( TermAPtr( new TermA() ) );
+	vector<IndexContraction> B;
+	B.push_back( IndexContraction( 0, 1 ) );
+	B.push_back( IndexContraction( 2, 3 ) );
+	B.push_back( IndexContraction( 4, 5 ) );
+	A.addTerm( FourierSumPtr( new FourierSum( B, 3 ) ) );
+	Sum E;
+	E.addTerm( A.copy() );
+	Product C;
+	C.addTerm( CoefficientFloatPtr( new CoefficientFloat( 0.0 ) ) );
+	E.addTerm( C.copy() );
+	ss << E.to_string();
+	ss << "    " << combineLikeTerms( E );
 	return ss.str();
 }
 
@@ -3244,6 +3258,10 @@ int main( int argc, char** argv ) {
 	 */
 
 	UnitTest( "AL01: combineLikeTerms() I", &AL01, " {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}  +  {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]}      {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]} {1 / 1}  +  {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]} {1 / 1} " );
+
+	UnitTest( "AL02: combineLikeTerms() II", &AL02, " {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}  + 0     {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]} {1 / 1} " );
+
+	UnitTest( "AL03: combineLikeTerms() III", &AL03, " {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}  +  {0}      {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]} {1 / 1} " );
 
 	/*
 	 * gcd()
