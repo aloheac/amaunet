@@ -1378,6 +1378,7 @@ bool isZeroTrace( SymbolicTermPtr tr ) {
 
 int getProductAOrder( SymbolicTermPtr prod ) {
 	if ( prod->getTermID() != TermTypes::PRODUCT ) {
+		cout << "***ERROR: An expression other than a Product was passed to getProductAOrder()." << endl;
 		return false;  // TODO: Throw exception.
 	}
 
@@ -1488,6 +1489,7 @@ map<int, int> constructContractionDictionary( DeltaContractionSet contractions )
 
 bool areTermsCommon( SymbolicTermPtr termA, SymbolicTermPtr termB ) {
 	if ( termA->getTermID() != TermTypes::PRODUCT or termB->getTermID() != TermTypes::PRODUCT ) {
+		cout << "***ERROR: An expression that is not a Product was passed to areTermsCommon()." << endl;
 		return false;  // TODO: Raise exception.
 	}
 
@@ -1637,6 +1639,7 @@ Sum distributeAllTraces( SymbolicTermPtr expr ) {
 
 Sum truncateAOrder( SymbolicTermPtr expr, int highestOrder ) {
 	if ( expr->getTermID() != TermTypes::SUM ) {
+		cout << "***ERROR: An expression other than a Sum was passed to truncateAOrders()." << endl;
 		return Sum();  // TODO: Throw exception.
 	}
 
@@ -1662,6 +1665,7 @@ Sum truncateAOrder( SymbolicTermPtr expr, int highestOrder ) {
 
 Sum truncateOddOrders( SymbolicTermPtr expr ) {
 	if ( expr->getTermID() != TermTypes::SUM ) {
+		cout << "***ERROR: An expression other than a Sum was passed to truncateOddOrders()." << endl;
 		return Sum();  // TODO: Throw exception.
 	}
 
@@ -1670,7 +1674,11 @@ Sum truncateOddOrders( SymbolicTermPtr expr ) {
 
 	for ( vector<SymbolicTermPtr>::iterator term = castExpr->getIteratorBegin(); term != castExpr->getIteratorEnd(); ++term ) {
 		if ( (*term)->getTermID() != TermTypes::PRODUCT ) {
-			return Sum();  // TODO: Throw exception.
+			if ( (*term)->to_string() != "0" and (*term)->to_string() != "1"  and (*term)->to_string() != "1 / 0 "  and (*term)->to_string() != "1 / 1" ) {
+				cout << "***WARNING: (WB1) A term other then a product, zero, or one was encountered when truncating odd orders. The solution may still be correct, but should be inspected." << endl;
+			}
+
+			(*term) = Product( *term ).copy();
 		}
 
 		ProductPtr castProduct = static_pointer_cast<Product>( *term );
@@ -1753,13 +1761,18 @@ Sum fourierTransformExpression( SymbolicTermPtr expr ) {
 	Sum transformedExpression;
 
 	if ( expr->getTermID() != TermTypes::SUM) {
+		cout << "***ERROR: An expression other than a Sum was passed to fourierTransformExpression()." << endl;
 		return Sum(); // TODO: Raise exception.
 	}
 
 	SumPtr castExpr = static_pointer_cast<Sum>( expr );
 	for ( vector<SymbolicTermPtr>::iterator term = castExpr->getIteratorBegin(); term != castExpr->getIteratorEnd(); ++term ) {
 		if ( (*term)->getTermID() != TermTypes::PRODUCT ) {
-			return Sum();  // TODO: Raise exception.
+			if ( (*term)->to_string() != "0" and (*term)->to_string() != "1"  and (*term)->to_string() != "1 / 0 "  and (*term)->to_string() != "1 / 1" ) {
+				cout << "***WARNING: (WC1) A term other then a product, zero, or one was encountered when computing symbolic Fourier transform. The solution may still be correct, but should be inspected." << endl;
+			}
+
+			(*term) = Product( *term ).copy();
 		}
 
 		ProductPtr castTerm = static_pointer_cast<Product>( *term );
@@ -1823,8 +1836,8 @@ Sum combineLikeTerms( Sum &expr ) {
 			// Under the current perturbation theory formalism, an expanded expression in standard form should always
 			// be a Sum of Product instances, except for the case where the expression is identically zero. We consider
 			// and account for that case here. The expression was mathematically simplified before entering the loop.
-			if ( (*term)->to_string() != "0" ) {
-				cout << "***WARNING: (WA1) A non-zero term other then a product was encountered when combining like terms. The solution may still be correct, but should be inspected." << endl;
+			if ( (*term)->to_string() != "0" and (*term)->to_string() != "1"  and (*term)->to_string() != "1 / 0 "  and (*term)->to_string() != "1 / 1" ) {
+				cout << "***WARNING: (WA1) A term other then a product, zero, or one was encountered when combining like terms. The solution may still be correct, but should be inspected." << endl;
 			}
 
 			(*term) = Product( *term ).copy();
@@ -1852,11 +1865,11 @@ Sum combineLikeTerms( Sum &expr ) {
 				// Under the current perturbation theory formalism, an expanded expression in standard form should always
 				// be a Sum of Product instances, except for the case where the expression is identically zero. We consider
 				// and account for that case here. The expression was mathematically simplified before entering the loop.
-				if ( (*secondTerm)->to_string() != "0" ) {
-					cout << "***WARNING: (WA2) A non-zero term other then a product was encountered when combining like terms. The solution may still be correct, but should be inspected." << endl;
+				if ( (*secondTerm)->to_string() != "0" and (*secondTerm)->to_string() != "1"  and (*secondTerm)->to_string() != "1 / 0 "  and (*secondTerm)->to_string() != "1 / 1" ) {
+					cout << "***WARNING: (WA2) A term other then a product, zero, or one was encountered when combining like terms. The solution may still be correct, but should be inspected." << endl;
 				}
 
-				(*term) = Product( *term ).copy();
+				(*secondTerm) = Product( *secondTerm ).copy();
 			}
 
 			ProductPtr castSecondTerm = static_pointer_cast<Product>( *secondTerm );
