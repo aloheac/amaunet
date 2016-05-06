@@ -329,6 +329,8 @@ public:
 	void reduceFourierSumIndices();
 
 	void clear();
+        
+        void combineCoefficients();
 
 	std::vector<SymbolicTermPtr>::const_iterator getIteratorBegin() const;
 
@@ -386,6 +388,8 @@ public:
 	void clear();
 
 	void reduceFourierSumIndices();
+        
+        void combineCoefficients();
 
 	std::vector<SymbolicTermPtr>::const_iterator getIteratorBegin() const;
 

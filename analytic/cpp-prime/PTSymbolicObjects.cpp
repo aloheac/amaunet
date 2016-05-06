@@ -554,6 +554,15 @@ void Sum::clear() {
 	terms.clear();
 }
 
+void Sum::combineCoefficients() {
+	for ( vector<SymbolicTermPtr>::iterator iter = terms.begin(); iter != terms.end(); ++iter ) {
+		if ( (*iter)->getTermID() == TermTypes::PRODUCT ) {
+			ProductPtr castTerm = static_pointer_cast<Product>( *iter );
+			castTerm->combineCoefficients();
+		}
+	}
+}
+
 bool Sum::operator==( const Sum &other ) const {
 	return false; // TODO
 }
@@ -857,6 +866,23 @@ void Product::reduceFourierSumIndices() {
 			castFactor->reduceDummyIndices();
 		}
 	}
+}
+
+void Product::combineCoefficients() {
+	CoefficientFraction runningCoefficient( 1, 1 );
+	for ( vector<SymbolicTermPtr>::iterator factor = terms.begin(); factor != terms.end(); ) {
+		if ( (*factor)->getTermID() == TermTypes::COEFFICIENT_FRACTION ) {
+			runningCoefficient *= *(static_pointer_cast<CoefficientFraction>( *factor ));
+			factor = terms.erase( factor );
+		} else if ( (*factor)->getTermID() == TermTypes::COEFFICIENT_FLOAT ) {
+			runningCoefficient = runningCoefficient * ( *(static_pointer_cast<CoefficientFloat>( *factor )) );
+			factor = terms.erase( factor );
+		} else {
+			++factor;
+		}
+	}
+
+	terms.push_back( runningCoefficient.copy() );
 }
 
 vector<SymbolicTermPtr>::const_iterator Product::getIteratorBegin() const {
