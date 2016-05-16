@@ -17,8 +17,8 @@ CFLAGS=-g -std=c++11
 
 all: amaunet
 
-amaunet: main.o PTSymbolicObjects.o PathIntegration.o Multithreading.o
-	$(CC) $(CFLAGS) main.o PTSymbolicObjects.o PathIntegration.o Multithreading.o -o amaunet
+amaunet: main.o PTSymbolicObjects.o PathIntegration.o Multithreading.o Debugging.o
+	$(CC) $(CFLAGS) main.o PTSymbolicObjects.o PathIntegration.o Multithreading.o Debugging.o -o amaunet
 	
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
@@ -32,10 +32,13 @@ PathIntegration.o: PathIntegration.cpp
 Multithreading.o: Multithreading.cpp
 	$(CC) $(CFLAGS) -c Multithreading.cpp
 	
+Debugging.o: Debugging.cpp
+	$(CC) $(CFLAGS) -c Debugging.cpp
+	
 ut: unittst
 
-unittst: UnitTesting.o PTSymbolicObjects.o PathIntegration.o Multithreading.o
-	$(CC) $(CFLAGS) UnitTesting.o PTSymbolicObjects.o PathIntegration.o Multithreading.o -o unittst
+unittst: UnitTesting.o PTSymbolicObjects.o PathIntegration.o Multithreading.o Debugging.o
+	$(CC) $(CFLAGS) UnitTesting.o PTSymbolicObjects.o PathIntegration.o Multithreading.o Debugging.o -o unittst
 	
 UnitTesting.o: UnitTesting.cpp
 	$(CC) $(CFLAGS) -c UnitTesting.cpp

@@ -45,6 +45,7 @@ class Delta;
 class FourierSum;
 class IndexContraction;
 class DeltaContractionSet;
+
 bool unpackTrivialExpression( std::shared_ptr<SymbolicTerm> & );
 
 /*
@@ -86,7 +87,8 @@ enum class TermTypes : char {
 	PRODUCT = 'P',
 	TRACE = 'T',
 	DELTA = 'd',
-	FOURIER_SUM = 'F'
+	FOURIER_SUM = 'F',
+        DEBUG_TRACE = 'Z'
 };
 
 /*
