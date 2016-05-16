@@ -15,6 +15,7 @@
  */
 
 #include <sstream>
+#include <iostream>
 #include "Debugging.h"
 
 using namespace std;
@@ -69,6 +70,21 @@ int DebugTracer::getCounter() {
  * DEBUGGING FUNCTIONS
  * ***********************************************************************
  */
+
+void injectDebuggingTracers( Sum &expr ) {
+	for ( vector<SymbolicTermPtr>::iterator iter = expr.getIteratorBegin(); iter != expr.getIteratorEnd(); ++iter ) {
+		if ( (*iter)->getTermID() != TermTypes::PRODUCT ) {
+			if ( (*iter)->to_string() != "0" and (*iter)->to_string() != "1"  and (*iter)->to_string() != "1 / 0"  and (*iter)->to_string() != "1 / 1" ) {
+				cout << "***WARNING: (WA1) A term other then a product, zero, or one was encountered when injecting debugging tracers. The solution may still be correct, but should be inspected." << endl;
+			}
+
+			(*iter) = Product( *iter ).copy();
+		}
+
+		ProductPtr castProduct = static_pointer_cast<Product>( *iter );
+		castProduct->addTerm( SymbolicTermPtr( new DebugTracer() ) );
+	}
+}
 
 Sum handpickTerms( Sum &expr, vector<int> termIDs ) {
 	Sum handpickedSum;

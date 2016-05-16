@@ -55,6 +55,8 @@ private:
  * ***********************************************************************
  */
 
+void injectDebuggingTracers( Sum &expr );
+
 Sum handpickTerms( Sum &expr, std::vector<int> termIDs );
 
 #endif /* DEBUGGING_H_ */
