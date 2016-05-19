@@ -22,7 +22,7 @@
 #include <vector>
 #include <memory>
 #include <map>
-
+#include <set>
 
 /*
  * ***********************************************************************
@@ -493,6 +493,8 @@ int getProductAOrder( SymbolicTermPtr prod );
 int getDualProductAOrder( Product &prodA, Product &prodB );
 
 int getTerminatedContraction( std::map<int, int> contractedIndexMapping, int index );
+
+std::vector< std::set<int> > groupContractions( std::vector< std::set<int> > groups );
 
 std::map<int,int> constructContractionDictionary( DeltaContractionSet contractions );
 

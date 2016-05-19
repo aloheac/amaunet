@@ -1133,89 +1133,51 @@ int getTerminatedContraction( map<int, int> contractedIndexMapping, int index ) 
 	}
 }
 
+vector< set<int> > groupContractions( vector< set<int> > groups ) {
+	for ( vector< set<int> >::iterator group = groups.begin(); group != groups.end(); ++group ) {
+		for ( set<int>::iterator index = group->begin(); index != group->end(); ++index ) {
+			for ( vector< set<int> >::iterator comparedGroup = groups.begin(); comparedGroup != groups.end(); ++comparedGroup ) {
+
+				if ( group != comparedGroup and comparedGroup->count( *index ) > 0 ) {
+					for ( set<int>::iterator indexToAppend = comparedGroup->begin(); indexToAppend != comparedGroup->end(); ++indexToAppend ) {
+						group->insert( *indexToAppend );
+					}
+
+					groups.erase( comparedGroup );
+					return groupContractions( groups );
+				}
+
+			}
+		}
+	}
+
+	return groups;
+}
+
 map<int, int> constructContractionDictionary( DeltaContractionSet contractions ) {
 	contractions.orderContractionIndices();
 	contractions.sortContractions();
 
-	map<int, int> contractedIndexMapping;
-	vector< set<int> > contractionGroupings;
-
+	vector< set<int> > contractionIndexSet;
 	for ( vector<IndexContraction>::iterator indexPair = contractions.getIteratorBegin(); indexPair != contractions.getIteratorEnd(); ++indexPair ) {
-		bool contractionAppended = false;  // Boolean flag indicating whether we need to generate a new set.
+		set<int> nextIndexPair;
+		nextIndexPair.insert( indexPair->i );
+		nextIndexPair.insert( indexPair->j );
+		contractionIndexSet.push_back( nextIndexPair );
+	}
 
-		// First, check if this contraction is a duplicate, that is, the two indices of the contraction already exist
-		// in the same set.
-		for ( vector< set<int> >::iterator groupingSet = contractionGroupings.begin(); groupingSet != contractionGroupings.end(); ++groupingSet ) {
-			if ( groupingSet->count( indexPair->i ) == 1 and groupingSet->count( indexPair->j ) == 1 ) {
-				contractionAppended = true;
-				break;
-			}
-		}
+	contractionIndexSet = groupContractions( contractionIndexSet );
 
-		// Next, check if two separate sets containing indexPair->i and indexPair-j already exist, indicating that
-		// those two sets need to be joined together.
-		if ( not contractionAppended ) {
-			for ( vector< set<int> >::iterator firstGroupingSet = contractionGroupings.begin(); firstGroupingSet != contractionGroupings.end(); ++firstGroupingSet) {
-				if ( firstGroupingSet->count( indexPair->i ) == 1 ) {
-					for ( vector< set<int> >::iterator secondGroupingSet = contractionGroupings.begin(); secondGroupingSet != contractionGroupings.end(); ++secondGroupingSet) {
-						if ( secondGroupingSet->count( indexPair->j ) == 1 ) {
-							firstGroupingSet->insert( secondGroupingSet->begin(), secondGroupingSet->end() );
-							contractionGroupings.erase( secondGroupingSet );
-							contractionAppended = true;
-							break;
-						}
-					}
+	map<int, int> contractionDictionary;
+	for ( vector< set<int> >::iterator group = contractionIndexSet.begin(); group != contractionIndexSet.end(); ++group ) {
+		int smallestGroupIndex = *(min_element( group->begin(), group->end() ));
 
-					if ( contractionAppended ) break;
-				} else if ( firstGroupingSet->count( indexPair->j ) == 1 ) {
-					for ( vector< set<int> >::iterator secondGroupingSet = contractionGroupings.begin(); secondGroupingSet != contractionGroupings.end(); ++secondGroupingSet) {
-						if ( secondGroupingSet->count( indexPair->i ) == 1 ) {
-							firstGroupingSet->insert( secondGroupingSet->begin(), secondGroupingSet->end() );
-							contractionGroupings.erase( secondGroupingSet );
-							contractionAppended = true;
-							break;
-						}
-					}
-
-					if ( contractionAppended ) break;
-				}
-			}
-		}
-
-		// If the contraction should be added to an existing set, append it.
-		if ( not contractionAppended ) {
-			for ( vector< set<int> >::iterator groupingSet = contractionGroupings.begin(); groupingSet != contractionGroupings.end(); ++groupingSet ) {
-				if ( groupingSet->count( indexPair->i ) == 1 ) {
-					groupingSet->insert( indexPair-> j );
-					contractionAppended = true;
-					break;
-				} else if ( groupingSet->count( indexPair->j ) == 1 ) {
-					groupingSet->insert( indexPair->i );
-					contractionAppended = true;
-					break;
-				}
-			}
-		}
-
-		// Finally, if no suitable set for this contraction exists, create it and add it to the vector of groupings.
-		if ( not contractionAppended ) {
-			set<int> newGroupingSet;
-			newGroupingSet.insert( indexPair->i );
-			newGroupingSet.insert( indexPair->j );
-
-			contractionGroupings.push_back( newGroupingSet );
+		for( set<int>::iterator index = group->begin(); index != group->end(); ++index ) {
+			contractionDictionary[ *index ] = smallestGroupIndex;
 		}
 	}
 
-	for ( vector< set<int> >::iterator groupingSet = contractionGroupings.begin(); groupingSet != contractionGroupings.end(); ++groupingSet ) {
-		int smallestIndex = *( min_element( groupingSet->begin(), groupingSet->end() ) );
-
-		for ( set<int>::iterator index = groupingSet->begin(); index != groupingSet->end(); ++index ) {
-			contractedIndexMapping[ *index ] = smallestIndex;
-		}
-	}
-
-	return contractedIndexMapping;
+	return contractionDictionary;
 }
 
 bool areTermsCommon( SymbolicTermPtr termA, SymbolicTermPtr termB ) {
