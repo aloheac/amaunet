@@ -428,6 +428,10 @@ public:
 	void reduceTree();
 
 	bool operator==( const Trace &other ) const;
+        
+        bool operator<( const Trace &other ) const;
+
+	bool operator>( const Trace &other ) const;
 
 private:
 
@@ -525,6 +529,8 @@ Sum combineLikeTerms( Sum &expr, int groupSize );
 Sum generateExponentialSeries( int order, Product x );
 
 Sum generateDeterminantExpansion( int order, const char* flavorLabel, bool insertFullE );
+
+Sum sortTracesByOrder( Sum &expr );
 
 /*
  * ***********************************************************************

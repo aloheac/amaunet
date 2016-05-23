@@ -936,6 +936,54 @@ bool Trace::operator==( const Trace &other ) const {
 	return *expr == other;
 }
 
+bool Trace::operator<( const Trace &other ) const {
+	int thisNumTerms = 0;
+	if ( expr->getTermID() == TermTypes::PRODUCT ) {
+		ProductPtr castProduct = static_pointer_cast<Product>( expr );
+		thisNumTerms = castProduct->getNumberOfTerms();
+	} else if ( expr->getTermID() == TermTypes::SUM ) {
+		cout << "***WARNING: Traces were not distributed prior to a call to Trace::operator<. Results cannot be trusted." << endl;
+		SumPtr castSum = static_pointer_cast<Sum>( expr );
+		thisNumTerms = castSum->getNumberOfTerms();
+	}
+
+	int otherNumTerms = 0;
+	if ( other.expr->getTermID() == TermTypes::PRODUCT ) {
+		ProductPtr castProduct = static_pointer_cast<Product>( other.expr );
+		otherNumTerms = castProduct->getNumberOfTerms();
+	} else if ( other.expr->getTermID() == TermTypes::SUM ) {
+		cout << "***WARNING: Traces were not distributed prior to a call to Trace::operator<. Results cannot be trusted." << endl;
+		SumPtr castSum = static_pointer_cast<Sum>( expr );
+		otherNumTerms = castSum->getNumberOfTerms();
+	}
+
+	return thisNumTerms < otherNumTerms;
+}
+
+bool Trace::operator>( const Trace &other ) const {
+	int thisNumTerms = 0;
+	if ( expr->getTermID() == TermTypes::PRODUCT ) {
+		ProductPtr castProduct = static_pointer_cast<Product>( expr );
+		thisNumTerms = castProduct->getNumberOfTerms();
+	} else if ( expr->getTermID() == TermTypes::SUM ) {
+		cout << "***WARNING: Traces were not distributed prior to a call to Trace::operator>. Results cannot be trusted." << endl;
+		SumPtr castSum = static_pointer_cast<Sum>( expr );
+		thisNumTerms = castSum->getNumberOfTerms();
+	}
+
+	int otherNumTerms = 0;
+	if ( other.expr->getTermID() == TermTypes::PRODUCT ) {
+		ProductPtr castProduct = static_pointer_cast<Product>( other.expr );
+		otherNumTerms = castProduct->getNumberOfTerms();
+	} else if ( other.expr->getTermID() == TermTypes::SUM ) {
+		cout << "***WARNING: Traces were not distributed prior to a call to Trace::operator>. Results cannot be trusted." << endl;
+		SumPtr castSum = static_pointer_cast<Sum>( expr );
+		otherNumTerms = castSum->getNumberOfTerms();
+	}
+
+	return thisNumTerms > otherNumTerms;
+}
+
 /*
  * Delta
  */
@@ -1552,6 +1600,40 @@ int factorial( int n ) {
 	} else {
 		return n * factorial( n - 1 );
 	}
+}
+
+Sum sortTracesByOrder( Sum &expr ) {
+	Sum sortedExpression;
+
+	for ( vector<SymbolicTermPtr>::iterator term = expr.getIteratorBegin(); term != expr.getIteratorEnd(); ++term ) {
+		if ( (*term)->getTermID() == TermTypes::PRODUCT ) {
+			ProductPtr castProduct = static_pointer_cast<Product>( *term );
+
+			vector<Trace> traces;
+			Product sortedProduct;
+			for ( vector<SymbolicTermPtr>::iterator factor = castProduct->getIteratorBegin(); factor != castProduct->getIteratorEnd(); ++factor ) {
+				if ( (*factor)->getTermID() == TermTypes::TRACE ) {
+					TracePtr castTrace = static_pointer_cast<Trace>( *factor );
+					traces.push_back( *castTrace );
+				} else {
+					sortedProduct.addTerm( (*factor)->copy() );
+				}
+			}
+
+			sort( traces.begin(), traces.end() );
+
+			for ( vector<Trace>::iterator tr = traces.begin(); tr != traces.end(); ++tr ) {
+				sortedProduct.addTerm( tr->copy() );
+			}
+
+			sortedExpression.addTerm( sortedProduct.copy() );
+
+		} else {
+			sortedExpression.addTerm( (*term)->copy() );
+		}
+	}
+
+	return sortedExpression;
 }
 
 /*

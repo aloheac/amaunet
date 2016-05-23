@@ -83,6 +83,9 @@ int main( int argc, char** argv ) {
 	cout << "Truncating odd order terms in expansion..." << endl;
 	Z = truncateOddOrders( Z.copy() );
 
+        cout << "Sorting traces by order..." << endl;
+	Z = sortTracesByOrder( Z );
+        
 	SymbolicTermPtr ZPtr = Z.copy();
 	cout << "Indexing trace arguments..." << endl;
 	indexExpression( ZPtr );

@@ -18,6 +18,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <algorithm>
 #include "PTSymbolicObjects.h"
 #include "PathIntegration.h"
 
@@ -825,6 +826,177 @@ string L01() {
 	SymbolicTermPtr term = GenericTestTermPtr( new GenericTestTerm(0) );
 	Trace A( term );
 	ss << A;
+	return ss.str();
+}
+
+string L02() {
+	stringstream ss;
+	Product A;
+	MatrixK B;
+	MatrixS C;
+
+	B.setIndices( 0, 1 );
+	A.addTerm( B.copy() );
+	C.setIndices( 1, 0 );
+	A.addTerm( C.copy() );
+	Trace D( A.copy() );
+
+	Product E;
+	B.setIndices( 0, 1 );
+	E.addTerm( B.copy() );
+	C.setIndices( 1, 2 );
+	E.addTerm( C.copy() );
+	B.setIndices( 2, 3 );
+	E.addTerm( B.copy() );
+	C.setIndices( 3, 0 );
+	E.addTerm( C.copy() );
+	Trace F( E.copy() );
+
+	ss << D << "    " << F << "    " << ( D < F ) << "    " << ( F < D );
+	return ss.str();
+}
+
+string L03() {
+	stringstream ss;
+	Product A;
+	MatrixK B;
+	MatrixS C;
+
+	B.setIndices( 0, 1 );
+	A.addTerm( B.copy() );
+	C.setIndices( 1, 2 );
+	A.addTerm( C.copy() );
+	B.setIndices( 2, 3 );
+	A.addTerm( B.copy() );
+	C.setIndices( 3, 0 );
+	A.addTerm( C.copy() );
+	Trace D( A.copy() );
+
+	Product E;
+	B.setIndices( 0, 1 );
+	E.addTerm( B.copy() );
+	C.setIndices( 1, 2 );
+	E.addTerm( C.copy() );
+	B.setIndices( 2, 3 );
+	E.addTerm( B.copy() );
+	C.setIndices( 3, 0 );
+	E.addTerm( C.copy() );
+	Trace F( E.copy() );
+
+	ss << D << "    " << F << "    " << ( D < F ) << "    " << ( F < D );
+	return ss.str();
+}
+
+string L04() {
+	stringstream ss;
+	Product A;
+	MatrixK B;
+	MatrixS C;
+
+	B.setIndices( 0, 1 );
+	A.addTerm( B.copy() );
+	C.setIndices( 1, 0 );
+	A.addTerm( C.copy() );
+	Trace D( A.copy() );
+
+	Product E;
+	B.setIndices( 0, 1 );
+	E.addTerm( B.copy() );
+	C.setIndices( 1, 2 );
+	E.addTerm( C.copy() );
+	B.setIndices( 2, 3 );
+	E.addTerm( B.copy() );
+	C.setIndices( 3, 0 );
+	E.addTerm( C.copy() );
+	Trace F( E.copy() );
+
+	ss << D << "    " << F << "    " << ( D > F ) << "    " << ( F > D );
+	return ss.str();
+}
+
+string L05() {
+	stringstream ss;
+	Product A;
+	MatrixK B;
+	MatrixS C;
+
+	B.setIndices( 0, 1 );
+	A.addTerm( B.copy() );
+	C.setIndices( 1, 2 );
+	A.addTerm( C.copy() );
+	B.setIndices( 2, 3 );
+	A.addTerm( B.copy() );
+	C.setIndices( 3, 0 );
+	A.addTerm( C.copy() );
+	Trace D( A.copy() );
+
+	Product E;
+	B.setIndices( 0, 1 );
+	E.addTerm( B.copy() );
+	C.setIndices( 1, 2 );
+	E.addTerm( C.copy() );
+	B.setIndices( 2, 3 );
+	E.addTerm( B.copy() );
+	C.setIndices( 3, 0 );
+	E.addTerm( C.copy() );
+	Trace F( E.copy() );
+
+	ss << D << "    " << F << "    " << ( D > F ) << "    " << ( F > D );
+	return ss.str();
+}
+
+string L06() {
+	stringstream ss;
+
+	Product A;
+	MatrixK B;
+	MatrixS C;
+
+	B.setIndices( 0, 1 );
+	A.addTerm( B.copy() );
+	C.setIndices( 1, 0 );
+	A.addTerm( C.copy() );
+	Trace D( A.copy() );
+
+	Product E;
+	B.setIndices( 0, 1 );
+	E.addTerm( B.copy() );
+	C.setIndices( 1, 2 );
+	E.addTerm( C.copy() );
+	B.setIndices( 2, 3 );
+	E.addTerm( B.copy() );
+	C.setIndices( 3, 0 );
+	E.addTerm( C.copy() );
+	Trace F( E.copy() );
+
+	Product G;
+	B.setIndices( 0, 1 );
+	G.addTerm( B.copy() );
+	C.setIndices( 1, 2 );
+	G.addTerm( C.copy() );
+	B.setIndices( 2, 3 );
+	G.addTerm( B.copy() );
+	C.setIndices( 3, 4 );
+	G.addTerm( C.copy() );
+	B.setIndices( 4, 5 );
+	G.addTerm( B.copy() );
+	C.setIndices( 5, 0 );
+	G.addTerm( C.copy() );
+	Trace H( G.copy() );
+
+	vector<Trace> I;
+	I.push_back( H );
+	I.push_back( D );
+	I.push_back( F );
+
+	ss << H << "    " << D << "    " << F << "    ";
+
+	sort( I.begin(), I.end() );
+
+	for ( vector<Trace>::iterator iter = I.begin(); iter != I.end(); ++iter ) {
+		ss << iter->to_string() << "    ";
+	}
+
 	return ss.str();
 }
 
@@ -2718,6 +2890,142 @@ string AQ07() {
 	return ss.str();
 }
 
+string AR01() {
+	stringstream ss;
+	Sum A;
+	Product B;
+	MatrixK C;
+	MatrixS D;
+
+	C.setIndices( 0, 1 );
+	B.addTerm( C.copy() );
+	D.setIndices( 1, 2 );
+	B.addTerm( D.copy() );
+	Trace E( B.copy() );  // 2 factors.
+
+	C.setIndices( 2, 3 );
+	B.addTerm( C.copy() );
+	D.setIndices( 3, 4 );
+	B.addTerm( D.copy() );
+	Trace F( B.copy() ); // 4 factors.
+
+	C.setIndices( 5, 6 );
+	B.addTerm( C.copy() );
+	D.setIndices( 6, 7 );
+	B.addTerm( D.copy() );
+	Trace G( B.copy() ); // 6 factors.
+
+	Product H;
+	H.addTerm( F.copy() );
+	H.addTerm( G.copy() );
+	H.addTerm( E.copy() );
+
+	Product I;
+	I.addTerm( G.copy() );
+	I.addTerm( F.copy() );
+	I.addTerm( E.copy() );
+
+	Product J;
+	J.addTerm( E.copy() );
+	J.addTerm( G.copy() );
+	J.addTerm( F.copy() );
+
+	Product K;
+	K.addTerm( E.copy() );
+	K.addTerm( F.copy() );
+	K.addTerm( G.copy() );
+
+	A.addTerm( H.copy() );
+	A.addTerm( I.copy() );
+	A.addTerm( J.copy() );
+	A.addTerm( K.copy() );
+
+	ss << A << "    ";
+	Sum L = sortTracesByOrder( A );
+	ss << L;
+	return ss.str();
+}
+
+string AR02() {
+	stringstream ss;
+	Sum A;
+	Product B;
+	MatrixK C;
+	MatrixS D;
+
+	C.setIndices( 0, 1 );
+	B.addTerm( C.copy() );
+	D.setIndices( 1, 2 );
+	B.addTerm( D.copy() );
+	Trace E( B.copy() );  // 2 factors.
+
+	C.setIndices( 2, 3 );
+	B.addTerm( C.copy() );
+	D.setIndices( 3, 4 );
+	B.addTerm( D.copy() );
+	Trace F( B.copy() ); // 4 factors.
+
+	C.setIndices( 5, 6 );
+	B.addTerm( C.copy() );
+	D.setIndices( 6, 7 );
+	B.addTerm( D.copy() );
+	Trace G( B.copy() ); // 6 factors.
+
+	Product H;
+	H.addTerm( F.copy() );
+	H.addTerm( TermAPtr( new TermA() ) );
+	H.addTerm( TermAPtr( new TermA() ) );
+	H.addTerm( TermAPtr( new TermA() ) );
+	H.addTerm( G.copy() );
+	H.addTerm( TermAPtr( new TermA() ) );
+	H.addTerm( E.copy() );
+	H.addTerm( TermAPtr( new TermA() ) );
+	H.addTerm( TermAPtr( new TermA() ) );
+
+	Product I;
+	I.addTerm( TermAPtr( new TermA() ) );
+	I.addTerm( TermAPtr( new TermA() ) );
+	I.addTerm( TermAPtr( new TermA() ) );
+	I.addTerm( TermAPtr( new TermA() ) );
+	I.addTerm( TermAPtr( new TermA() ) );
+	I.addTerm( TermAPtr( new TermA() ) );
+	I.addTerm( G.copy() );
+	I.addTerm( F.copy() );
+	I.addTerm( E.copy() );
+
+	Product J;
+	J.addTerm( E.copy() );
+	J.addTerm( TermAPtr( new TermA() ) );
+	J.addTerm( TermAPtr( new TermA() ) );
+	J.addTerm( TermAPtr( new TermA() ) );
+	J.addTerm( G.copy() );
+	J.addTerm( TermAPtr( new TermA() ) );
+	J.addTerm( TermAPtr( new TermA() ) );
+	J.addTerm( TermAPtr( new TermA() ) );
+	J.addTerm( F.copy() );
+
+	Product K;
+	K.addTerm( E.copy() );
+	K.addTerm( F.copy() );
+	K.addTerm( G.copy() );
+	K.addTerm( TermAPtr( new TermA() ) );
+	K.addTerm( TermAPtr( new TermA() ) );
+	K.addTerm( TermAPtr( new TermA() ) );
+	K.addTerm( TermAPtr( new TermA() ) );
+	K.addTerm( TermAPtr( new TermA() ) );
+	K.addTerm( TermAPtr( new TermA() ) );
+
+	A.addTerm( H.copy() );
+	A.addTerm( I.copy() );
+	A.addTerm( J.copy() );
+	A.addTerm( K.copy() );
+
+	ss << A << "    ";
+	Sum L = sortTracesByOrder( A );
+	ss << L;
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -2918,6 +3226,16 @@ int main( int argc, char** argv ) {
 	 */
 
 	UnitTest( "L01: Trace, Constructor", &L01, "Trace[ GT_0 ]" );
+
+	UnitTest( "L02: Trace, operator< Overload I", &L02, "Trace[  {K__( 0, 1 )} {S_(1, 0)}  ]    Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 0)}  ]    1    0" );
+
+	UnitTest( "L03: Trace, operator< Overload II", &L03, "Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 0)}  ]    Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 0)}  ]    0    0" );
+
+	UnitTest( "L04: Trace, operator> Overload III", &L04, "Trace[  {K__( 0, 1 )} {S_(1, 0)}  ]    Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 0)}  ]    0    1" );
+
+	UnitTest( "L05: Trace, operator> Overload IV", &L05, "Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 0)}  ]    Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 0)}  ]    0    0" );
+
+	UnitTest( "L06: Trace, operator<, sort()", &L06, "Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 4, 5 )} {S_(5, 0)}  ]    Trace[  {K__( 0, 1 )} {S_(1, 0)}  ]    Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 0)}  ]    Trace[  {K__( 0, 1 )} {S_(1, 0)}  ]    Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 0)}  ]    Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 4, 5 )} {S_(5, 0)}  ]    " );
 
 	/*
 	 * M: Delta
@@ -3317,6 +3635,14 @@ int main( int argc, char** argv ) {
 	UnitTest( "AQ06: generateDeterminantExpansion(), Expanded and truncated to n = 2", &AQ06, "1 +  {A} {A} {E2_dn}  +  {A} {E1_dn}  +  {1 / 2} {A} {E1_dn} {A} {E1_dn}  +  {A} {A} {E2_up}  +  {A} {E1_up}  +  {A} {E1_up} {A} {E1_dn}  +  {1 / 2} {A} {E1_up} {A} {E1_up} " );
 
 	UnitTest( "AQ07: generateDeterminantExpansion(), Full expression expanded and truncated to n = 3", &AQ07, "1 +  {A} {A} {A} {1 / 3} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)} {K_dn_( 0, 0 )} {S_(0, 0)} {K_dn_( 0, 0 )} {S_(0, 0)}  ]}  +  {A} {A} {-1 / 2} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)} {K_dn_( 0, 0 )} {S_(0, 0)}  ]}  +  {A} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)}  ]}  +  {A} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)}  ]} {A} {A} {-1 / 2} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)} {K_dn_( 0, 0 )} {S_(0, 0)}  ]}  +  {1 / 2} {A} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)}  ]} {A} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)}  ]}  +  {1 / 6} {A} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)}  ]} {A} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)}  ]} {A} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)}  ]}  +  {A} {A} {A} {1 / 3} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)} {K_up_( 0, 0 )} {S_(0, 0)} {K_up_( 0, 0 )} {S_(0, 0)}  ]}  +  {A} {A} {-1 / 2} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)} {K_up_( 0, 0 )} {S_(0, 0)}  ]}  +  {A} {A} {-1 / 2} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)} {K_up_( 0, 0 )} {S_(0, 0)}  ]} {A} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)}  ]}  +  {A} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)}  ]}  +  {A} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)}  ]} {A} {A} {-1 / 2} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)} {K_dn_( 0, 0 )} {S_(0, 0)}  ]}  +  {A} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)}  ]} {A} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)}  ]}  +  {A} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)}  ]} {1 / 2} {A} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)}  ]} {A} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)}  ]}  +  {A} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)}  ]} {A} {A} {-1 / 2} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)} {K_up_( 0, 0 )} {S_(0, 0)}  ]}  +  {1 / 2} {A} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)}  ]} {A} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)}  ]}  +  {1 / 2} {A} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)}  ]} {A} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)}  ]} {A} {Trace[  {K_dn_( 0, 0 )} {S_(0, 0)}  ]}  +  {1 / 6} {A} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)}  ]} {A} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)}  ]} {A} {Trace[  {K_up_( 0, 0 )} {S_(0, 0)}  ]} " );
+
+	/*
+	 * sortTracesByOrder()
+	 */
+
+	UnitTest( "AR01: sortTracesByOrder() I", &AR01, " {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}      {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} " );
+
+	UnitTest( "AR02: sortTracesByOrder() II", &AR02, " {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {A} {A}  +  {A} {A} {A} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {A} {A} {A} {A} {A} {A}      {A} {A} {A} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}  +  {A} {A} {A} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}  +  {A} {A} {A} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}  +  {A} {A} {A} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} " );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;
