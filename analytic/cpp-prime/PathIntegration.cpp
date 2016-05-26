@@ -228,30 +228,6 @@ void initializeStaticReferences() {
     SINE_PATH_INTEGRALS[ 10 ] = CoefficientFraction( 63, 256 );
 }
 
-TotalSignature getDeltaSignature( vector<int> contraction ) {
-    DeltaContractionSet deltas;
-    DeltaContractionSet deltaBars;
-    int nextDeltaIndex = 0;
-
-    for ( int i = 0; i < contraction.size(); i++ ) {
-        for ( int j = nextDeltaIndex; j < nextDeltaIndex + contraction[i] - 1; j++ ) {
-            deltas.addContraction( IndexContraction( j, j + 1 ) );
-        }
-
-        if ( i != contraction.size() - 1 ) {
-            deltaBars.addContraction( IndexContraction( nextDeltaIndex + contraction[i] - 1, nextDeltaIndex + contraction[i] ) );
-        }
-
-        nextDeltaIndex += contraction[i];
-    }
-
-    TotalSignature signature;
-    signature.deltas = deltas;
-    signature.deltaBars = deltaBars;
-
-    return signature;
-}
-
 vector< vector<int> > combinations( vector<int> list, int k ) {
     assert(k <= list.size());
 
@@ -296,6 +272,48 @@ vector< vector<int> > combinations( vector<int> list, int k ) {
 
         return combos;
     }
+}
+
+TotalSignature getDeltaSignature( vector<int> contraction ) {
+    DeltaContractionSet deltas;
+    DeltaContractionSet deltaBars;
+    vector<int> contractionGroupHeads;
+    vector<int> contractionGroupTails;
+
+    int nextDeltaIndex = 0;
+
+    for ( int i = 0; i < contraction.size(); i++ ) {
+        contractionGroupHeads.push_back( nextDeltaIndex );
+
+        for ( int j = nextDeltaIndex; j < nextDeltaIndex + contraction[i] - 1; j++ ) {
+            deltas.addContraction( IndexContraction( j, j + 1 ) );
+        }
+
+        nextDeltaIndex += contraction[i];
+        contractionGroupTails.push_back( nextDeltaIndex - 1 );
+    }
+
+    // Only add \bar{\delta} objects to the signature if the number of groups in the contraction list is greater then
+    // one.
+    if ( contraction.size() > 1 ) {
+        vector<int> contractionGroupIndices;
+        for ( int i = 0; i < contraction.size(); i++ ) {  // Generate a vector of integers that labels each contraction
+            contractionGroupIndices.push_back( i );       // group. This vector will be passed to contractions(), which
+        }                                                 // will generate all possible pairings.
+
+        vector< vector<int> > groupPairings = combinations(contractionGroupIndices, 2);  // Choose two.
+
+        // For each possible pairing, add a \bar{\delta} to the signature.
+        for (vector< vector<int> >::iterator pair = groupPairings.begin(); pair != groupPairings.end(); ++pair) {
+            deltaBars.addContraction( IndexContraction( contractionGroupTails.at( pair->at(0) ), contractionGroupHeads.at( pair->at(1)) ) );
+        }
+    }
+
+    TotalSignature signature;
+    signature.deltas = deltas;
+    signature.deltaBars = deltaBars;
+
+    return signature;
 }
 
 vector< vector<int> > getIndexPermutations( vector<int> contraction, vector<int> list ) {
