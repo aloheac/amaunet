@@ -504,7 +504,7 @@ std::map<int,int> constructContractionDictionary( DeltaContractionSet contractio
 
 bool areTermsCommon( SymbolicTermPtr termA, SymbolicTermPtr termB );
 
-int gcd( int a, int b );
+unsigned long gcd( unsigned long a, unsigned long b );
 
 int factorial( int n );
 

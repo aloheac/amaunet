@@ -395,7 +395,7 @@ double CoefficientFraction::eval() {
 
 void CoefficientFraction::reduce() {
 	if ( abs( floor( num ) - num ) == 0 and abs( floor( den ) - den ) == 0 ) {
-		double thisGCD = (double)gcd( (int)abs( num ), (int)abs( den ) );
+		double thisGCD = (double)gcd( (unsigned long)abs( num ), (unsigned long)abs( den ) );
 		num /= thisGCD;
 		den /= thisGCD;
 	}
@@ -1586,7 +1586,7 @@ Sum generateDeterminantExpansion( int order, const char* flavorLabel,  bool inse
 	return Sum( expansion.copy() );
 }
 
-int gcd( int a, int b ) {
+unsigned long gcd( unsigned long a, unsigned long b ) {
 	if ( a == 0 ) {
 		return b;
 	} else {
