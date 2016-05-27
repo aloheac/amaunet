@@ -49,6 +49,18 @@ private:
 	int counter;
 };
 
+class GenericTestTerm : public SymbolicTerm {
+public:
+
+	GenericTestTerm( int thisId );
+
+	const std::string to_string() const;
+
+	SymbolicTermPtr copy();
+
+	int id;
+};
+
 /*
  * ***********************************************************************
  * DEBUGGING FUNCTIONS

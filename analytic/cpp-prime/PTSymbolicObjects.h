@@ -74,6 +74,14 @@ typedef std::shared_ptr<FourierSum> FourierSumPtr;
  * ***********************************************************************
  */
 
+/**
+ * Enumerations used to uniquely define each type of symbolic term that may appear in an expression. An instance of
+ * TermTypes is most typically used in the termID field of the SymbolicTerm class. Classes that are derived from
+ * SymbolicTerm indicates which subclass the particular instance is so that static casts to the derived class type
+ * can be made after checking which TermTypes enum is held in termID.
+ *
+ * Note that if INVALID_TERM ever appears during normal execution, an error has very likely occured.
+ */
 enum class TermTypes : char {
 	INVALID_TERM = '0',
 	GENERIC_TEST_TERM = 'g',
@@ -88,7 +96,7 @@ enum class TermTypes : char {
 	TRACE = 'T',
 	DELTA = 'd',
 	FOURIER_SUM = 'F',
-        DEBUG_TRACE = 'Z'
+	DEBUG_TRACE = 'Z'
 };
 
 /*
@@ -97,40 +105,107 @@ enum class TermTypes : char {
  * ***********************************************************************
  */
 
+/**
+ * Base class for all expressions and symbolic objects that may appear in an expression, given the current formalism of
+ * perturbation theory.
+ */
 class SymbolicTerm {
 
 	friend bool unpackTrivialExpression( SymbolicTermPtr & );
 
 public:
 
+	/**
+	 * SymbolicTerm default constructor. Accepts no arguments.
+	 */
 	SymbolicTerm();
 
+	/**
+	 * SymbolicTerm destructor.
+	 */
 	virtual ~SymbolicTerm();
 
+	/**
+	 * Equality operator overload. This method should always be overridden by derived classes.
+	 * @param other SymbolicTerm instance which is being compared.
+	 * @return true if other is mathematically and symbolically equivalent to this instance, false otherwise.
+	 */
 	virtual bool operator==( const SymbolicTerm &other ) const;
 
+	/**
+	 * Mathematically simplifies the expression in a trivial manner. By the present implementation, all Product
+	 * expressions that contain an identifiable expression of zero itself is reduced to zero, and factors of one
+	 * are removed from the Product. Any terms in a Sum which are zero are removed. All implementations are provided
+	 * by derived classes.
+	 */
 	virtual void simplify();
 
+	/**
+	 * Reduces the expression tree of the data structure to canonical form. All expression manipulation functions
+	 * typically expect passed expressions to be in canonical form.
+	 */
 	virtual void reduceTree();
 
+	/**
+	 * Returns a pretty-printed representation of the expression. All derived classes should override this method.
+	 * @return A pretty-printed representation of the expression.
+	 */
 	virtual const std::string to_string() const;
 
+	/**
+	 * Gets the particle flavor label assigned to this expression. Flavor labels are not appropriate for all types of
+	 * expressions, and is only used in cases where matrices are dependent on the particle species it refers to.
+	 * @return Flavor label assigned to this expression.
+	 */
 	const char* getFlavorLabel();
 
+	/**
+	 * Gets the indices assigned to this expression. Two and only two indices may be assigned to an expression under
+	 * the present formalism. Exactly two integers are allocated for this array for each instance. The indices are
+	 * commonly referred to as i and j.
+	 * @return Two element array of indices assigned to this expression.
+	 */
 	int* getIndices();
 
+	/**
+	 * Sets the two indices assigned to this expression. Indices are held in the two-element int array field indices.
+	 * @param i The first index.
+	 * @param j The second index.
+	 */
 	void setIndices( int i, int j );
 
+	/**
+	 * Gets the term type identifier, which is a valid instance of the TermTypes enumeration. All derived classes set
+	 * the term identifier associated with the derived class in constructors.
+	 * @return The term type identifier assigned to this symbolic object.
+	 */
 	TermTypes getTermID();
 
+	/**
+	 * Generates a deep copy of this SymbolicTerm instance on the heap and returns a shared smart pointer to the copy.
+	 * All derived classes should implement a method that overrides the base class definition. If the base class method
+	 * is called directly, the symbolic object will have the term identifier of an invalid term.
+	 * @return A shared smart pointer to the copy on the heap.
+	 */
 	virtual SymbolicTermPtr copy();
 
 protected:
 
+	/**
+	 * The particle flavor label (e.g. "up", "dn") associated with this symbolic object, if applicable.
+	 */
 	const char* flavorLabel;
 
+	/**
+	 * The coordinate- or momentum-space indices associated with this symbolic object, if applicable. Under the current
+	 * formalism any object which carries indices, including matrices and delta functions, should carry exactly two
+	 * indices. Abstract indices are generally referred to with integers in this formalism.
+	 */
 	int indices[ 2 ];
 
+	/**
+	 * The term type identifier associated with this symbolic object.
+	 */
 	TermTypes termID;
 };
 
@@ -140,35 +215,72 @@ protected:
  * ***********************************************************************
  */
 
-class GenericTestTerm : public SymbolicTerm {
-public:
-
-	GenericTestTerm( int thisId );
-
-	const std::string to_string() const;
-
-	SymbolicTermPtr copy();
-
-	int id;
-};
-
+/**
+ * Symbolic representation of the matrix K in terms of the current perturbation theory formalism. Class is derived from
+ * the base class SymbolicTerm. This matrix is defined as
+ *
+ * 	K \equiv M_0^{-1} \mathcal{T}
+ *
+ * 	where M_0 indicates the matrix M in the non-interacting limit (A = 0) and \mathcal{T} is the matrix of kinetic
+ * 	energy operators. This matrix is later Fourier transformed to a diagonal representation in momentum space. The
+ * 	pretty-printed representation of this symbolic object is
+ *
+ * 	K_##_( a, b )
+ *
+ * 	where ## is the flavor label assigned to this matrix, and ( a, b ) are the corresponding coordinate-space indices
+ * 	of this element, after trace operators have been removed after indexing. Note that the index set ( 0, 0 )
+ * 	corresponds to an invalid set of indices where no indices have yet been assigned.
+ */
 class MatrixK : public SymbolicTerm {
+
 public:
 
+	/**
+	 * The default constructor for MatrixK. Assigns the empty string for the flavor label.
+	 */
 	MatrixK();
 
+	/**
+	 * Constructor which assigns a given flavor label to the matrix.
+	 * @param flavorLabel The flavor label to assign.
+	 */
 	MatrixK( const char* flavorLabel );
 
+	/**
+	 * Equality operator overload. Two MatrixK objects are considered to be equivalent if the flavor labels of both
+	 * objects are equal and if both objects are or are not symbolically Fourier transformed. The indices of both
+	 * objects do not need to be equal since the objects commute after the expression in indexed. This operator is
+	 * generally used only when combining like terms, and becomes important when considering polarized systems.
+	 * @param other The other instance of MatrixK to check for mathematical equivalance.
+	 * @return true if this instance and other are mathematically equivalent, false otherwise.
+	 */
 	bool operator==( const MatrixK &other ) const;
 
+	/**
+	 * Gets the pretty-printed representation of this instance of MatrixK. See the class description for clarification
+	 * on this representation.
+	 * @return The pretty-printed representation of this instance of MatrixK.
+	 */
 	const std::string to_string() const;
 
+	/**
+	 * Generates a deep copy of this instance on the heap and returns a smart shared pointer to the copy.
+	 * @return A smart shared pointer to the generated copy.
+	 */
 	SymbolicTermPtr copy();
 
+	/**
+	 * Marks this instance of MatrixK as Fourier transformed to momentum space. The result is refered to as the
+	 * propagator D in the formalism.
+	 */
 	void fourierTransform();
 
 private:
 
+	/**
+	 * Boolean flag indicating whether this instance is symbolically Fourier transformed to momentum space. This field
+	 * is always initialized to false.
+	 */
 	bool isFourierTransformed;
 };
 

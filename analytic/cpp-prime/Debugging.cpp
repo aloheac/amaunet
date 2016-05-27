@@ -66,6 +66,34 @@ int DebugTracer::getCounter() {
 }
 
 /*
+ * GenericTestTerm
+ */
+
+GenericTestTerm::GenericTestTerm( int thisId ) : SymbolicTerm() {
+	id = thisId;
+	termID = TermTypes::GENERIC_TEST_TERM ;
+}
+
+const string GenericTestTerm::to_string() const {
+	stringstream ss;
+	ss << "GT_" << id;
+	return ss.str();
+}
+
+SymbolicTermPtr GenericTestTerm::copy() {
+	GenericTestTermPtr cpy( new GenericTestTerm( 0 ) );
+	cpy->id = id;
+	cpy->termID = TermTypes::GENERIC_TEST_TERM;
+
+	return SymbolicTermPtr( static_pointer_cast<SymbolicTerm>( cpy ) );
+}
+
+std::ostream& operator<<( std::ostream& os, const GenericTestTerm &st ) {
+	os << st.to_string();
+	return os;
+}
+
+/*
  * ***********************************************************************
  * DEBUGGING FUNCTIONS
  * ***********************************************************************

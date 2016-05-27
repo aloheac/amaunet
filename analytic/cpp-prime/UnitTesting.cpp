@@ -21,6 +21,7 @@
 #include <algorithm>
 #include "PTSymbolicObjects.h"
 #include "PathIntegration.h"
+#include "Debugging.h"
 
 using namespace std;
 
