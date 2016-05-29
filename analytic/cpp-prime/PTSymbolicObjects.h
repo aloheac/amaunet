@@ -121,9 +121,23 @@ public:
 	SymbolicTerm();
 
 	/**
+	 * Copy constructor for SymbolicTerm. Simply performs a member-wise copy of the passed object, but is provided for
+	 * explicit clarity. Derived classes should implement their own copy constructor where appropriate.
+	 * @param other Instance of SymbolicTerm to copy.
+	 */
+	SymbolicTerm( const SymbolicTerm &other );
+
+	/**
 	 * SymbolicTerm destructor.
 	 */
 	virtual ~SymbolicTerm();
+
+	/**
+	 * Assignment operator for SymbolicTerm. Derived classes should override and implement their own assignment
+	 * operators.
+	 * @param rhs Instance of SymbolicTerm to copy.
+	 */
+	virtual SymbolicTerm& operator=( const SymbolicTerm& rhs );
 
 	/**
 	 * Equality operator overload. This method should always be overridden by derived classes.
@@ -247,6 +261,18 @@ public:
 	MatrixK( const char* flavorLabel );
 
 	/**
+	 * Copy constructor for MatrixK.
+	 * @param other Instance of MatrixK to copy.
+	 */
+	MatrixK( const MatrixK &other );
+
+	/**
+	 * Assignment operator overload for MatrixK.
+	 * @param rhs Instance of MatrixK to copy.
+	 */
+	MatrixK& operator=( const MatrixK &rhs );
+
+	/**
 	 * Equality operator overload. Two MatrixK objects are considered to be equivalent if the flavor labels of both
 	 * objects are equal and if both objects are or are not symbolically Fourier transformed. The indices of both
 	 * objects do not need to be equal since the objects commute after the expression in indexed. This operator is
@@ -284,26 +310,64 @@ private:
 	bool isFourierTransformed;
 };
 
+/**
+ * Symbolic representation of the matrix S in terms of the current perturbation theory formalism. Class is derived from
+ * SymbolicTerm. The matrix S is diagonal with elements \sin\sigma_j, where the index j refers to a coordinate space
+ * lattice site. This matrix arises from the Hubbard-Stratonovich form of the contact interaction, and its form will
+ * need to change in a non-trivial way if we would like to introduce a new interaction.
+ *
+ * The pretty-printed form of MatrixS is "S_( a, b )", where ( a, b ) are the coordinate-space indices of the matrix.
+ * Since the matrix is diagonal, a \delta_{a, b} replaces the matrix under path integration.
+ */
 class MatrixS : public SymbolicTerm {
+
 public:
 
+	/**
+	 * Default constructor for MatrixS.
+	 */
 	MatrixS();
 
+	/**
+	 * Gets the pretty-printed representation of this instance of MatrixS. The the class description for further details
+	 * on the representation.
+	 * @return The pretty-printed representation.
+	 */
 	const std::string to_string() const;
 
+	/**
+	 * Generates a deep copy of this instance on the heap and returns a smart shared pointer to the copy.
+	 * @return A smart shared pointer to the generated copy.
+	 */
 	SymbolicTermPtr copy();
-
 };
 
+/**
+ * Symbolic representation of the scalar A in terms of the current perturbation theory formalism. The class is
+ * derived from SymbolicTerm. This scalar parameter, which is the expansion variable, is defined such that
+ *
+ * A \equiv \sqrt{2( e^{\tau g} - 1 )}
+ *
+ * where \tau is the temporal lattice spacing, and g is the bare coupling. The pretty-printed representation is
+ * always simply "A". Instances of TermA are simply used to track the order of terms in the perturbation expansion.
+ */
 class TermA : public SymbolicTerm {
 public:
 
+	/**
+	 * Default constructor for TermA.
+	 */
 	TermA();
 
-	TermA( const TermA* A );
-
+	/**
+	 * Gets the pretty-printed representation of TermA. Always returns "A".
+	 */
 	const std::string to_string() const;
 
+	/**
+	 * Equality operator overload for TermA. Always returns true since all TermA instances are mathematically
+	 * equivalent.
+	 */
 	bool operator==( const TermA &other ) const;
 
 	SymbolicTermPtr copy();
@@ -444,7 +508,7 @@ public:
 
 	void clear();
         
-        void combineCoefficients();
+	void combineCoefficients();
 
 	std::vector<SymbolicTermPtr>::const_iterator getIteratorBegin() const;
 
@@ -503,7 +567,7 @@ public:
 
 	void reduceFourierSumIndices();
         
-        void combineCoefficients();
+	void combineCoefficients();
 
 	std::vector<SymbolicTermPtr>::const_iterator getIteratorBegin() const;
 
@@ -541,7 +605,7 @@ public:
 
 	bool operator==( const Trace &other ) const;
         
-        bool operator<( const Trace &other ) const;
+	bool operator<( const Trace &other ) const;
 
 	bool operator>( const Trace &other ) const;
 

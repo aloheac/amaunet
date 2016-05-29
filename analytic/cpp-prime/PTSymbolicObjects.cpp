@@ -40,7 +40,21 @@ SymbolicTerm::SymbolicTerm() {
 	termID = TermTypes::INVALID_TERM ;
 }
 
+SymbolicTerm::SymbolicTerm( const SymbolicTerm &other ) : flavorLabel( other.flavorLabel ), termID( other.termID ) {
+	indices[ 0 ] = other.indices[ 0 ];
+	indices[ 1 ] = other.indices[ 1 ];
+}
+
 SymbolicTerm::~SymbolicTerm() { }
+
+SymbolicTerm& SymbolicTerm::operator=( const SymbolicTerm& rhs ) {
+	flavorLabel = rhs.flavorLabel;
+	termID = rhs.termID;
+	indices[ 0 ] = rhs.indices[ 0 ];
+	indices[ 1 ] = rhs.indices[ 1 ];
+
+	return *this;
+}
 
 bool SymbolicTerm::operator==( const SymbolicTerm &other ) const {
 	return ( flavorLabel == other.flavorLabel );
@@ -109,6 +123,17 @@ MatrixK::MatrixK( const char* thisFlavorLabel ) : SymbolicTerm() {
 	termID = TermTypes::MATRIX_K;
 }
 
+MatrixK::MatrixK( const MatrixK &other ) : SymbolicTerm( other ) {
+	isFourierTransformed = other.isFourierTransformed;
+}
+
+MatrixK& MatrixK::operator=( const MatrixK &rhs ) {
+	SymbolicTerm::operator=( rhs );
+	isFourierTransformed = rhs.isFourierTransformed;
+
+	return *this;
+}
+
 bool MatrixK::operator==( const MatrixK &other ) const {
 	return ( isFourierTransformed == other.isFourierTransformed ) and ( flavorLabel == other.flavorLabel );
 }
@@ -169,10 +194,6 @@ SymbolicTermPtr MatrixS::copy() {
  */
 
 TermA::TermA() : SymbolicTerm() {
-	termID = TermTypes::TERM_A;
-}
-
-TermA::TermA( const TermA* A ) : SymbolicTerm() {
 	termID = TermTypes::TERM_A;
 }
 

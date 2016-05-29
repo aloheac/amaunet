@@ -222,6 +222,33 @@ string F04() {
 	return ss.str();
 }
 
+string F05() {
+    stringstream ss;
+    MatrixK A( "up" );
+    A.setIndices( 9, 7 );
+    A.fourierTransform();
+    MatrixK B( A );
+    ss << A << "    " << B;
+    return ss.str();
+}
+
+string F06() {
+    stringstream ss;
+    MatrixK A( "up" );
+    A.setIndices( 5, 3 );
+    A.fourierTransform();
+
+    MatrixK B( "dn" );
+    B.setIndices( 1, 9 );
+
+    ss << A << "    " << B << "    ";
+
+    A = B;
+
+    ss << A << "    " << B;
+    return ss.str();
+}
+
 string G01() {
 	stringstream ss;
 	MatrixS A;
@@ -3103,6 +3130,10 @@ int main( int argc, char** argv ) {
 	UnitTest( "F02: MatrixK, Constructor, flavorLabel", &F02, "K_up_( 0, 0 )" );
 
 	UnitTest( "F04: MatrixK, fourierTransform()", &F04, "D_up_( 0, 0 )" );
+
+    UnitTest( "F05: MatrixK, Copy Constructor", &F05, "D_up_( 9, 7 )    D_up_( 9, 7 )" );
+
+    UnitTest( "F06: MatrixK, Assignment Operator Overload", &F06, "D_up_( 5, 3 )    K_dn_( 1, 9 )    K_dn_( 1, 9 )    K_dn_( 1, 9 )" );
 
 	/*
 	 * G: MatrixS
