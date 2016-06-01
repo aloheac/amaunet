@@ -310,7 +310,7 @@ SymbolicTermPtr CoefficientFloat::copy() {
 	return cpy;
 }
 
-double CoefficientFloat::eval() {
+double CoefficientFloat::eval() const {
 	return value;
 }
 
@@ -381,7 +381,7 @@ SymbolicTermPtr CoefficientFraction::copy() {
 	return cpy;
 }
 
-double CoefficientFraction::eval() {
+double CoefficientFraction::eval() const {
 	return num / den;
 }
 
@@ -554,10 +554,6 @@ void Sum::combineCoefficients() {
 			castTerm->combineCoefficients();
 		}
 	}
-}
-
-bool Sum::operator==( const Sum &other ) const {
-	return false; // TODO
 }
 
 void Sum::reduceFourierSumIndices() {

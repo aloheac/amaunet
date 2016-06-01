@@ -541,7 +541,7 @@ public:
 	 * Gets the floating-point numerical result of dividing the numerator by the denominator.
 	 * @return The numerical evaluation of num / den.
 	 */
-	double eval();
+	double eval() const;
 
 	/**
 	 * Reduces this fraction to lowest terms by the greatest common divisor.
@@ -556,16 +556,35 @@ private:
 	double num, den;
 };
 
+/**
+ * Symbolic representation of a signed floating-point coefficient in terms of the current perturbation theory
+ * formalism. An instance of this class is most typically used to represent a coefficient of -1.
+ */
 class CoefficientFloat : public SymbolicTerm {
 
 	friend class CoefficientFraction; // TODO: Replace friend declaration with making eval() const.
 
 public:
 
+	/**
+	 * Constructor for CoefficientFloat. Accepts the value of the floating-point coefficient.
+	 * @param val Numerical value of this floating-point coefficient.
+	 */
 	CoefficientFloat( double val );
 
+	/**
+	 * Gets the pretty-printed representation of this term. Always returns the string reprentation of the value. A copy
+	 * of the value is truncated below a particular threshold to avoid machine epsillon precision errors. This
+	 * threshold value is set to 1e-10.
+	 * @return The string representation of this CoefficientFloat instance.
+	 */
 	const std::string to_string() const;
 
+	/**
+	 * Multiplication operator overload for products between two instances of CoefficientFloat.
+	 * @param obj Other CoefficientFloat instance to multiply with this instance.
+	 * @return A new CoefficientFloat instance whose value is the product of this instance's value and the value of obj.
+	 */
 	CoefficientFloat operator*( const CoefficientFloat& obj ) const;
 
 	CoefficientFloat operator+( const CoefficientFloat& obj ) const;
@@ -580,7 +599,7 @@ public:
 
 	SymbolicTermPtr copy();
 
-	double eval();
+	double eval() const;
 
 private:
 
@@ -628,8 +647,6 @@ public:
 	void addTerm( SymbolicTermPtr thisTerm );
 
 	int getNumberOfTerms();
-
-	bool operator==( const Sum &other ) const;
 
 	void reduceFourierSumIndices();
 
