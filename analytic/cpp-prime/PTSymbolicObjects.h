@@ -5,7 +5,7 @@
  * High-order Perturbation Theory Analytics
  * Weak-coupling Expansion for Fermionic Contact Interactions
  *
- * Symbolic Peturbation Theory Expression Objects Header
+ * Symbolic Perturbation Theory Expression Objects Header
  *
  * v. 0.1		09 Feb 2016
  *
@@ -318,6 +318,9 @@ private:
  *
  * The pretty-printed form of MatrixS is "S_( a, b )", where ( a, b ) are the coordinate-space indices of the matrix.
  * Since the matrix is diagonal, a \delta_{a, b} replaces the matrix under path integration.
+ *
+ * Note that since no additional data members are added to this derived class, the compiler-provided copy constructor
+ * and assignment operator overloads are sufficient.
  */
 class MatrixS : public SymbolicTerm {
 
@@ -361,71 +364,195 @@ public:
 
 	/**
 	 * Gets the pretty-printed representation of TermA. Always returns "A".
+	 * @return String of the pretty-printed representation of TermA.
 	 */
 	const std::string to_string() const;
 
 	/**
 	 * Equality operator overload for TermA. Always returns true since all TermA instances are mathematically
 	 * equivalent.
+	 * @return Boolean value of true.
 	 */
 	bool operator==( const TermA &other ) const;
 
+	/**
+	 * Generates a deep copy of this instance on the heap and returns a smart shared pointer to the copy.
+	 * @return A smart shared pointer to the generated copy.
+	 */
 	SymbolicTermPtr copy();
 };
 
+/**
+ * Symbolic representation of the scalar E_k in terms of the current perturbation formalism, where E_k is the trace
+ * over the k-th order matrix product KS, such that
+ *
+ * E_k \equiv \frac{(-1)^{k + 1}{k} \tr\left[(K\mathcal{S}[\sigma])^k\right]
+ */
 class TermE : public SymbolicTerm {
 
 public:
 
+	/**
+	 * Constructor for TermE. The order k of the term must always be specified where k is an integer and k >= 1.
+	 * @param thisOrder Order k of the term E_k.
+	 */
 	TermE( int thisOrder );
 
+	/**
+	 * Constructor for TermE. Additionally specifies the particle flavor label that is assigned to all matricies K
+	 * that appear in the product (KS)^k.
+	 * @param thisOrder Order k of the term E_k.
+	 * @param thisFlavorLabel Flavor label to be assigned to all MatrixK instances that appear in this term.
+	 */
 	TermE( int thisOrder, const char* thisFlavorLabel );
 
+	/**
+	 * Gets the pretty-printed representation TermE. Returns "E_k" where k is replaced by the value of thisOrder.
+	 * @return String of the pretty-printed representation of TermE.
+	 */
 	const std::string to_string() const;
 
+	/**
+	 * Equality operator overload for TermE. Two instances of TermE are considered equal if the orders and flavor labels
+	 * of this instance and other are both equal.
+	 * @param other Other instance of TermE to compare for equality.
+	 * @return true if order and flavorLabel of both instances are equal, false otherwise.
+	 */
 	bool operator==( const TermE &other ) const;
 
+	/**
+	 * Generates a deep copy of this instance on the heap and returns a smart shared pointer to the copy.
+	 * @return A smart shared pointer to the generated copy.
+	 */
 	SymbolicTermPtr copy();
 
-	int getOrder();
+	/**
+	 * Gets the order of this instance of TermE.
+	 * @return The order of this term.
+	 */
+	unsigned int getOrder();
 
+	/**
+	 * Generates the full representation of the term E_k at the previously assigned order. The full representation is
+	 * in terms of a scalar coefficient, a trace operator, and instances of MatrixK and MatrixS with the given flavor
+	 * label assignments. The expression is placed on the heap with a smart pointer to the object returned, which is
+	 * an instance of ProductPtr.
+	 * @return A shared smart pointer to the full expression representation.
+	 */
 	SymbolicTermPtr getFullExpression();
 
 private:
 
-	int order;
+	/**
+	 * Order of the E term, or the order of the product KS under the trace. Always is an integer greater then zero.
+	 */
+	unsigned int order;
 
 };
 
+/**
+ * Symbolic representation of a fraction or ratio between two scalar values. The fraction is specified in terms of a
+ * numerator and denominator.
+ */
 class CoefficientFraction : public SymbolicTerm {
+
 public:
 
+	/**
+	 * Default constructor for CoefficientFraction. Sets the fraction equal to zero, where the numerator is 0 and the
+	 * denominator is 1.
+	 */
 	CoefficientFraction();
 
+	/**
+	 * Constructs an instance of CoefficientFraction with a specified numerator and denominator.
+	 * @param n Numerator of the fraction.
+	 * @param d Denominator of the fraction.
+	 */
 	CoefficientFraction( double n, double d );
 
+	/**
+	 * Gets the pretty-printed representation of this instance of CoefficientFraction. Returns "n / d", where n is
+	 * the string representation of the numerator, and d is the string representation of the denominator (as defined by
+	 * operator<<).
+	 * @return The pretty-printed string representation of this instance.
+	 */
 	const std::string to_string() const;
 
+	/**
+	 * Multiplication operator overload between two instances of CoefficientFraction. Returns the resulting product
+	 * as a new CoefficientFraction which has been simplified by a call to reduce(). Note that any two
+	 * CoefficientFraction objects commute.
+	 * @param obj The CoefficientFraction term to multiply against this instance.
+	 * @return The product of this instance and obj.
+	 */
 	CoefficientFraction operator*( const CoefficientFraction& obj ) const;
 
+	/**
+	 * Addition operator overload between two instances of CoefficientFraction. Note that any two CoefficientFraction
+	 * objects commute. Returns the resulting sum as a new CoefficientFraction which as been simplified by a call to
+	 * reduce().
+	 * @param obj The CoefficientFraction term to add against this instance.
+	 * @return The sum of this instance and obj.
+	 */
 	CoefficientFraction operator+( const CoefficientFraction& obj ) const;
 
+	/**
+	 * Multiplication operator overload between this instance of CoefficientFraction and another CoefficientFloat
+	 * object. Note that CoefficientFraction and CoefficientFloat objects commute. Returns the resulting product as a
+	 * new CoefficientFraction which has been simplified by a call to reduce().
+	 * @param obj The CoefficientFloat instance to multiply against this instance.
+	 * @return The product of this instance and obj.
+	 */
 	CoefficientFraction operator*( const CoefficientFloat& obj ) const;
 
+	/**
+	 * Addition operator overload between this instance of CoefficientFraction and another CoefficientFloat object.
+	 * Note that CoefficientFraction and CoefficientFloat objects commute. Returns the resulting sum as a new
+	 * CoefficientFraction which has been simplified by a call to reduce().
+	 * @param obj The CoefficientFloat instance to add against this instance.
+	 * @return The sum of this instance and obj.
+	 */
 	CoefficientFraction operator+( const CoefficientFloat& obj ) const;
 
+	/**
+	 * Operator *= overload between two instances of CoefficientFraction. Implemented in terms of operator*.
+	 * @param obj The CoefficientFraction instance to multiply against this instance.
+	 * @return This instance of CoefficientFraction, whose value is the previous value of this instance times the value
+	 *         of obj.
+	 */
 	CoefficientFraction& operator*=( const CoefficientFraction& obj );
 
+	/**
+	 * Operator += overload between two instances of CoefficientFraction. Implemented in terms of operator+.
+	 * @param obj The CoefficientFraction instance to add against this instance.
+	 * @return This instance of CoefficientFraction, whose value is the previous value of this instance plus the value
+	 *         of obj.
+	 */
 	CoefficientFraction& operator+=( const CoefficientFraction& obj );
 
+	/**
+	 * Generates a deep copy of this instance on the heap and returns a smart shared pointer to the copy.
+	 * @return A smart shared pointer to the generated copy.
+	 */
 	SymbolicTermPtr copy();
 
+	/**
+	 * Gets the floating-point numerical result of dividing the numerator by the denominator.
+	 * @return The numerical evaluation of num / den.
+	 */
 	double eval();
 
+	/**
+	 * Reduces this fraction to lowest terms by the greatest common divisor.
+	 */
 	void reduce();
 
 private:
 
+	/**
+	 * Numerator (num) and denominator (den) of this fraction.
+	 */
 	double num, den;
 };
 

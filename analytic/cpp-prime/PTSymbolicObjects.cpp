@@ -236,7 +236,7 @@ SymbolicTermPtr TermE::copy() {
 	return SymbolicTermPtr( new TermE( order, flavorLabel ) );
 }
 
-int TermE::getOrder() {
+unsigned int TermE::getOrder() {
 	return order;
 }
 
