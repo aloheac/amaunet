@@ -794,6 +794,8 @@ public:
 
 	void reduceDummyIndices();
 
+    std::vector<IndexContraction> getContractionVector();
+
 private:
 
 	std::vector<IndexContraction> indices;
@@ -841,6 +843,8 @@ Sum truncateOddOrders( SymbolicTermPtr expr );
 void indexExpression( SymbolicTermPtr expr );
 
 Sum fourierTransformExpression( SymbolicTermPtr expr );
+
+bool areDiagramsSimilar( std::vector<IndexContraction> diagramA, std::vector<IndexContraction> diagramB );
 
 Sum combineLikeTerms( Sum &expr );
 

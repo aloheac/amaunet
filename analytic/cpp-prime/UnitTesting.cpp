@@ -3054,6 +3054,65 @@ string AR02() {
 	return ss.str();
 }
 
+string AS01() {
+    stringstream ss;
+
+    // Test N4LO diagram is a third-order chain with one mole.
+    vector<IndexContraction> A;
+    A.push_back( IndexContraction( 0, 1 ) );
+    A.push_back( IndexContraction( 0, 0 ) );
+    A.push_back( IndexContraction( 1, 2 ) );
+    A.push_back( IndexContraction( 0, 0 ) );
+    A.push_back( IndexContraction( 2, 0 ) );
+    A.push_back( IndexContraction( 0, 3 ) );
+    A.push_back( IndexContraction( 0, 0 ) );
+    A.push_back( IndexContraction( 3, 0 ) );
+
+    vector<IndexContraction> B;
+    B.push_back( IndexContraction( 0, 0 ) );
+    B.push_back( IndexContraction( 1, 0 ) );
+    B.push_back( IndexContraction( 0, 2 ) );
+    B.push_back( IndexContraction( 0, 0 ) );
+    B.push_back( IndexContraction( 2, 1 ) );
+    B.push_back( IndexContraction( 1, 3 ) );
+    B.push_back( IndexContraction( 0, 0 ) );
+    B.push_back( IndexContraction( 3, 1 ) );
+
+    ss << areDiagramsSimilar( A, B );
+
+    return ss.str();
+}
+
+string AS02() {
+    stringstream ss;
+
+    // Test N4LO diagram is a third-order chain with one mole.
+    vector<IndexContraction> A;
+    A.push_back( IndexContraction( 0, 1 ) );
+    A.push_back( IndexContraction( 0, 0 ) );
+    A.push_back( IndexContraction( 1, 2 ) );
+    A.push_back( IndexContraction( 0, 0 ) );
+    A.push_back( IndexContraction( 2, 0 ) );
+    A.push_back( IndexContraction( 0, 3 ) );
+    A.push_back( IndexContraction( 0, 0 ) );
+    A.push_back( IndexContraction( 3, 0 ) );
+
+    // Test N4LO diagram is a beachball with a handle times infinity.
+    vector<IndexContraction> B;
+    B.push_back( IndexContraction( 0, 0 ) );
+    B.push_back( IndexContraction( 0, 0 ) );
+    B.push_back( IndexContraction( 0, 0 ) );
+    B.push_back( IndexContraction( 1, 2 ) );
+    B.push_back( IndexContraction( 2, 1 ) );
+    B.push_back( IndexContraction( 1, 0 ) );
+    B.push_back( IndexContraction( 0, 2 ) );
+    B.push_back( IndexContraction( 2, 1 ) );
+
+    ss << areDiagramsSimilar( A, B );
+
+    return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -3675,6 +3734,14 @@ int main( int argc, char** argv ) {
 	UnitTest( "AR01: sortTracesByOrder() I", &AR01, " {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}      {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} " );
 
 	UnitTest( "AR02: sortTracesByOrder() II", &AR02, " {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {A} {A}  +  {A} {A} {A} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]}  +  {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} {A} {A} {A} {A} {A} {A}      {A} {A} {A} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}  +  {A} {A} {A} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}  +  {A} {A} {A} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]}  +  {A} {A} {A} {A} {A} {A} {Trace[  {K__( 0, 1 )} {S_(1, 2)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)}  ]} {Trace[  {K__( 0, 1 )} {S_(1, 2)} {K__( 2, 3 )} {S_(3, 4)} {K__( 5, 6 )} {S_(6, 7)}  ]} " );
+
+    /*
+     * areDiagramsSimilar()
+     */
+
+    UnitTest( "AS01: areDiagramsSimilar() I", &AS01, "1" );
+
+    UnitTest( "AS02: areDiagramsSimilar() II", &AS02, "0" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

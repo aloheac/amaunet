@@ -17,6 +17,7 @@
 #include <sstream>
 #include <cstring>
 #include <set>
+#include <algorithm>
 #include <boost/algorithm/string/trim.hpp>
 #include "PTSymbolicObjects.h"
 #include "PathIntegration.h"
@@ -1068,6 +1069,10 @@ void FourierSum::reduceDummyIndices() {
 	}
 }
 
+std::vector<IndexContraction> FourierSum::getContractionVector() {
+    return indices;
+}
+
 bool FourierSum::operator==( const FourierSum &other ) const {
 	vector<IndexContraction> lhs( indices );
 	vector<IndexContraction> rhs( other.indices );
@@ -1251,7 +1256,7 @@ bool areTermsCommon( SymbolicTermPtr termA, SymbolicTermPtr termB ) {
 	FourierSumPtr castTermAFourierSum = static_pointer_cast<FourierSum>( termAFourierSum );
 	FourierSumPtr castTermBFourierSum = static_pointer_cast<FourierSum>( termBFourierSum );
 
-	if ( not( *castTermAFourierSum == *castTermBFourierSum ) ) return false;
+	if ( not( *castTermAFourierSum == *castTermBFourierSum  or areDiagramsSimilar( castTermAFourierSum->getContractionVector(), castTermBFourierSum->getContractionVector() ) ) ) return false;
 
 	return true;
 }
@@ -1414,6 +1419,43 @@ Sum fourierTransformExpression( SymbolicTermPtr expr ) {
 	}
 
 	return transformedExpression;
+}
+
+bool areDiagramsSimilar( vector<IndexContraction> diagramA, vector<IndexContraction> diagramB ) {
+    if ( diagramA.size() != diagramB.size() ) {
+        // TODO: Throw exception here.
+        cout << "***ERROR: Compared diagrams in areDiagramsSimilar() are not of the same order." << endl;
+        return false;
+    }
+
+    // Return false if the vector length of both diagrams are not a valid diagram.
+    if ( diagramA.size() == 0 or diagramA.size() % 2 == 1 ) {
+        return false;
+    }
+
+    vector<unsigned int> spatialVertices;
+    for ( int i = 0; i < diagramA.size() / 2; i++ ) {
+        spatialVertices.push_back( i );
+    }
+
+    vector<IndexContraction> diagramAPermutation;
+    FourierSum rhs( diagramB, (int)diagramB.size() );
+    do {
+        diagramAPermutation = vector<IndexContraction>();
+        for ( vector<IndexContraction>::iterator indexPair = diagramA.begin(); indexPair != diagramA.end(); ++indexPair ) {
+            if ( indexPair->i == 0 and indexPair->j == 0 ) {
+                diagramAPermutation.push_back( IndexContraction( 0, 0 ) );
+            } else {
+                diagramAPermutation.push_back( IndexContraction( spatialVertices.at( indexPair->i ), spatialVertices.at( indexPair->j ) ) );
+            }
+        }
+
+        FourierSum lhs = FourierSum( diagramAPermutation, (int)diagramAPermutation.size() );
+        if( lhs == rhs ) return true;
+
+    } while ( next_permutation( spatialVertices.begin(), spatialVertices.end() ) );  // std::next_permutation provided in <algorithm>.
+
+    return false;
 }
 
 Sum combineLikeTerms( Sum &expr ) {
