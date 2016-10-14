@@ -2417,6 +2417,76 @@ string AK05() {
 	return ss.str();
 }
 
+string AK06() {
+	stringstream ss;
+	vector<IndexContraction> A;
+	A.push_back( IndexContraction( 1, 0 ) );
+	A.push_back( IndexContraction( 0, 0 ) );
+	A.push_back( IndexContraction( 0, 1 ) );
+	A.push_back( IndexContraction( 0, 0 ) );
+	FourierSum B( A, 4 );
+
+	Product C;
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	C.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	C.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	C.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	C.addTerm( B.copy() );
+
+	Product D;
+	D.addTerm( TermAPtr( new TermA() ) );
+	D.addTerm( TermAPtr( new TermA() ) );
+	D.addTerm( TermAPtr( new TermA() ) );
+	D.addTerm( TermAPtr( new TermA() ) );
+	D.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	D.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	D.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	D.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	D.addTerm( B.copy() );
+
+	ss << C << "    " << D << "    " << areTermsCommon( C.copy(), D.copy() );
+	return ss.str();
+}
+
+string AK07() {
+	stringstream ss;
+	vector<IndexContraction> A;
+	A.push_back( IndexContraction( 1, 0 ) );
+	A.push_back( IndexContraction( 0, 0 ) );
+	A.push_back( IndexContraction( 0, 1 ) );
+	A.push_back( IndexContraction( 0, 0 ) );
+	FourierSum B( A, 4 );
+
+	Product C;
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( TermAPtr( new TermA() ) );
+	C.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	C.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	C.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	C.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	C.addTerm( B.copy() );
+
+	Product D;
+	D.addTerm( TermAPtr( new TermA() ) );
+	D.addTerm( TermAPtr( new TermA() ) );
+	D.addTerm( TermAPtr( new TermA() ) );
+	D.addTerm( TermAPtr( new TermA() ) );
+	D.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	D.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	D.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	D.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	D.addTerm( B.copy() );
+
+	ss << C << "    " << D << "    " << areTermsCommon( C.copy(), D.copy() );
+	return ss.str();
+}
+
 string AL01() {
 	stringstream ss;
 	Product A;
@@ -3113,6 +3183,137 @@ string AS02() {
     return ss.str();
 }
 
+string AT01() {
+	stringstream ss;
+	Product A;
+	A.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+
+	ss << getFlavorLabelOrder( A.copy() );
+	return ss.str();
+}
+
+string AT02() {
+	stringstream ss;
+	Product A;
+	A.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+
+	Product B;
+	B.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+
+	ss << getFlavorLabelOrder( A.copy() ) << "    " << getFlavorLabelOrder( B.copy() );
+	return ss.str();
+}
+
+string AT03() {
+	stringstream ss;
+	Product A;
+	A.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( TermAPtr( new TermA() ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+
+	ss << getFlavorLabelOrder( A.copy() );
+	return ss.str();
+}
+
+string AU01() {
+	stringstream ss;
+	Product A;
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+
+	Product B;
+	B.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+
+	ss << areFlavorLabelOrdersIdentical( getFlavorLabelOrder( A.copy() ), getFlavorLabelOrder( B.copy() ) );
+	return ss.str();
+}
+
+string AU02() {
+	stringstream ss;
+	Product A;
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+
+	Product B;
+	B.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+
+	ss << areFlavorLabelOrdersIdentical( getFlavorLabelOrder( A.copy() ), getFlavorLabelOrder( B.copy() ) );
+	return ss.str();
+}
+
+string AU03() {
+	stringstream ss;
+	Product A;
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+
+	Product B;
+	B.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+
+	ss << areFlavorLabelOrdersIdentical( getFlavorLabelOrder( A.copy() ), getFlavorLabelOrder( B.copy() ) );
+	return ss.str();
+}
+
+string AU04() {
+	stringstream ss;
+	Product A;
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+
+	Product B;
+	B.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+
+	ss << areFlavorLabelOrdersIdentical( getFlavorLabelOrder( A.copy() ), getFlavorLabelOrder( B.copy() ) );
+	return ss.str();
+}
+
+string AU05() {
+	stringstream ss;
+	Product A;
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	A.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+
+	Product B;
+	B.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "dn" ) ) );
+	B.addTerm( MatrixKPtr( new MatrixK( "up" ) ) );
+
+	ss << areFlavorLabelOrdersIdentical( getFlavorLabelOrder( A.copy() ), getFlavorLabelOrder( B.copy() ) );
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -3631,6 +3832,10 @@ int main( int argc, char** argv ) {
 
 	UnitTest( "AK05: areTermsCommon() V", &AK05, " {A} {A} {A} {A} {A} {A} {1}      {A} {A} {A} {A} {A} {A} {FourierSum[ ( 1, 0 )  ( 0, 0 )  ( 0, 1 )  ( 0, 0 )  ( 0, 0 )  ( 0, 0 ) ]}     0" );
 
+	UnitTest( "AK06: areTermsCommon() VI", &AK06, " {A} {A} {A} {A} {K_up_( 0, 0 )} {K_up_( 0, 0 )} {K_dn_( 0, 0 )} {K_dn_( 0, 0 )} {FourierSum[ ( 1, 0 )  ( 0, 0 )  ( 0, 1 )  ( 0, 0 ) ]}      {A} {A} {A} {A} {K_up_( 0, 0 )} {K_dn_( 0, 0 )} {K_up_( 0, 0 )} {K_dn_( 0, 0 )} {FourierSum[ ( 1, 0 )  ( 0, 0 )  ( 0, 1 )  ( 0, 0 ) ]}     1" );
+
+	UnitTest( "AK07: areTermsCommon() VII", &AK07, " {A} {A} {A} {A} {K_up_( 0, 0 )} {K_up_( 0, 0 )} {K_dn_( 0, 0 )} {K_dn_( 0, 0 )} {FourierSum[ ( 1, 0 )  ( 0, 0 )  ( 0, 1 )  ( 0, 0 ) ]}      {A} {A} {A} {A} {K_up_( 0, 0 )} {K_up_( 0, 0 )} {K_up_( 0, 0 )} {K_dn_( 0, 0 )} {FourierSum[ ( 1, 0 )  ( 0, 0 )  ( 0, 1 )  ( 0, 0 ) ]}     0" );
+
 	/*
 	 * combineLikeTerms()
 	 */
@@ -3742,6 +3947,30 @@ int main( int argc, char** argv ) {
     UnitTest( "AS01: areDiagramsSimilar() I", &AS01, "1" );
 
     UnitTest( "AS02: areDiagramsSimilar() II", &AS02, "0" );
+
+	/*
+	 * getFlavorLabelOrder()
+	 */
+
+	UnitTest( "AT01: getFlavorLabelOrder() I", &AT01, "[ dn : 1  up : 2 ]" );
+
+	UnitTest( "AT02: getFlavorLabelOrder() II", &AT02, "[ dn : 1  up : 3 ]    [ dn : 3  up : 1 ]" );
+
+	UnitTest( "AT03: getFlavorlabelOrder() III", &AT03, "[ dn : 1  up : 2 ]" );
+
+	/*
+	 * areFlavorLabelOrdersIdentical()
+	 */
+
+	UnitTest( "AU01: areFlavorLabelOrdersIdentical() I", &AU01, "1" );
+
+	UnitTest( "AU02: areFlavorLabelOrdersIdentical() II", &AU02, "0" );
+
+	UnitTest( "AU03: areFlavorLabelOrdersIdentical() III", &AU03, "1" );
+
+	UnitTest( "AU04: areFlavorLabelOrdersIdentical() IV", &AU04, "0" );
+
+	UnitTest( "AU05: areFlavorLabelOrdersIdentical() V", &AU05, "0" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

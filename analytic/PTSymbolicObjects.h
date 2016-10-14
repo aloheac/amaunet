@@ -818,6 +818,10 @@ int getProductAOrder( SymbolicTermPtr prod );
 
 int getDualProductAOrder( Product &prodA, Product &prodB );
 
+std::map<std::string, int> getFlavorLabelOrder( SymbolicTermPtr prod );
+
+bool areFlavorLabelOrdersIdentical( std::map<std::string, int> orderA, std::map<std::string, int> orderB );
+
 int getTerminatedContraction( std::map<int, int> contractedIndexMapping, int index );
 
 std::vector< std::set<int> > groupContractions( std::vector< std::set<int> > groups );
@@ -869,5 +873,7 @@ std::ostream& operator<<( std::ostream& os, const TermA &obj );
 std::ostream& operator<<( std::ostream& os, const TermTypes &obj );
 
 std::ostream& operator<<( std::ostream& os, const std::map<int, int> &obj );
+
+std::ostream& operator<<( std::ostream& os, const std::map<std::string, int> &obj );
 
 #endif /* PTSYMBOLICOBJECTS_H_ */

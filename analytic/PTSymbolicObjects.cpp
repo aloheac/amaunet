@@ -15,6 +15,7 @@
  */
 
 #include <sstream>
+#include <iostream>
 #include <cstring>
 #include <set>
 #include <algorithm>
@@ -1167,6 +1168,47 @@ int getProductAOrder( SymbolicTermPtr prod ) {
 	return orderInA;
 }
 
+// Note that the key of the map is the flavor label. We choose to use the type string instead of const char* for the
+// key. This may make managing the return result easier.
+map<string, int> getFlavorLabelOrder( SymbolicTermPtr prod ) {
+	if ( prod->getTermID() != TermTypes::PRODUCT ) {
+		cout << "***ERROR: An expression other than a Product was passed to getFlavorLabelOrder()." << endl;
+		return map<string, int>();  // TODO: Throw exception.
+	}
+
+	ProductPtr castTerm = static_pointer_cast<Product>( prod );
+	map<string, int> flavorLabelOrderMap;
+
+	for ( vector<SymbolicTermPtr>::iterator factor = castTerm->getIteratorBegin(); factor != castTerm->getIteratorEnd(); ++factor ) {
+		if ( (*factor)->getTermID() == TermTypes::MATRIX_K ) {
+			// See if a key for the flavor label of the current MatrixK instance already exists in the map. If it does,
+			// increment the order count, otherwise initialize a new key-value pair.
+			string flavorLabel = string( (*factor)->getFlavorLabel() );
+
+			if ( flavorLabelOrderMap.count( flavorLabel ) == 1 ) {
+				flavorLabelOrderMap[ flavorLabel ] += 1;
+			} else {
+				flavorLabelOrderMap[ flavorLabel ] = 1;  // Flavor label does not exist; initialize.
+			}
+		}
+	}
+
+	return flavorLabelOrderMap;
+}
+
+bool areFlavorLabelOrdersIdentical( map<string, int> orderA, map<string, int> orderB ) {
+	// Iterate over the contents of map orderA and compare to the keys and values in orderB.
+	for ( map<string, int>::iterator orderAPair = orderA.begin(); orderAPair != orderA.end(); ++orderAPair ) {
+		if ( not orderB.count( orderAPair->first ) == 1 ) {
+			return false;
+		} else {
+			if ( orderB[ orderAPair->first ] != orderAPair->second ) return false;
+		}
+	}
+
+	return true;
+}
+
 int getTerminatedContraction( map<int, int> contractedIndexMapping, int index ) {
 	if ( contractedIndexMapping.count( index ) == 0 or contractedIndexMapping[ index ] == index  ) {
 		return index;
@@ -1230,6 +1272,9 @@ bool areTermsCommon( SymbolicTermPtr termA, SymbolicTermPtr termB ) {
 
 	// Check if order in A in both terms are the same.
 	if ( getProductAOrder( termA ) != getProductAOrder( termB ) ) return false;
+
+	// Check if flavor label orders for both terms are the same.
+	if ( not areFlavorLabelOrdersIdentical( getFlavorLabelOrder( termA ), getFlavorLabelOrder( termB ) ) ) return false;
 
 	// Check if FourierSum signatures for both terms are the same.
 	SymbolicTermPtr termAFourierSum, termBFourierSum;
@@ -1686,6 +1731,15 @@ std::ostream& operator<<( std::ostream& os, const TermTypes &obj ) {
 std::ostream& operator<<( std::ostream& os, const map<int, int> &obj ) {
 	os << "[";
 	for ( map<int, int>::const_iterator pair = obj.begin(); pair != obj.end(); ++pair ) {
+		os << " " << pair->first << " : " << pair->second << " ";
+	}
+	os << "]";
+	return os;
+}
+
+std::ostream& operator<<( std::ostream& os, const map<string, int> &obj ) {
+	os << "[";
+	for ( map<string, int>::const_iterator pair = obj.begin(); pair != obj.end(); ++pair ) {
 		os << " " << pair->first << " : " << pair->second << " ";
 	}
 	os << "]";
