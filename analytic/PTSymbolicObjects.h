@@ -587,22 +587,63 @@ public:
 	 */
 	CoefficientFloat operator*( const CoefficientFloat& obj ) const;
 
+	/**
+	 * Addition operator overload for sums between two instances of CoefficientFloat.
+	 * @param obj Other CoefficientFloat instance to add with this instance.
+	 * @return A new CoefficientFloat instance whose value is the sum of this instance's value and the value of obj.
+	 */
 	CoefficientFloat operator+( const CoefficientFloat& obj ) const;
 
+	/**
+	 * Multiplication operator overload for products between an instance of CoefficientFloat and an instance of
+	 * CoefficientFraction.
+	 * @param obj CoefficientFraction instance to multiply with this instance of CoefficientFloat.
+	 * @return A new CoefficientFraction instance whose value is the product of this instance's value and the value
+	 * of obj.
+	 */
 	CoefficientFraction operator*( const CoefficientFraction& obj ) const;
 
+	/**
+	 * Addition operator overload for sums between an instance of CoefficientFloat and an instance of
+	 * CoefficientFraction.
+	 * @param obj CoefficientFraction instance to add with this instance of CoefficientFloat.
+	 * @return A new CoefficientFraction instance whose value is the sum of this instance's value and the value of obj.
+	 */
 	CoefficientFraction operator+( const CoefficientFraction& obj ) const;
 
+	/**
+	 * Multiplication-equals operator overload for products between this instance of CoefficientFloat and another
+	 * instance of CoefficientFloat.
+	 * @param obj CoefficientFloat instance to multiply with this instance of CoefficientFloat.
+	 * @return A reference to this instance of CoefficientFloat after the product is performed.
+	 */
 	CoefficientFloat& operator*=( const CoefficientFloat& obj );
 
+	/**
+	 * Addition-equals operator overload for sums between this instance of CoefficientFloat and another instance of
+	 * CoefficientFloat.
+	 * @param obj CoefficientFloat instance to add with this instance of CoefficientFloat.
+	 * @return A reference to this instance of CoefficientFloat after the sum is performed.
+	 */
 	CoefficientFloat& operator+=( const CoefficientFloat& obj );
 
+	/**
+	 * Generates a deep copy of this instance on the heap and returns a smart shared pointer to the copy.
+	 * @return A smart shared pointer to the generated copy.
+	 */
 	SymbolicTermPtr copy();
 
+	/**
+	 * Gets the floating-point numerical value of this instance. Implemented here for polymorphism purposes.
+	 * @return The numerical value of this instance.
+	 */
 	double eval() const;
 
 private:
 
+	/**
+	 * The value this floating-point coefficient holds.
+	 */
 	double value;
 };
 
@@ -612,6 +653,10 @@ private:
  * ***********************************************************************
  */
 
+/**
+ * Symbolic representation of a sum of terms. Sum instances may be nested within other Sums, such that they are
+ * "sums of one or more sums". Sums may be simplified and expanded through a variety of provided methods.
+ */
 class Sum : public SymbolicTerm {
 
 	friend bool unpackTrivialExpression( SymbolicTermPtr & );
@@ -622,51 +667,136 @@ class Sum : public SymbolicTerm {
 
 public:
 
+	/**
+	 * Default constructor. Creates an empty sum.
+	 */
 	Sum();
 
+	/**
+	 * Constructs a Sum whose terms are the elements of the passed vector.
+	 * @param thisTerms A vector of SymbolicTermPtr objects which each reference a term in this sum.
+	 */
 	Sum( std::vector<SymbolicTermPtr> thisTerms );
 
+	/**
+	 * Constructs a Sum and pushes back the single passed term into the sum.
+	 * @param term The term to add to the empty sum.
+	 */
 	Sum( SymbolicTermPtr term );
 
+	/**
+	 * Copy constructor for a Sum.
+	 * @param s The Sum to copy.
+	 */
 	Sum( const Sum &s );
 
+	/**
+	 * Destructor.
+	 */
 	~Sum();
 
+	/**
+	 * Assignment operator overload for a Sum.
+	 * @param rhs The Sum on the right-hand side of the assignment.
+	 * @return A reference to this instance.
+	 */
 	Sum& operator=( const Sum &rhs );
 
+	/**
+	 * Gets a pretty-printed representation of this Sum.
+	 * @return A string that holds the pretty-printed representation of this Sum.
+	 */
 	const std::string to_string() const;
 
+	/**
+	 * Generates a deep copy of this instance on the heap and returns a smart shared pointer to the copy.
+	 * @return A smart shared pointer to the generated copy.
+	 */
 	SymbolicTermPtr copy();
 
+	/**
+	 * Mathematically simplifies the sum by removing any CoefficientFloat or CoefficientFraction terms which evaluate
+	 * to zero. Trivial terms are unpacked in the process.
+	 */
 	void simplify();
 
+	/**
+	 * Simplifies the structure representation of this sum by recursively unpacking trivial expressions.
+	 */
 	void reduceTree();
 
+	/**
+	 * Computes and returns the fully expanded expression.
+	 * @return The expanded expression.
+	 */
 	Sum getExpandedExpr();
 
+	/**
+	 * Adds a term to teh end of the sum.
+	 * @param thisTerm A SymbolicTermPtr which references the term to add to this sum.
+	 */
 	void addTerm( SymbolicTermPtr thisTerm );
 
+	/**
+	 * Gets the length of the internal vector holding SymbolicTermPtr terms. This may not be the mathematical
+	 * number of terms in the sum, unless it is fully expanded and has a fully reduced tree.
+	 * @return The number of terms in the sum as currently represented.
+	 */
 	int getNumberOfTerms();
 
+	/**
+	 * Calls the reduceFourierSumIndices() method on each term of the sum which is a Product. The expression
+	 * should be expanded and reduced before using this method.
+	 */
 	void reduceFourierSumIndices();
 
+	/**
+	 * Clears all terms in this sum.
+	 */
 	void clear();
-        
+
+	/**
+	 * Calls the combineCoefficients() method on each term of the sum which is a Product. The expression
+	 * should be expanded and reduced before using this method.
+	 */
 	void combineCoefficients();
 
+	/**
+	 * Gets the beginning iterator of the internal vector holding the terms of this sum.
+	 * @return The beginning iterator of this sum.
+	 */
 	std::vector<SymbolicTermPtr>::const_iterator getIteratorBegin() const;
 
+	/**
+	 * Gets the ending iterator of the internal vector holding the terms of this sum.
+	 * @return The ending iterator of this sum.
+	 */
 	std::vector<SymbolicTermPtr>::const_iterator getIteratorEnd() const;
 
+	/**
+	 * Gets the beginning iterator of the internal vector holding the terms of this sum.
+	 * @return The beginning iterator of this sum.
+	 */
 	std::vector<SymbolicTermPtr>::iterator getIteratorBegin();
 
+	/**
+	 * Gets the beginning iterator of the internal vector holding the terms of this sum.
+	 * @return The beginning iterator of this sum.
+	 */
 	std::vector<SymbolicTermPtr>::iterator getIteratorEnd();
 
 private:
 
+	/**
+	 * The vector of SymbolicTermPtr objects which reference the terms of this sum.
+	 */
 	std::vector<SymbolicTermPtr> terms;
 };
 
+/**
+ * Symbolic representation of a product of terms (or factors). Product instances may be nested within other Products,
+ * and may represent products of sums. Products may be expanded and simplified through a variety of provided methods.
+ */
 class Product : public SymbolicTerm {
 
 	friend bool unpackTrivialExpression( SymbolicTermPtr & );
@@ -677,36 +807,101 @@ class Product : public SymbolicTerm {
 
 public:
 
+	/**
+	 * Default constructor for a Product. Creates a product with zero factors.
+	 */
 	Product();
 
+	/**
+	 * Constructs a Product whose factors are the elements of the passed vector.
+	 * @param thisTerms A vector of SymbolicTermPtr objects which each reference a factor in this product.
+	 */
 	Product( std::vector<SymbolicTermPtr> t );
 
+	/**
+	 * Constructs a Product whose only factor is the passed term.
+	 * @param term A SymbolicTermPtr object which references the factor to insert into this product.
+	 */
 	Product( SymbolicTermPtr term );
 
+	/**
+	 * Destructor for Product instances.
+	 */
 	~Product();
 
+	/**
+	 * Assignment operator overload for Product objects.
+	 * @param rhs The right-hand side of the assignment expression.
+	 * @return A reference to this instance.
+	 */
 	Product& operator=( const Product &rhs );
 
+	/**
+	 * Gets the pretty-printed representation of this Product instance as a string.
+	 * @return A string which hold the pretty-printed representation of this Product.
+	 */
 	const std::string to_string() const;
 
+	/**
+	 * Generates a deep copy of this instance on the heap and returns a smart shared pointer to the copy.
+	 * @return A smart shared pointer to the generated copy.
+	 */
 	SymbolicTermPtr copy();
 
+	/**
+	 * Mathematically simplifies this product by evaluating the entire product to zero if any CoefficientFloat or
+	 * CoefficientFraction term evaluates to zero, and by removing any CoefficientFloat or CoefficientFraction term
+	 * which evaluates to one.
+	 */
 	void simplify();
 
+	/**
+	 * Reduces (or flattens) the tree representation of this Product by recursively unpacking trivial expressions.
+	 */
 	void reduceTree();
 
+    /**
+     * Computes the fully expanded expression.
+     * @return The fully expanded expression.
+     */
 	Sum getExpandedExpr();
 
+    /**
+     * Adds a factor to the end of this product.
+     * @param t The SymbolicTermPtr object which references the term to add to this product.
+     */
 	void addTerm( SymbolicTermPtr t );
 
+    /**
+	 * Gets the length of the internal vector holding SymbolicTermPtr terms. This may not be the mathematical
+	 * number of terms in the product, unless it is fully expanded and has a fully reduced tree.
+	 * @return The number of terms in the product as currently represented.
+	 */
 	int getNumberOfTerms();
 
+	/**
+	 * Assignment operator overload for when the right-hand side is an instance of a sum. This always returns false,
+	 * which defines the fact that an instance of a Product can never be equivalent to an instance of a Sum.
+	 * @param other An instance of a Sum.
+	 * @return False.
+	 */
 	bool operator==( const Sum &other ) const;
 
+    /**
+     * Determines whether at least one of the factors in this Product is an instance of a Sum. Useful for determining
+     * if it is necessary to expand the expression.
+     * @return True if the Product contains a Sum, false otherwise.
+     */
 	bool containsSum();
 
+    /**
+     * Sets the internal vector of factors to a new vector whose only factor is a CoefficientFloat of value zero.
+     */
 	void zero();
 
+    /**
+     * Clears the internal vector of factors.
+     */
 	void clear();
 
 	void reduceFourierSumIndices();
@@ -810,6 +1005,12 @@ private:
  * ***********************************************************************
  */
 
+/**
+ * Determines if this expression is a trivial one; that is, this instance is a trivial sum with a single term.
+ * If it is, the SymbolicTermPtr is redirected to the nested expression.
+ * @param expr A SymbolicTermPtr that references a Product or Sum which should be unpacked.
+ * @return Returns true if the expression was trivial and a simplification was performed, false otherwise.
+ */
 bool unpackTrivialExpression( SymbolicTermPtr& expr );
 
 bool isZeroTrace( SymbolicTermPtr tr );
