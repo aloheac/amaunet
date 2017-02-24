@@ -51,11 +51,16 @@ int main( int argc, char** argv ) {
 	// Load global system parameters.
 	int EXPANSION_ORDER_IN_A = 6;
 	int SPLIT_SUMS_BY_LINE = 1;
-	int EVAL_BY_PARTS = 0;
+	int EVAL_BY_PARTS = 1;
+    int POOL_SIZE = 1000;
+    int NUM_THREADS = 10;
 
 	cout << "Loaded parameters:" << endl;
 	cout << "\tExpansion order in A:\t\t" << EXPANSION_ORDER_IN_A << endl;
-	cout << "\tSplit sums by line:\t\t\t" << SPLIT_SUMS_BY_LINE << endl;
+	cout << "\tSplit sums by line:\t\t" << SPLIT_SUMS_BY_LINE << endl;
+    cout << "\tEvaluate by parts:\t\t" << EVAL_BY_PARTS << endl;
+    cout << "\tTerm pool size:\t\t" << POOL_SIZE << endl;
+    cout << "\tNumber of threads:\t\t" << NUM_THREADS << endl;
 	cout << endl;
 
 	if ( EXPANSION_ORDER_IN_A > 10 ) {
@@ -83,50 +88,59 @@ int main( int argc, char** argv ) {
     Zdn.reduceTree();
     Zdn.simplify();
 
-    cout << "Generating product of fermion determinants..." << endl;
-    Product fermionDeterminants;
-    fermionDeterminants.addTerm( Zup.copy() );
-    fermionDeterminants.addTerm( Zdn.copy() );
-    Z = Sum( fermionDeterminants.copy() );
+    if ( not EVAL_BY_PARTS ) {
 
-    cout << "Expanding product of fermion determinants..." << endl;
-    Z = Z.getExpandedExpr();
+        cout << "Generating product of fermion determinants..." << endl;
+        Product fermionDeterminants;
+        fermionDeterminants.addTerm( Zup.copy() );
+        fermionDeterminants.addTerm( Zdn.copy() );
+        Z = Sum( fermionDeterminants.copy() );
 
-    cout << "Reducing expression tree..." << endl;
-    Z.reduceTree();
+        cout << "Expanding product of fermion determinants..." << endl;
+        Z = Z.getExpandedExpr();
 
-	cout << "Truncating high-order terms in expansion..." << endl;
-	Z = truncateAOrder( Z.copy(), EXPANSION_ORDER_IN_A );
+        cout << "Reducing expression tree..." << endl;
+        Z.reduceTree();
+        Z.simplify();
 
-	cout << "Truncating odd order terms in expansion..." << endl;
-	Z = truncateOddOrders( Z.copy() );
+        cout << "Truncating high-order terms in expansion..." << endl;
+        Z = truncateAOrder( Z.copy(), EXPANSION_ORDER_IN_A );
 
-    cout << "Sorting traces by order..." << endl;
-	Z = sortTracesByOrder( Z );
-        
-	SymbolicTermPtr ZPtr = Z.copy();
-	cout << "Indexing trace arguments..." << endl;
-	indexExpression( ZPtr );
+        cout << "Truncating odd order terms in expansion..." << endl;
+        Z = truncateOddOrders( Z.copy() );
 
-	cout << "Computing path integral of expression..." << endl;
-	ZPtr->reduceTree();
-	Z = pathIntegrateExpression( ZPtr );
+        cout << "Sorting traces by order..." << endl;
+        Z = sortTracesByOrder( Z );
 
-	cout << "Expanding integrated expression..." << endl;
-	Z = Z.getExpandedExpr();
+        SymbolicTermPtr ZPtr = Z.copy();
+        cout << "Indexing trace arguments..." << endl;
+        indexExpression( ZPtr );
 
-	cout << "Reducing expression tree..." << endl;
-	Z.reduceTree();
+        cout << "Computing path integral of expression..." << endl;
+        ZPtr->reduceTree();
+        Z = pathIntegrateExpression( ZPtr );
 
-	cout << "Computing symbolic Fourier transform..." << endl;
-	Z = fourierTransformExpression( Z.copy() );
+        cout << "Expanding integrated expression..." << endl;
+        Z = Z.getExpandedExpr();
 
-	cout << "Reducing dummy indices of Fourier transform..." << endl;
-	Z.reduceFourierSumIndices();
+        cout << "Reducing expression tree..." << endl;
+        Z.reduceTree();
 
-	cout << "Combining like terms..." << endl;
-	Z = combineLikeTerms( Z, 1000 );
+        cout << "Computing symbolic Fourier transform..." << endl;
+        Z = fourierTransformExpression( Z.copy() );
 
-	cout << Z << endl;
+        cout << "Reducing dummy indices of Fourier transform..." << endl;
+        Z.reduceFourierSumIndices();
 
+        cout << "Combining like terms..." << endl;
+        Z = combineLikeTerms( Z, 1000 );
+
+        cout << Z << endl;
+
+    } else {
+
+        SumPtr ZPtr = multithreaded_expandAndEvaluateExpressionByParts( static_pointer_cast<Sum>( Zup.copy() ), static_pointer_cast<Sum>( Zdn.copy() ), EXPANSION_ORDER_IN_A, 5000, 10 );
+
+        cout << ZPtr->to_string() << endl;
+    }
 }

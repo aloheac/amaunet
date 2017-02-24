@@ -13,7 +13,7 @@
 # University of North Carolina at Chapel Hill
 
 CC=g++
-CFLAGS=-g -std=c++11
+CFLAGS=-g -std=c++11 -fopenmp
 
 all: amaunet
 

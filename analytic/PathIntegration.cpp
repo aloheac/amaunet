@@ -505,7 +505,12 @@ Sum pathIntegrateExpression( SymbolicTermPtr expr ) {
     }
 
     SumPtr castExpr = static_pointer_cast<Sum>( expr );
-    cout << ">> Number of terms: " << castExpr->getNumberOfTerms() << endl;
+
+    #pragma omp critical(printcout)
+    {
+        cout << ">> Number of terms: " << castExpr->getNumberOfTerms() << endl;
+    }
+
     for ( vector<SymbolicTermPtr>::iterator term = castExpr->getIteratorBegin(); term != castExpr->getIteratorEnd(); ++term ) {
         if ( (*term)->getTermID() != TermTypes::PRODUCT ) {
             if ( (*term)->to_string() != "0" and (*term)->to_string() != "1"  and (*term)->to_string() != "1 / 0 "  and (*term)->to_string() != "1 / 1" ) {

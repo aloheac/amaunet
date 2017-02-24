@@ -546,6 +546,10 @@ int Sum::getNumberOfTerms() {
 	return (int)terms.size();
 }
 
+SymbolicTermPtr Sum::getTerm( int i ) {
+	return terms[ i ];
+}
+
 void Sum::clear() {
 	terms.clear();
 }

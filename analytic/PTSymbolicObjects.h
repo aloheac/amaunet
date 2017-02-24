@@ -744,6 +744,8 @@ public:
 	 */
 	int getNumberOfTerms();
 
+    SymbolicTermPtr getTerm( int i );
+
 	/**
 	 * Calls the reduceFourierSumIndices() method on each term of the sum which is a Product. The expression
 	 * should be expanded and reduced before using this method.

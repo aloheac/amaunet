@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include <thread>
+#include "omp.h"
 #include "PTSymbolicObjects.h"
 #include "PathIntegration.h"
 
@@ -54,46 +55,48 @@ Sum getDualExpansionByParts( SumPtr exprA, SumPtr exprB ) {
 }
 
 SymbolicTermPtr fullyEvaluatePartialExpression( SumPtr expr, int EXPANSION_ORDER_IN_A, int POOL_SIZE ) {
-    cout << ">> Reducing expression tree..." << endl;
+    bool SILENT = true;
+
+    if ( not SILENT ) cout << ">> >> Reducing expression tree..." << endl;
     expr->reduceTree();
 
-    cout << ">> Truncating high orders in A of expansion..." << endl;
+    if ( not SILENT ) cout << ">> >> Truncating high orders in A of expansion..." << endl;
     expr = static_pointer_cast<Sum>( truncateAOrder( expr, EXPANSION_ORDER_IN_A ).copy() );
 
-    cout << ">> Truncating odd orders in A of expansion..." << endl;
+    if ( not SILENT ) cout << ">> >> Truncating odd orders in A of expansion..." << endl;
     expr = static_pointer_cast<Sum>( truncateOddOrders( expr ).copy() );
 
-    cout << ">> Indexing terms in expansion..." << endl;
+    if ( not SILENT ) cout << ">> >> Indexing terms in expansion..." << endl;
     indexExpression( expr );
 
-    cout << ">> Reducing expression tree..." << endl;
+    if ( not SILENT ) cout << ">> >> Reducing expression tree..." << endl;
     expr->reduceTree();
 
-    cout << ">> Computing path integral of expression..." << endl;
+    if ( not SILENT ) cout << ">> >> Computing path integral of expression..." << endl;
     Sum pathIntegral = pathIntegrateExpression( expr );
 
-    cout << ">> Reducing expression tree..." << endl;
+    if ( not SILENT ) cout << ">> >> Reducing expression tree..." << endl;
     pathIntegral.reduceTree();
 
-    cout << ">> Performing trivial mathematical simplification..." << endl;
+    if ( not SILENT ) cout << ">> >> Performing trivial mathematical simplification..." << endl;
     pathIntegral.simplify();
 
-    cout << ">> Expanding integrated expression..." << endl;
+    if ( not SILENT ) cout << ">> >> Expanding integrated expression..." << endl;
     pathIntegral = pathIntegral.getExpandedExpr();
 
-    cout << ">> Reducing expression tree..." << endl;
+    if ( not SILENT ) cout << ">> >> Reducing expression tree..." << endl;
     pathIntegral.reduceTree();
 
-    cout << ">> Computing analytic Fourier transform of expression..." << endl;
+    if ( not SILENT ) cout << ">> >> Computing analytic Fourier transform of expression..." << endl;
     pathIntegral = fourierTransformExpression( pathIntegral.copy() );
 
-    cout << ">> Reducing dummy indices of Fourier transformation..." << endl;
+    if ( not SILENT ) cout << ">> >> Reducing dummy indices of Fourier transformation..." << endl;
     pathIntegral.reduceFourierSumIndices();
 
-    cout << ">> Combining like terms..." << endl;
+    if ( not SILENT ) cout << ">> >> Combining like terms..." << endl;
     pathIntegral = combineLikeTerms( pathIntegral, POOL_SIZE );
 
-    cout << ">> Performing trivial mathematical simplification..." << endl;
+    if ( not SILENT ) cout << ">> >> Performing trivial mathematical simplification..." << endl;
     pathIntegral.simplify();
 
     return pathIntegral.copy();
@@ -155,6 +158,50 @@ SumPtr expandAndEvaluateExpressionByParts( SumPtr exprA, SumPtr exprB, int EXPAN
     }
 
     cout << ">> Dual expansion complete. Reducing expression tree and combining like terms..." << endl;
+    expandedExpression.reduceTree();
+    expandedExpression = combineLikeTerms( expandedExpression, POOL_SIZE );
+    return static_pointer_cast<Sum>( expandedExpression.copy() );
+}
+
+SumPtr multithreaded_expandAndEvaluateExpressionByParts( SumPtr exprA, SumPtr exprB, int EXPANSION_ORDER_IN_A, int POOL_SIZE, int NUM_THREADS ) {
+    exprA->reduceTree();
+    exprB->reduceTree();
+
+    SymbolicTermPtr exprBCopy = exprB->copy();
+
+    SumPtr parallelParts[ exprA->getNumberOfTerms() ];
+
+    omp_set_num_threads( NUM_THREADS );
+
+    int numTermsComplete = 0;
+
+#pragma omp parallel for shared( exprA, exprBCopy, parallelParts )
+    for ( int term = 0; term < exprA->getNumberOfTerms(); term++ ) {
+        #pragma omp critical(printcout)
+        {
+            cout << ">> Performing expression expansion and evaluation for term " << term << " of "
+                 << exprB->getNumberOfTerms() << " (" << numTermsComplete << " terms complete)..." << endl;
+            numTermsComplete++;
+        }
+
+        Product nextExpansion;
+        nextExpansion.addTerm( exprA->getTerm( term )->copy() );
+        nextExpansion.addTerm( exprBCopy );
+
+        SumPtr expanded = static_pointer_cast<Sum>( nextExpansion.getExpandedExpr().copy() );
+        expanded->reduceTree();
+
+        parallelParts[ term ] = fullyEvaluateExpressionByParts( expanded, EXPANSION_ORDER_IN_A, POOL_SIZE );
+        nextExpansion.clear();
+    }
+
+    cout << ">> Dual expansion complete. Performing reduction on parallel results..." << endl;
+    Sum expandedExpression;
+    for ( int term = 0; term < exprA->getNumberOfTerms(); term++ ) {
+        expandedExpression.addTerm( parallelParts[ term ] );
+    }
+
+    cout << ">> Reducing expression tree and combining like terms..." << endl;
     expandedExpression.reduceTree();
     expandedExpression = combineLikeTerms( expandedExpression, POOL_SIZE );
     return static_pointer_cast<Sum>( expandedExpression.copy() );
