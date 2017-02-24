@@ -49,10 +49,10 @@ int main( int argc, char** argv ) {
 	cout << VERSION_STRING << "\t\t" << BUILD_DATE << "\t\t" << COMMIT_ID << endl << endl;
 
 	// Load global system parameters.
-	int EXPANSION_ORDER_IN_A = 6;
+	int EXPANSION_ORDER_IN_A = 4;
 	int SPLIT_SUMS_BY_LINE = 1;
 	int EVAL_BY_PARTS = 1;
-    int POOL_SIZE = 1000;
+    int POOL_SIZE = 5000;
     int NUM_THREADS = 10;
 
 	cout << "Loaded parameters:" << endl;
@@ -139,7 +139,7 @@ int main( int argc, char** argv ) {
 
     } else {
 
-        SumPtr ZPtr = multithreaded_expandAndEvaluateExpressionByParts( static_pointer_cast<Sum>( Zup.copy() ), static_pointer_cast<Sum>( Zdn.copy() ), EXPANSION_ORDER_IN_A, 5000, 10 );
+        SumPtr ZPtr = multithreaded_expandAndEvaluateExpressionByParts( static_pointer_cast<Sum>( Zup.copy() ), static_pointer_cast<Sum>( Zdn.copy() ), EXPANSION_ORDER_IN_A, POOL_SIZE, NUM_THREADS );
 
         cout << ZPtr->to_string() << endl;
     }

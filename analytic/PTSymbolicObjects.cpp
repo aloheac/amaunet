@@ -17,6 +17,7 @@
 #include <sstream>
 #include <iostream>
 #include <cstring>
+#include <cmath>
 #include <set>
 #include <algorithm>
 #include <boost/algorithm/string/trim.hpp>
@@ -273,7 +274,7 @@ CoefficientFloat::CoefficientFloat( double val ) : SymbolicTerm() {
 
 const string CoefficientFloat::to_string() const {
 	stringstream ss;
-	if ( abs( value ) < 1E-10 ) {
+	if ( fabs( value ) < 1E-10 ) {
 		ss << "0";
 	} else {
 		ss << value;
@@ -391,7 +392,7 @@ double CoefficientFraction::eval() const {
 
 void CoefficientFraction::reduce() {
 	if ( abs( floor( num ) - num ) == 0 and abs( floor( den ) - den ) == 0 ) {
-		double thisGCD = (double)gcd( (unsigned long)abs( num ), (unsigned long)abs( den ) );
+		double thisGCD = (double)gcd( (unsigned long)fabs( num ), (unsigned long)fabs( den ) );
 		num /= thisGCD;
 		den /= thisGCD;
 	}
