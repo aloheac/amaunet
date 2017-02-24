@@ -22,6 +22,7 @@
 #include "PTSymbolicObjects.h"
 #include "PathIntegration.h"
 #include "Debugging.h"
+#include "FeynmanDiagram.h"
 
 using namespace std;
 
@@ -3314,6 +3315,247 @@ string AU05() {
 	return ss.str();
 }
 
+string AV01() {
+	stringstream ss;
+	Vertex A(3);
+	ss << A.to_string();
+	return ss.str();
+}
+
+string AV02() {
+	stringstream ss;
+	FeynmanDiagram A;
+	A.addVertex( Vertex(0) );
+	A.addVertex( Vertex(1) );
+	A.addVertex( Vertex(2) );
+	ss << A.to_string();
+	return ss.str();
+}
+
+string AV03() {
+	stringstream ss;
+	FeynmanDiagram A;
+	A.addVertex( Vertex(0) );
+	A.addVertex( Vertex(1) );
+	A.addVertex( Vertex(2) );
+
+	A.connect( 0, 1 );
+	A.connect( 0, 2 );
+	ss << A.to_string();
+	return ss.str();
+}
+
+string AV04() {
+	stringstream ss;
+	FeynmanDiagram A;
+	A.addVertex( Vertex(0) );
+	A.addVertex( Vertex(1) );
+	A.addVertex( Vertex(2) );
+	A.connect( 0, 1 );
+	A.connect( 0, 2 );
+	ss << A.to_string() << "    ";
+
+	map<unsigned int, unsigned int> B;
+	B.insert( pair<unsigned int, unsigned int>(0, 3) );
+	B.insert( pair<unsigned int, unsigned int>(1, 4) );
+	B.insert( pair<unsigned int, unsigned int>(2, 5) );
+	A.transformIndices(B);
+	ss << A.to_string();
+	return ss.str();
+}
+
+string AV05() {
+	stringstream ss;
+	FeynmanDiagram A;
+	A.addVertex( Vertex(2) );
+	A.addVertex( Vertex(0) );
+	A.addVertex( Vertex(1) );
+	A.connect( 0, 1 );
+	A.connect( 0, 2 );
+	ss << A.to_string() << "    ";
+
+	map<unsigned int, unsigned int> B;
+	B.insert( pair<unsigned int, unsigned int>(0, 3) );
+	B.insert( pair<unsigned int, unsigned int>(1, 4) );
+	B.insert( pair<unsigned int, unsigned int>(2, 5) );
+	A.transformIndices(B);
+	ss << A.to_string();
+	return ss.str();
+}
+
+string AV06() {
+	stringstream ss;
+	FeynmanDiagram A;
+	A.addVertex( Vertex(2) );
+	A.addVertex( Vertex(0) );
+	A.addVertex( Vertex(1) );
+	A.connect( 0, 2 );
+	A.connect( 0, 1 );
+	ss << A.to_string() << "    ";
+
+	map<unsigned int, unsigned int> B;
+	B.insert( pair<unsigned int, unsigned int>(0, 3) );
+	B.insert( pair<unsigned int, unsigned int>(1, 4) );
+	B.insert( pair<unsigned int, unsigned int>(2, 5) );
+	A.transformIndices(B);
+	ss << A.to_string();
+	return ss.str();
+}
+
+string AV07() {
+	stringstream ss;
+	FeynmanDiagram A;
+	A.addVertex( Vertex(2) );
+	A.addVertex( Vertex(0) );
+	A.addVertex( Vertex(1) );
+	A.connect( 0, 2 );
+	A.connect( 0, 1 );
+	A.connect( 1, 0 );
+
+	FeynmanDiagram B;
+	B.addVertex( Vertex(2) );
+	B.addVertex( Vertex(0) );
+	B.addVertex( Vertex(1) );
+	B.connect( 0, 2 );
+	B.connect( 0, 1 );
+	B.connect( 0, 1 );
+
+	ss << A.to_string() << "    " << B.to_string() << "    " << A.isIdenticalTo(B);
+	return ss.str();
+}
+
+string AV08() {
+	stringstream ss;
+	FeynmanDiagram A;
+	A.addVertex( Vertex(2) );
+	A.addVertex( Vertex(0) );
+	A.addVertex( Vertex(1) );
+	A.connect( 0, 2 );
+	A.connect( 0, 1 );
+	A.connect( 1, 0 );
+
+	FeynmanDiagram B;
+	B.addVertex( Vertex(2) );
+	B.addVertex( Vertex(0) );
+	B.addVertex( Vertex(1) );
+	B.connect( 0, 2 );
+	B.connect( 0, 1 );
+	B.connect( 0, 1 );
+
+	ss << A.to_string() << "    " << B.to_string() << "    " << A.isSimilarTo(B);
+	return ss.str();
+}
+
+string AV09() {
+	stringstream ss;
+	FeynmanDiagram A;
+	A.addVertex( Vertex(2) );
+	A.addVertex( Vertex(0) );
+	A.addVertex( Vertex(1) );
+	A.connect( 0, 2 );
+	A.connect( 0, 1 );
+	A.connect( 2, 0 );
+
+	FeynmanDiagram B;
+	B.addVertex( Vertex(2) );
+	B.addVertex( Vertex(0) );
+	B.addVertex( Vertex(1) );
+	B.connect( 0, 2 );
+	B.connect( 0, 1 );
+	B.connect( 0, 1 );
+
+	ss << A.to_string() << "    " << B.to_string() << "    " << A.isIdenticalTo(B);
+	return ss.str();
+}
+
+string AV10() {
+	stringstream ss;
+	FeynmanDiagram A;
+	A.addVertex( Vertex(2) );
+	A.addVertex( Vertex(0) );
+	A.addVertex( Vertex(1) );
+	A.connect( 0, 2 );
+	A.connect( 0, 1 );
+	A.connect( 1, 0 );
+
+	FeynmanDiagram B;
+	B.addVertex( Vertex(2) );
+	B.addVertex( Vertex(0) );
+	B.addVertex( Vertex(1) );
+	B.connect( 0, 1 );
+	B.connect( 0, 2 );
+	B.connect( 2, 0 );
+
+	ss << A.to_string() << "    " << B.to_string() << "    " << A.isSimilarTo(B);
+	return ss.str();
+}
+
+string AV11() {
+	stringstream ss;
+	FeynmanDiagram A;
+	A.addVertex( Vertex(3) );
+	A.addVertex( Vertex(4) );
+	A.addVertex( Vertex(5) );
+	A.connect( 3, 5 );
+	A.connect( 3, 4 );
+	A.connect( 4, 3 );
+
+	FeynmanDiagram B;
+	B.addVertex( Vertex(2) );
+	B.addVertex( Vertex(0) );
+	B.addVertex( Vertex(1) );
+	B.connect( 0, 1 );
+	B.connect( 0, 2 );
+	B.connect( 2, 0 );
+
+	ss << A.to_string() << "    " << B.to_string() << "    " << A.isSimilarTo(B);
+	return ss.str();
+}
+
+string AV12() {
+	stringstream ss;
+	FeynmanDiagram A;
+	A.addVertex( Vertex(0) );
+	A.addVertex( Vertex(1) );
+	A.connect( 0, 1 );
+	A.connect( 1, 0 );
+	A.connect( 0, 1 );
+	A.connect( 1, 0 );
+
+	FeynmanDiagram B;
+	B.addVertex( Vertex(1) );
+	B.addVertex( Vertex(2) );
+	B.connect( 1, 2 );
+	B.connect( 2, 1 );
+	B.connect( 1, 2 );
+	B.connect( 2, 1 );
+
+	ss << A.to_string() << "    " << B.to_string() << "    " << A.isSimilarTo(B);
+	return ss.str();
+}
+
+string AV13() {
+	stringstream ss;
+	DeltaContractionSet A;
+	A.addContraction( IndexContraction( 0, 0 ) );
+	A.addContraction( IndexContraction( 0, 0 ) );
+	A.addContraction( IndexContraction( 1, 0 ) );
+	A.addContraction( IndexContraction( 0, 1 ) );
+	A.addContraction( IndexContraction( 1, 0 ) );
+	A.addContraction( IndexContraction( 0, 1 ) );
+
+	DeltaContractionSet B;
+	B.addContraction( IndexContraction( 1, 2 ) );
+	B.addContraction( IndexContraction( 2, 1 ) );
+	B.addContraction( IndexContraction( 1, 2 ) );
+	B.addContraction( IndexContraction( 2, 1 ) );
+	B.addContraction( IndexContraction( 0, 0 ) );
+	B.addContraction( IndexContraction( 0, 0 ) );
+
+	ss << compareContractionSetsViaDiagrams(A, B);
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -3840,7 +4082,7 @@ int main( int argc, char** argv ) {
 	 * combineLikeTerms()
 	 */
 
-	UnitTest( "AL01: combineLikeTerms() I", &AL01, " {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}  +  {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]}      {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]} {1 / 1}  +  {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]} {1 / 1} " );
+	UnitTest( "AL01: combineLikeTerms() I", &AL01, " {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}  +  {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 6, 7 ) ]}      {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]} {2 / 1}  +  {0 / 1} " );
 
 	UnitTest( "AL02: combineLikeTerms() II", &AL02, " {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]}  + 0     {A} {A} {FourierSum[ ( 0, 1 )  ( 2, 3 )  ( 4, 5 ) ]} {1 / 1} " );
 
@@ -3971,6 +4213,36 @@ int main( int argc, char** argv ) {
 	UnitTest( "AU04: areFlavorLabelOrdersIdentical() IV", &AU04, "0" );
 
 	UnitTest( "AU05: areFlavorLabelOrdersIdentical() V", &AU05, "0" );
+
+	/*
+	 * FeynmanDiagram, Vertex
+	 */
+
+	UnitTest( "AV01: Vertex, Constructor, to_string()", &AV01, "3 --> {}" );
+
+	UnitTest( "AV02: FeynmanDiagram, Constructor, addVertex(), to_string()", &AV02, "FeynmanDiagram[ 0 --> {}  1 --> {}  2 --> {} ]" );
+
+	UnitTest( "AV03: FeynmanDiagram, connect()", &AV03, "FeynmanDiagram[ 0 --> { 1  2 }  1 --> { 0 }  2 --> { 0 } ]" );
+
+	UnitTest( "AV04: FeynmanDiagram, transformIndices()", &AV04, "FeynmanDiagram[ 0 --> { 1  2 }  1 --> { 0 }  2 --> { 0 } ]    FeynmanDiagram[ 3 --> { 4  5 }  4 --> { 3 }  5 --> { 3 } ]" );
+
+	UnitTest( "AV05: FeynmanDiagram, addVertex(), cmp_vertex()", &AV05, "FeynmanDiagram[ 0 --> { 1  2 }  1 --> { 0 }  2 --> { 0 } ]    FeynmanDiagram[ 3 --> { 4  5 }  4 --> { 3 }  5 --> { 3 } ]" );
+
+	UnitTest( "AV06: Vertex, addVertex(), Sort Connected Vertices", &AV06, "FeynmanDiagram[ 0 --> { 1  2 }  1 --> { 0 }  2 --> { 0 } ]    FeynmanDiagram[ 3 --> { 4  5 }  4 --> { 3 }  5 --> { 3 } ]" );
+
+	UnitTest( "AV07: FeynmanDiagram, isIdenticalTo() I", &AV07, "FeynmanDiagram[ 0 --> { 1  1  2 }  1 --> { 0  0 }  2 --> { 0 } ]    FeynmanDiagram[ 0 --> { 1  1  2 }  1 --> { 0  0 }  2 --> { 0 } ]    1" );
+
+	UnitTest( "AV08: FeynmanDiagram, isSimilarTo() I", &AV08, "FeynmanDiagram[ 0 --> { 1  1  2 }  1 --> { 0  0 }  2 --> { 0 } ]    FeynmanDiagram[ 0 --> { 1  1  2 }  1 --> { 0  0 }  2 --> { 0 } ]    1" );
+
+	UnitTest( "AV09: FeynmanDiagram, isIdenticalTo() II", &AV09, "FeynmanDiagram[ 0 --> { 1  2  2 }  1 --> { 0 }  2 --> { 0  0 } ]    FeynmanDiagram[ 0 --> { 1  1  2 }  1 --> { 0  0 }  2 --> { 0 } ]    0" );
+
+	UnitTest( "AV10: FeynmanDiagram, isSimilarTo() II", &AV10, "FeynmanDiagram[ 0 --> { 1  1  2 }  1 --> { 0  0 }  2 --> { 0 } ]    FeynmanDiagram[ 0 --> { 1  2  2 }  1 --> { 0 }  2 --> { 0  0 } ]    1" );
+
+	UnitTest( "AV11: FeynmanDiagram, isSimilarTo() III", &AV11, "FeynmanDiagram[ 3 --> { 4  4  5 }  4 --> { 3  3 }  5 --> { 3 } ]    FeynmanDiagram[ 0 --> { 1  2  2 }  1 --> { 0 }  2 --> { 0  0 } ]    1" );
+
+	UnitTest( "AV12: FeynmanDiagram, isSimilarTo() IV", &AV12, "FeynmanDiagram[ 0 --> { 1  1  1  1 }  1 --> { 0  0  0  0 } ]    FeynmanDiagram[ 1 --> { 2  2  2  2 }  2 --> { 1  1  1  1 } ]    1" );
+
+	UnitTest( "AV13: FeynmanDiagram, compareContractionSetsViaDiagrams() I", &AV13, "1" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

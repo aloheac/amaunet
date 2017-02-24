@@ -22,6 +22,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include "PTSymbolicObjects.h"
 #include "PathIntegration.h"
+#include "FeynmanDiagram.h"
 
 using namespace std;
 
@@ -1301,7 +1302,13 @@ bool areTermsCommon( SymbolicTermPtr termA, SymbolicTermPtr termB ) {
 	FourierSumPtr castTermAFourierSum = static_pointer_cast<FourierSum>( termAFourierSum );
 	FourierSumPtr castTermBFourierSum = static_pointer_cast<FourierSum>( termBFourierSum );
 
-	if ( not( *castTermAFourierSum == *castTermBFourierSum  or areDiagramsSimilar( castTermAFourierSum->getContractionVector(), castTermBFourierSum->getContractionVector() ) ) ) return false;
+	if ( not( *castTermAFourierSum == *castTermBFourierSum  or areDiagramsSimilar( castTermAFourierSum->getContractionVector(), castTermBFourierSum->getContractionVector() ) ) ) {
+        // Explicitly wait to verify diagrams using Feynman diagram data structures until we've exhausted simpler methods,
+        // since that is more expensive. The conditional would short-circuit if we included this above, but this is to
+        // be clear here.
+        if ( not compareContractionSetsViaDiagrams( DeltaContractionSet( castTermAFourierSum->getContractionVector() ),
+		                                          DeltaContractionSet( castTermBFourierSum->getContractionVector() ) ) ) return false;
+    }
 
 	return true;
 }

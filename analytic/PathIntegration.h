@@ -55,11 +55,15 @@ public:
 
     DeltaContractionSet();
 
+    DeltaContractionSet( std::vector<IndexContraction> thisContractions );
+
     void addContraction( IndexContraction newContraction );
 
     void addContractionSet( DeltaContractionSet set );
 
     unsigned int getNumContractions();
+
+    std::vector<IndexContraction> getContractions();
 
     bool containsIndex( int index );
 

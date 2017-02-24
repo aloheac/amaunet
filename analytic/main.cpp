@@ -66,16 +66,34 @@ int main( int argc, char** argv ) {
 	cout << endl << "Initializing..." << endl << endl;
 	initializeStaticReferences();
 
-	Sum Z;
+	Sum Z, Zup, Zdn;
 	cout << "Generating series for fermion determinant..." << endl;
-	Z = generateDeterminantExpansion( EXPANSION_ORDER_IN_A, "up", true);
+	Zup = generateDeterminantExpansion( EXPANSION_ORDER_IN_A, "", true);
+    Zdn = generateDeterminantExpansion( EXPANSION_ORDER_IN_A, "", true);
 
-	cout << "Expanding fermion determinant..." << endl;
-	Z = Z.getExpandedExpr();
+	cout << "Expanding spin-up fermion determinant..." << endl;
+	Zup = Zup.getExpandedExpr();
+
+    cout << "Expanding spin-down fermion determinant..." << endl;
+    Zdn = Zdn.getExpandedExpr();
 
 	cout << "Reducing expression tree and mathematically simplifying expansion..." << endl;
-	Z.reduceTree();
-	Z.simplify();
+	Zup.reduceTree();
+	Zup.simplify();
+    Zdn.reduceTree();
+    Zdn.simplify();
+
+    cout << "Generating product of fermion determinants..." << endl;
+    Product fermionDeterminants;
+    fermionDeterminants.addTerm( Zup.copy() );
+    fermionDeterminants.addTerm( Zdn.copy() );
+    Z = Sum( fermionDeterminants.copy() );
+
+    cout << "Expanding product of fermion determinants..." << endl;
+    Z = Z.getExpandedExpr();
+
+    cout << "Reducing expression tree..." << endl;
+    Z.reduceTree();
 
 	cout << "Truncating high-order terms in expansion..." << endl;
 	Z = truncateAOrder( Z.copy(), EXPANSION_ORDER_IN_A );
@@ -83,7 +101,7 @@ int main( int argc, char** argv ) {
 	cout << "Truncating odd order terms in expansion..." << endl;
 	Z = truncateOddOrders( Z.copy() );
 
-        cout << "Sorting traces by order..." << endl;
+    cout << "Sorting traces by order..." << endl;
 	Z = sortTracesByOrder( Z );
         
 	SymbolicTermPtr ZPtr = Z.copy();
@@ -107,7 +125,7 @@ int main( int argc, char** argv ) {
 	Z.reduceFourierSumIndices();
 
 	cout << "Combining like terms..." << endl;
-	Z = combineLikeTerms( Z, 500 );
+	Z = combineLikeTerms( Z, 1000 );
 
 	cout << Z << endl;
 

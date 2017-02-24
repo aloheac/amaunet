@@ -72,6 +72,8 @@ bool IndexContraction::containsIndex( int index ) {
 
 DeltaContractionSet::DeltaContractionSet() { }  // Default constructor is sufficient.
 
+DeltaContractionSet::DeltaContractionSet( vector<IndexContraction> thisContractions ) : contractions( thisContractions ) { }
+
 void DeltaContractionSet::addContraction( IndexContraction newContraction ) {
     contractions.push_back( newContraction );
 }
@@ -82,6 +84,10 @@ void DeltaContractionSet::addContractionSet( DeltaContractionSet set ) {
 
 unsigned int DeltaContractionSet::getNumContractions() {
     return (int)contractions.size();
+}
+
+vector<IndexContraction> DeltaContractionSet::getContractions() {
+    return contractions;
 }
 
 bool DeltaContractionSet::containsIndex( int index ) {
