@@ -906,24 +906,56 @@ public:
      */
 	void clear();
 
+	/**
+	 * Iterates through each factor in the product and calls the method reduceDummyIndices() on all instances of
+	 * FourierSum objects.
+	 */
 	void reduceFourierSumIndices();
-        
+
+	/**
+	 * Multiplies all values of CoefficientFloat and CoefficientFraction factors together and inserts a new
+	 * CoefficientFraction object with total value of all previous coefficient factors. The new object is inserted
+	 * at the end of the Product.
+	 */
 	void combineCoefficients();
 
+	/**
+	 * Gets the beginning iterator of the internal vector holding the terms of this sum.
+	 * @return The beginning iterator of this sum.
+	 */
 	std::vector<SymbolicTermPtr>::const_iterator getIteratorBegin() const;
 
+	/**
+	 * Gets the ending iterator of the internal vector holding the terms of this sum.
+	 * @return The ending iterator of this sum.
+	 */
 	std::vector<SymbolicTermPtr>::const_iterator getIteratorEnd() const;
 
+	/**
+	 * Gets the beginning iterator of the internal vector holding the terms of this sum.
+	 * @return The beginning iterator of this sum.
+	 */
 	std::vector<SymbolicTermPtr>::iterator getIteratorBegin();
 
+	/**
+	 * Gets the ending iterator of the internal vector holding the terms of this sum.
+	 * @return The ending iterator of this sum.
+	 */
 	std::vector<SymbolicTermPtr>::iterator getIteratorEnd();
 
 private:
 
+	/**
+	 * The vector of SymbolicTermPtr objects which reference the factors of this product.
+	 */
 	std::vector<SymbolicTermPtr> terms;
 
 };
 
+/**
+ * Symbolic representation of a trace over an expression. This objects holds a pointer to a single expression object
+ * whose trace is to be computed over.
+ */
 class Trace : public SymbolicTerm {
 
 	friend bool isZeroTrace( SymbolicTermPtr );
@@ -932,71 +964,195 @@ class Trace : public SymbolicTerm {
 
 public:
 
+	/*
+	 * Constructor.
+	 * @param expr The pointer to an expresson whose trace is to be computed over.
+	 */
 	Trace( SymbolicTermPtr expr );
 
+	/**
+	 * Destructor.
+	 */
 	~Trace();
 
+	/**
+	 * Gets the pretty-printed representation of this Trace instance as a string.
+	 * @return A string which hold the pretty-printed representation of this Trace.
+	 */
 	const std::string to_string() const;
 
+	/**
+	 * Generates a deep copy of this instance on the heap and returns a smart shared pointer to the copy.
+	 * @return A smart shared pointer to the generated copy.
+	 */
 	SymbolicTermPtr copy();
 
+	/**
+	 * Calls simplify() on the object referenced by expr, whch mathematically simplifies this product by evaluating
+	 * the entire product to zero if any CoefficientFloat or CoefficientFraction term evaluates to zero, and by
+	 * removing any CoefficientFloat or CoefficientFraction term which evaluates to one.
+	 */
 	void simplify();
 
+	/**
+	 * Calls reduceTree() on the object referenced by expr, which reduces (or flattens) the tree representation of
+	 * this Product by recursively unpacking trivial expressions.
+	 */
 	void reduceTree();
 
+	/**
+	 * Equivalance operator overload for when the right-hand side of the expression is an instance of a Trace.
+	 * @param other The right-hand side of the equivalance comparison.
+	 * @return True if *expr == other->expr, false otherwise.
+	 */
 	bool operator==( const Trace &other ) const;
-        
+
+	/**
+	 * Less than operator overload for when the right-hand side of the expression is an instance of a Trace. Traces
+	 * must be distributed over the fully expanded form of *expr. Natural ordering for Trace objects is determined by
+	 * the number of terms in the fully-expanded form of *expr.
+	 * @param other The right-hand side of the expression.
+	 * @return True if the number of terms in this instance is less than the number of terms in other, false otherwise.
+	 */
 	bool operator<( const Trace &other ) const;
 
+	/**
+	 * Greater than operator for when the right-hand side of the expression is an instance of a Trace. Traces must
+	 * be distributed over the fully expanded form of *expr. Natural ordering for Trace objects is determined by the
+	 * number of terms in the fully-expanded form of *expr.
+	 * @param other The right-hand side of the expression.
+	 * @return True if the number of terms in this instance is greater than the number of terms in other, false
+	 * otherwise.
+	 */
 	bool operator>( const Trace &other ) const;
 
 private:
 
+	/**
+	 * Pointer to the expression object whose trace is to be taken over.
+	 */
 	SymbolicTermPtr expr;
 };
 
+/**
+ * Symbolic representation of a Kronecker delta function of two indices.
+ */
 class Delta : public SymbolicTerm {
 public:
 
+	/**
+	 * Constructor. Creates a standard delta function.
+	 * @param a The first index.
+	 * @param b The second index.
+	 */
 	Delta( int a, int b );
 
+	/**
+	 * Constructor. Allows for the specification
+	 * @param a The first index.
+	 * @param b The second index.
+	 * @param type Boolean flag for whether this object is \bar{delta} (equivalent mathematically as 1 - \delta_{ij}),
+	 * or not.
+	 */
 	Delta( int a, int b, bool type );
 
+	/**
+	 * Gets the pretty-printed representation of this Delta instance as a string.
+	 * @return A string which hold the pretty-printed representation of this Trace.
+	 */
 	const std::string to_string() const;
 
+	/**
+	 * Generates a deep copy of this instance on the heap and returns a smart shared pointer to the copy.
+	 * @return A smart shared pointer to the generated copy.
+	 */
 	SymbolicTermPtr copy();
 
+	/**
+	 * Equivalence operator overload for when the right-hand side of the expression is an instance of a Delta.
+	 * Two Delta objects are considered equivalent if they are both barred or not barred, and if their ordered
+	 * indices are equivalent.
+	 * @param other The right hand side of the expression.
+	 * @return True if both Delta objects are equivalent according to their indices and if it is \bar{\delta} or \delta,
+	 * false otherwise.
+	 */
 	bool operator==( const Delta &other ) const;
 
+	/**
+	 * Returns whether this Delta instance is a \bar{\delta} or not.
+	 */
 	bool isDeltaBar();
 
 private:
 
+	/**
+	 * Boolean flag that sets if this Delta instance is a \bar{\delta} or not.
+	 */
 	bool isBar;
 
 };
 
+/**
+ * Symbolic representation of a Fourier sum, or a sum over coordinate space of a product of free propagators. See the
+ * written documentation for the mathematical details behind this class.
+ */
 class FourierSum : public SymbolicTerm {
 public:
 
+	/**
+	 * Constructor.
+	 * @param i Vector of IndexContraction objects that are resulting momentum-space indices.
+	 * @param orderInK Order in the matricies K in this expression. Should be equal to the length of the vector i.
+	 */
 	FourierSum( std::vector<IndexContraction> i, int orderInK );
 
+	/**
+	 * Destructor.
+	 */
 	~FourierSum();
 
+	/**
+	 * Gets the pretty-printed representation of this FourierSum instance as a string.
+	 * @return A string which hold the pretty-printed representation of this Trace.
+	 */
 	const std::string to_string() const;
 
+	/**
+	 * Generates a deep copy of this instance on the heap and returns a smart shared pointer to the copy.
+	 * @return A smart shared pointer to the generated copy.
+	 */
 	SymbolicTermPtr copy();
 
+	/**
+	 * Equivalance operator overload for when the right-hand side of the expression is an instance of a FourierSum.
+	 * Two FourierSum instances are considered equivalent if their vectors of sorted indices are equivalent.
+	 * @param other The right-hand side of the expression.
+	 * @return True if the FourierSum instances are considered equivalent, false otherwise.
+	 */
 	bool operator==( const FourierSum &other ) const;
 
+	/**
+	 * Reduces dummy indices such that extraneous free indices are eliminated and an equivalent diagram is written in
+	 * terms of the fewest number of indices possible.
+	 */
 	void reduceDummyIndices();
 
+	/**
+	 * Returns the vector of contracted indices.
+	 * @return
+	 */
     std::vector<IndexContraction> getContractionVector();
 
 private:
 
+    /**
+     * The vector of contracted momentum-space indices in this Fourier sum over coordinate space.
+     */
 	std::vector<IndexContraction> indices;
 
+    /**
+     * Order in matrices K of this product.
+     */
 	int order;
 
 };
@@ -1015,8 +1171,21 @@ private:
  */
 bool unpackTrivialExpression( SymbolicTermPtr& expr );
 
+/**
+ * Determines if the argument of the passed trace symbolically evaluates to zero. The passed argument must reference
+ * an instance of a Trace. A trace is considered to evaluate to zero if the contained expression contains a Sum or
+ * Product with zero terms, or if the string representation of the contained expression evaluates to "0" or "{0}".
+ * One should usually call expr->simplify() before calling this function.
+ * @param tr A pointer to a Trace object which is to be checked.
+ * @return True if the trace symbolically evaluates to zero, false otherwise.
+ */
 bool isZeroTrace( SymbolicTermPtr tr );
 
+/**
+ * Determines the order of a Product in TermA objects (e.g., determine n for A^n in a product).
+ * @param prod A pointer to a Product object to be evaluated.
+ * @return The order n for A^n of the expression.
+ */
 int getProductAOrder( SymbolicTermPtr prod );
 
 int getDualProductAOrder( Product &prodA, Product &prodB );
