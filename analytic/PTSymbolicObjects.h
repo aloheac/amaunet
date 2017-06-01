@@ -23,6 +23,11 @@
 #include <memory>
 #include <map>
 #include <set>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
 /*
  * ***********************************************************************
@@ -47,6 +52,7 @@ class IndexContraction;
 class DeltaContractionSet;
 
 bool unpackTrivialExpression( std::shared_ptr<SymbolicTerm> & );
+
 
 /*
  * ***********************************************************************
@@ -99,6 +105,10 @@ enum class TermTypes : char {
 	DEBUG_TRACE = 'Z'
 };
 
+template <typename Archive> void serialize( Archive &ar, TermTypes &T, const unsigned int version ) {
+
+}
+
 /*
  * ***********************************************************************
  * EXPRESSION AND TERM BASE CLASSES
@@ -112,6 +122,8 @@ enum class TermTypes : char {
 class SymbolicTerm {
 
 	friend bool unpackTrivialExpression( SymbolicTermPtr & );
+
+    friend class boost::serialization::access;
 
 public:
 
@@ -171,7 +183,7 @@ public:
 	 * expressions, and is only used in cases where matrices are dependent on the particle species it refers to.
 	 * @return Flavor label assigned to this expression.
 	 */
-	const char* getFlavorLabel();
+	std::string getFlavorLabel();
 
 	/**
 	 * Gets the indices assigned to this expression. Two and only two indices may be assigned to an expression under
@@ -208,7 +220,7 @@ protected:
 	/**
 	 * The particle flavor label (e.g. "up", "dn") associated with this symbolic object, if applicable.
 	 */
-	const char* flavorLabel;
+	std::string flavorLabel;
 
 	/**
 	 * The coordinate- or momentum-space indices associated with this symbolic object, if applicable. Under the current
@@ -221,6 +233,44 @@ protected:
 	 * The term type identifier associated with this symbolic object.
 	 */
 	TermTypes termID;
+
+private:
+
+    /**
+     * Serialization method compatible with the Boost library. Implementation of serialize() is split into save() and
+     * load() methods. This method serializes a SymbolicTerm.
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void save( Archive &ar, const unsigned int version ) const {
+        std::string tid( 1, (char)termID );  // For string representation of termID (type TermTypes).
+
+        ar << indices[ 0 ];
+        ar << indices[ 1 ];
+        ar << flavorLabel;
+        ar << tid;
+    }
+
+    /**
+     * Serialization method compatible with the Boost library. Implementation of serialize() is split into save() and
+     * load() methods. This method deserializes a SymbolicTerm().
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void load( Archive &ar, const unsigned int version ) {
+        std::string tid;  // For string representation of termID (type TermTypes).
+
+        ar >> indices[ 0 ];
+        ar >> indices[ 1 ];
+        ar >> flavorLabel;
+        ar >> tid;
+
+        termID = TermTypes( tid.at( 0 ) );  // Convert termID back to a char.
+    }
+
+	BOOST_SERIALIZATION_SPLIT_MEMBER();  // Macro function which provides serialize() method.
 };
 
 /*
@@ -247,6 +297,8 @@ protected:
  */
 class MatrixK : public SymbolicTerm {
 
+    friend class boost::serialization::access;
+
 public:
 
 	/**
@@ -258,7 +310,7 @@ public:
 	 * Constructor which assigns a given flavor label to the matrix.
 	 * @param flavorLabel The flavor label to assign.
 	 */
-	MatrixK( const char* flavorLabel );
+	MatrixK( std::string flavorLabel );
 
 	/**
 	 * Copy constructor for MatrixK.
@@ -308,6 +360,17 @@ private:
 	 * is always initialized to false.
 	 */
 	bool isFourierTransformed;
+
+    /**
+     * Serialization method compatible with the Boost library.
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void serialize( Archive &ar, const unsigned int version ) {
+        ar & boost::serialization::base_object<SymbolicTerm>( *this );
+        ar & isFourierTransformed;
+    }
 };
 
 /**
@@ -323,6 +386,8 @@ private:
  * and assignment operator overloads are sufficient.
  */
 class MatrixS : public SymbolicTerm {
+
+    friend class boost::serialization::access;
 
 public:
 
@@ -343,6 +408,19 @@ public:
 	 * @return A smart shared pointer to the generated copy.
 	 */
 	SymbolicTermPtr copy();
+
+private:
+
+    /**
+     * Serialization method compatible with the Boost library.
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void serialize( Archive &ar, const unsigned int version ) {
+        ar & boost::serialization::base_object<SymbolicTerm>( *this );
+    }
+
 };
 
 /**
@@ -355,6 +433,9 @@ public:
  * always simply "A". Instances of TermA are simply used to track the order of terms in the perturbation expansion.
  */
 class TermA : public SymbolicTerm {
+
+    friend class boost::serialization::access;
+
 public:
 
 	/**
@@ -380,6 +461,19 @@ public:
 	 * @return A smart shared pointer to the generated copy.
 	 */
 	SymbolicTermPtr copy();
+
+private:
+
+    /**
+     * Serialization method compatible with the Boost library.
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void serialize( Archive &ar, const unsigned int version ) {
+        ar & boost::serialization::base_object<SymbolicTerm>( *this );
+    }
+
 };
 
 /**
@@ -390,7 +484,11 @@ public:
  */
 class TermE : public SymbolicTerm {
 
+    friend class boost::serialization::access;
+
 public:
+
+    TermE();
 
 	/**
 	 * Constructor for TermE. The order k of the term must always be specified where k is an integer and k >= 1.
@@ -404,7 +502,7 @@ public:
 	 * @param thisOrder Order k of the term E_k.
 	 * @param thisFlavorLabel Flavor label to be assigned to all MatrixK instances that appear in this term.
 	 */
-	TermE( int thisOrder, const char* thisFlavorLabel );
+	TermE( int thisOrder, std::string thisFlavorLabel );
 
 	/**
 	 * Gets the pretty-printed representation TermE. Returns "E_k" where k is replaced by the value of thisOrder.
@@ -448,6 +546,17 @@ private:
 	 */
 	unsigned int order;
 
+    /**
+     * Serialization method compatible with the Boost library.
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void serialize( Archive &ar, const unsigned int version ) {
+        ar & boost::serialization::base_object<SymbolicTerm>( *this );
+        ar & order;
+    }
+
 };
 
 /**
@@ -455,6 +564,8 @@ private:
  * numerator and denominator.
  */
 class CoefficientFraction : public SymbolicTerm {
+
+    friend class boost::serialization::access;
 
 public:
 
@@ -554,6 +665,18 @@ private:
 	 * Numerator (num) and denominator (den) of this fraction.
 	 */
 	double num, den;
+
+    /**
+     * Serialization method compatible with the Boost library.
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void serialize( Archive &ar, const unsigned int version ) {
+        ar & boost::serialization::base_object<SymbolicTerm>( *this );
+        ar & num;
+        ar & den;
+    }
 };
 
 /**
@@ -562,9 +685,13 @@ private:
  */
 class CoefficientFloat : public SymbolicTerm {
 
+    friend class boost::serialization::access;
+
 	friend class CoefficientFraction; // TODO: Replace friend declaration with making eval() const.
 
 public:
+
+    CoefficientFloat();
 
 	/**
 	 * Constructor for CoefficientFloat. Accepts the value of the floating-point coefficient.
@@ -645,6 +772,18 @@ private:
 	 * The value this floating-point coefficient holds.
 	 */
 	double value;
+
+    /**
+     * Serialization method compatible with the Boost library.
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void serialize( Archive &ar, const unsigned int version ) {
+        ar & boost::serialization::base_object<SymbolicTerm>( *this );
+        ar & value;
+    }
+
 };
 
 /*
@@ -664,6 +803,8 @@ class Sum : public SymbolicTerm {
 	friend Sum truncateOddOrders( SymbolicTermPtr expr );
 
 	friend class Product;
+
+    friend class boost::serialization::access;
 
 public:
 
@@ -793,6 +934,17 @@ private:
 	 * The vector of SymbolicTermPtr objects which reference the terms of this sum.
 	 */
 	std::vector<SymbolicTermPtr> terms;
+
+    /**
+     * Serialization method compatible with the Boost library.
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void serialize( Archive &ar, const unsigned int version ) {
+        ar & boost::serialization::base_object<SymbolicTerm>( *this );
+        ar & terms;
+    }
 };
 
 /**
@@ -806,6 +958,8 @@ class Product : public SymbolicTerm {
 	friend class Sum;
 
 	friend void indexExpression( SymbolicTermPtr expr );
+
+    friend class boost::serialization::access;
 
 public:
 
@@ -950,6 +1104,17 @@ private:
 	 */
 	std::vector<SymbolicTermPtr> terms;
 
+    /**
+     * Serialization method compatible with the Boost library.
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void serialize( Archive &ar, const unsigned int version ) {
+        ar & boost::serialization::base_object<SymbolicTerm>( *this );
+        ar & terms;
+    }
+
 };
 
 /**
@@ -962,7 +1127,11 @@ class Trace : public SymbolicTerm {
 
 	friend void indexExpression( SymbolicTermPtr expr );
 
+    friend class boost::serialization::access;
+
 public:
+
+    Trace();
 
 	/*
 	 * Constructor.
@@ -1032,13 +1201,29 @@ private:
 	 * Pointer to the expression object whose trace is to be taken over.
 	 */
 	SymbolicTermPtr expr;
+
+    /**
+     * Serialization method compatible with the Boost library.
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void serialize( Archive &ar, const unsigned int version ) {
+        ar & boost::serialization::base_object<SymbolicTerm>( *this );
+        ar & expr;
+    }
 };
 
 /**
  * Symbolic representation of a Kronecker delta function of two indices.
  */
 class Delta : public SymbolicTerm {
+
+    friend class boost::serialization::access;
+
 public:
+
+    Delta();
 
 	/**
 	 * Constructor. Creates a standard delta function.
@@ -1090,6 +1275,17 @@ private:
 	 */
 	bool isBar;
 
+    /**
+     * Serialization method compatible with the Boost library.
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void serialize( Archive &ar, const unsigned int version ) {
+        ar & boost::serialization::base_object<SymbolicTerm>( *this );
+        ar & isBar;
+    }
+
 };
 
 /**
@@ -1097,7 +1293,12 @@ private:
  * written documentation for the mathematical details behind this class.
  */
 class FourierSum : public SymbolicTerm {
+
+    friend class boost::serialization::access;
+
 public:
+
+    FourierSum();
 
 	/**
 	 * Constructor.
@@ -1154,6 +1355,18 @@ private:
      * Order in matrices K of this product.
      */
 	int order;
+
+    /**
+     * Serialization method compatible with the Boost library.
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void serialize( Archive &ar, const unsigned int version ) {
+        ar & boost::serialization::base_object<SymbolicTerm>( *this );
+        ar & indices;
+        ar & order;
+    }
 
 };
 

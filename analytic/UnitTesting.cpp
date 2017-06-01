@@ -19,10 +19,13 @@
 #include <sstream>
 #include <string>
 #include <algorithm>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include "PTSymbolicObjects.h"
 #include "PathIntegration.h"
 #include "Debugging.h"
 #include "FeynmanDiagram.h"
+#include "ExpressionSerialization.h"
 
 using namespace std;
 
@@ -3556,6 +3559,98 @@ string AV13() {
 	return ss.str();
 }
 
+string AW01() {
+    stringstream ss;
+    SymbolicTerm A;
+    A.setIndices(3,5);
+    ss << A.getIndices()[0] << "," << A.getIndices()[1] << "    ";
+
+    stringstream ser;
+    boost::archive::text_oarchive oa{ser};
+    oa << A;
+
+    boost::archive::text_iarchive ia{ser};
+    SymbolicTerm B;
+    ia >> B;
+    ss << B.getIndices()[0] << "," << B.getIndices()[1];
+    return ss.str();
+}
+
+string AW02() {
+    stringstream ss;
+    MatrixK A( "up" );
+    A.setIndices(5,7);
+    ss << A << "    ";
+
+    stringstream ser;
+    boost::archive::text_oarchive oa{ser};
+    oa << A;
+
+    boost::archive::text_iarchive ia{ser};
+    MatrixK B;
+    ia >> B;
+    ss << B;
+    return ss.str();
+}
+
+string AW03() {
+    stringstream ss;
+    TermE A(3);
+    ss << A << "    ";
+
+    stringstream ser;
+    boost::archive::text_oarchive oa{ser};
+    oa << A;
+
+    boost::archive::text_iarchive ia{ser};
+    TermE B(1);
+    ia >> B;
+    ss << B;
+    return ss.str();
+}
+
+string AW04() {
+    stringstream ss;
+    TermA A;
+    Trace B( A.copy() );
+    ss << B << "    ";
+
+    stringstream ser;
+    boost::archive::text_oarchive oa{ser};
+    oa << B;
+
+    boost::archive::text_iarchive ia{ser};
+    Trace C( GenericTestTerm( 1 ).copy() );
+    ia >> C;
+
+    ss << C;
+    return ss.str();
+}
+
+string AW05() {
+    stringstream ss;
+    stringstream ser;
+
+    TermA A;
+    Sum B;
+    B.addTerm( A.copy() );
+    B.addTerm( A.copy() );
+    B.addTerm( A.copy() );
+
+    ss << B << "    ";
+
+    boost::archive::text_oarchive oa{ser};
+    oa << B;
+
+    boost::archive::text_iarchive ia{ser};
+    Sum C;
+    ia >> C;
+
+    ss << C;
+    return ss.str();
+
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -4243,6 +4338,20 @@ int main( int argc, char** argv ) {
 	UnitTest( "AV12: FeynmanDiagram, isSimilarTo() IV", &AV12, "FeynmanDiagram[ 0 --> { 1  1  1  1 }  1 --> { 0  0  0  0 } ]    FeynmanDiagram[ 1 --> { 2  2  2  2 }  2 --> { 1  1  1  1 } ]    1" );
 
 	UnitTest( "AV13: FeynmanDiagram, compareContractionSetsViaDiagrams() I", &AV13, "1" );
+
+    /*
+     * Serialization
+     */
+
+    UnitTest( "AW01: Serialization, SymbolicTerm", &AW01, "3,5    3,5" );
+
+    UnitTest( "AW02: Serialization, MatrixK", &AW02, "K_up_( 5, 7 )    K_up_( 5, 7 )" );
+
+    UnitTest( "AW03: Serialization, TermE", &AW03, "E3    E3" );
+
+    UnitTest( "AW04: Serialization, Trace I", &AW04, "Trace[ A ]    Trace[ A ]" );
+
+    UnitTest( "AW05: Serialization, Sum I", &AW05, "A + A + A    A + A + A" );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;

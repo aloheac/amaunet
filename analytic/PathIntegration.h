@@ -47,6 +47,17 @@ struct IndexContraction{
 
     bool containsIndex( int index );
 
+    /**
+     * Serialization method compatible with the Boost library.
+     * @tparam Archive Serialization stream type provided by the Boost library implementation.
+     * @param ar Serialization stream provided by the Boost library implementation.
+     * @param version Version of this serialization (unused by this code).
+     */
+    template <class Archive> void serialize( Archive &ar, const unsigned int version ) {
+        ar & i;
+        ar & j;
+    }
+
 };
 
 class DeltaContractionSet {

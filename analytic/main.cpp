@@ -20,6 +20,7 @@
 #include "PTSymbolicObjects.h"
 #include "PathIntegration.h"
 #include "Multithreading.h"
+#include "ExpressionSerialization.h"
 
 using namespace std;
 
@@ -51,7 +52,7 @@ int main( int argc, char** argv ) {
 	// Load global system parameters.
 	int EXPANSION_ORDER_IN_A = 4;
 	int SPLIT_SUMS_BY_LINE = 1;
-	int EVAL_BY_PARTS = 1;
+	int EVAL_BY_PARTS = 0;
     int POOL_SIZE = 5000;
     int NUM_THREADS = 10;
 

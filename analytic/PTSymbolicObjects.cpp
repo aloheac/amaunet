@@ -24,8 +24,39 @@
 #include "PTSymbolicObjects.h"
 #include "PathIntegration.h"
 #include "FeynmanDiagram.h"
+#include <boost/serialization/export.hpp>
 
 using namespace std;
+class Sum;
+class Product;
+class Trace;
+class SymbolicTerm;
+class GenericTestTerm;
+class MatrixK;
+class MatrixS;
+class TermA;
+class TermE;
+class CoefficientFloat;
+class CoefficientFraction;
+class Delta;
+class FourierSum;
+class IndexContraction;
+class DeltaContractionSet;
+
+BOOST_CLASS_EXPORT( Sum );
+BOOST_CLASS_EXPORT( Product );
+BOOST_CLASS_EXPORT( Trace );
+BOOST_CLASS_EXPORT( SymbolicTerm );
+BOOST_CLASS_EXPORT( MatrixK );
+BOOST_CLASS_EXPORT( MatrixS );
+BOOST_CLASS_EXPORT( TermA );
+BOOST_CLASS_EXPORT( TermE );
+BOOST_CLASS_EXPORT( CoefficientFloat );
+BOOST_CLASS_EXPORT( CoefficientFraction );
+BOOST_CLASS_EXPORT( Delta );
+BOOST_CLASS_EXPORT( FourierSum );
+BOOST_CLASS_EXPORT( IndexContraction );
+
 
 /*
  * ***********************************************************************
@@ -77,7 +108,7 @@ const string SymbolicTerm::to_string() const {
 	return "<invalid_term>";
 }
 
-const char* SymbolicTerm::getFlavorLabel() {
+string SymbolicTerm::getFlavorLabel() {
 	return flavorLabel;
 }
 
@@ -106,6 +137,8 @@ SymbolicTermPtr SymbolicTerm::copy() {
 	return cpy;
 }
 
+//template <typename Archive> void SymbolicTerm::serialize( Archive &ar, const unsigned int version )
+
 /*
  * ***********************************************************************
  * TERM DERIVED CLASSES - SCALAR AND MATRIX OBJECTS : IMPLEMENTATIONS
@@ -121,7 +154,7 @@ MatrixK::MatrixK() : SymbolicTerm() {
 	termID = TermTypes::MATRIX_K;
 }
 
-MatrixK::MatrixK( const char* thisFlavorLabel ) : SymbolicTerm() {
+MatrixK::MatrixK( string thisFlavorLabel ) : SymbolicTerm() {
 	isFourierTransformed = false;
 	flavorLabel = thisFlavorLabel;
 	termID = TermTypes::MATRIX_K;
@@ -217,9 +250,13 @@ bool TermA::operator==( const TermA &other ) const {
  * TermE
  */
 
+TermE::TermE() : order( 1 ) {
+	termID = TermTypes::TERM_E;
+}
+
 TermE::TermE( int thisOrder ) : order( thisOrder ) { }
 
-TermE::TermE( int thisOrder, const char* thisFlavorLabel ) : order( thisOrder ) {
+TermE::TermE( int thisOrder, string thisFlavorLabel ) : order( thisOrder ) {
 	flavorLabel = thisFlavorLabel;
 }
 
@@ -266,6 +303,10 @@ SymbolicTermPtr TermE::getFullExpression() {
 /*
  * CoefficientFloat;
  */
+
+CoefficientFloat::CoefficientFloat() : value( 0.0 ) {
+	termID = TermTypes::COEFFICIENT_FLOAT;
+}
 
 CoefficientFloat::CoefficientFloat( double val ) : SymbolicTerm() {
 	value = val;
@@ -901,6 +942,9 @@ vector<SymbolicTermPtr>::iterator Product::getIteratorEnd() {
 /*
  * Trace
  */
+Trace::Trace() {
+	termID = TermTypes::TRACE;
+}
 
 Trace::Trace( SymbolicTermPtr thisExpr ) : SymbolicTerm() {
 	expr = thisExpr;
@@ -985,6 +1029,13 @@ bool Trace::operator>( const Trace &other ) const {
  * Delta
  */
 
+Delta::Delta() {
+	indices[0] = 0;
+	indices[0] = 0;
+	isBar = false;
+	termID = TermTypes::DELTA;
+}
+
 Delta::Delta( int a, int b ) {
 	indices[0] = a;
 	indices[1] = b;
@@ -1022,6 +1073,11 @@ bool Delta::isDeltaBar() {
 /*
  * FourierSum
  */
+
+FourierSum::FourierSum() {
+	order = 0;
+	termID = TermTypes::FOURIER_SUM;
+}
 
 FourierSum::FourierSum( vector<IndexContraction> i, int orderInK ) {
 	indices = i;

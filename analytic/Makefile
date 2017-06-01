@@ -9,16 +9,17 @@
 #   - Unit testing (target: ut)
 #
 # Andrew C. Loheac, Joaquin E. Drut
-# Department of Physics and Astronomy
+# Department of Physics and Astronomy -L /usr/lib/x86_64-linux-gnu
 # University of North Carolina at Chapel Hill
 
 CC=g++
 CFLAGS=-g -std=c++11 -fopenmp
+LIBBOOST=-lboost_serialization
 
 all: amaunet
 
-amaunet: main.o PTSymbolicObjects.o PathIntegration.o Multithreading.o Debugging.o FeynmanDiagram.o
-	$(CC) $(CFLAGS) main.o PTSymbolicObjects.o PathIntegration.o Multithreading.o Debugging.o FeynmanDiagram.o -o amaunet
+amaunet: main.o PTSymbolicObjects.o PathIntegration.o Multithreading.o Debugging.o FeynmanDiagram.o ExpressionSerialization.o
+	$(CC) $(CFLAGS) main.o PTSymbolicObjects.o PathIntegration.o Multithreading.o Debugging.o FeynmanDiagram.o ExpressionSerialization.o -o amaunet $(LIBBOOST)
 	
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
@@ -37,14 +38,17 @@ Debugging.o: Debugging.cpp
 
 FeynmanDiagram.o: FeynmanDiagram.cpp
 	$(CC) $(CFLAGS) -c FeynmanDiagram.cpp
+
+ExpressionSerialization.o: ExpressionSerialization.cpp
+	$(CC) $(CFLAGS) -c ExpressionSerialization.cpp
 	
 ut: unittst
 
-unittst: UnitTesting.o PTSymbolicObjects.o PathIntegration.o Multithreading.o Debugging.o FeynmanDiagram.o
-	$(CC) $(CFLAGS) UnitTesting.o PTSymbolicObjects.o PathIntegration.o Multithreading.o Debugging.o FeynmanDiagram.o -o unittst
+unittst: UnitTesting.o PTSymbolicObjects.o PathIntegration.o Multithreading.o Debugging.o FeynmanDiagram.o ExpressionSerialization.o
+	$(CC) $(CFLAGS) UnitTesting.o PTSymbolicObjects.o PathIntegration.o Multithreading.o Debugging.o FeynmanDiagram.o ExpressionSerialization.o -o unittst $(LIBBOOST)
 	
 UnitTesting.o: UnitTesting.cpp
 	$(CC) $(CFLAGS) -c UnitTesting.cpp
 
 clean:
-	rm *o amaunet unittst
+	rm *.o amaunet unittst
