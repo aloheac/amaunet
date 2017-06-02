@@ -206,3 +206,46 @@ SumPtr multithreaded_expandAndEvaluateExpressionByParts( SumPtr exprA, SumPtr ex
     expandedExpression = combineLikeTerms( expandedExpression, POOL_SIZE );
     return static_pointer_cast<Sum>( expandedExpression.copy() );
 }
+
+SumPtr multithreaded_getDualExpansionByParts( SumPtr exprA, SumPtr exprB, int NUM_THREADS ) {
+    exprA->reduceTree();
+    exprB->reduceTree();
+
+    SymbolicTermPtr exprBCopy = exprB->copy();
+
+    SumPtr parallelParts[ exprA->getNumberOfTerms() ];
+
+    omp_set_num_threads( NUM_THREADS );
+
+    int numTermsComplete = 0;
+
+#pragma omp parallel for shared( exprA, exprBCopy, parallelParts )
+    for ( int term = 0; term < exprA->getNumberOfTerms(); term++ ) {
+#pragma omp critical(printcout)
+        {
+            cout << ">> Performing expression expansion for term " << term << " of "
+                 << exprB->getNumberOfTerms() << " (" << numTermsComplete << " terms complete)..." << endl;
+            numTermsComplete++;
+        }
+
+        Product nextExpansion;
+        nextExpansion.addTerm( exprA->getTerm( term )->copy() );
+        nextExpansion.addTerm( exprBCopy );
+
+        SumPtr expanded = static_pointer_cast<Sum>( nextExpansion.getExpandedExpr().copy() );
+        expanded->reduceTree();
+
+        parallelParts[ term ] = expanded;
+        nextExpansion.clear();
+    }
+
+    cout << ">> Dual expansion complete. Performing reduction on parallel results..." << endl;
+    Sum expandedExpression;
+    for ( int term = 0; term < exprA->getNumberOfTerms(); term++ ) {
+        expandedExpression.addTerm( parallelParts[ term ] );
+    }
+
+    cout << ">> Reducing expression tree..." << endl;
+    expandedExpression.reduceTree();
+    return static_pointer_cast<Sum>( expandedExpression.copy() );
+}

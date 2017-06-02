@@ -18,4 +18,8 @@ int saveSumToFile( Sum &expr, std::string filename );
 
 Sum loadSumFromFile( std::string filename );
 
+int splitSumToFiles( Sum &expr, int blockSize, std::string saveDir );
+
+Sum loadAndEvaluateSumFromFiles( std::string saveDir, int numberOfFiles, int EXPANSION_ORDER_IN_A, int POOL_SIZE );
+
 #endif //AMAUNETC_EXPRESSIONSERIALIZATION_H

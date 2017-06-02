@@ -9,7 +9,7 @@
 #   - Unit testing (target: ut)
 #
 # Andrew C. Loheac, Joaquin E. Drut
-# Department of Physics and Astronomy -L /usr/lib/x86_64-linux-gnu
+# Department of Physics and Astronomy
 # University of North Carolina at Chapel Hill
 
 CC=g++

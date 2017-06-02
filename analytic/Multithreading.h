@@ -31,4 +31,6 @@ SumPtr expandAndEvaluateExpressionByParts( SumPtr exprA, SumPtr exprB, int EXPAN
 
 SumPtr multithreaded_expandAndEvaluateExpressionByParts( SumPtr exprA, SumPtr exprB, int EXPANSION_ORDER_IN_A, int POOL_SIZE, int NUM_THREADS );
 
+SumPtr multithreaded_getDualExpansionByParts( SumPtr exprA, SumPtr exprB, int NUM_THREADS );
+
 #endif //AMAUNETC_MULTITHREADING_H

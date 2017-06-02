@@ -50,16 +50,16 @@ int main( int argc, char** argv ) {
 	cout << VERSION_STRING << "\t\t" << BUILD_DATE << "\t\t" << COMMIT_ID << endl << endl;
 
 	// Load global system parameters.
-	int EXPANSION_ORDER_IN_A = 4;
+	int EXPANSION_ORDER_IN_A = 6;
 	int SPLIT_SUMS_BY_LINE = 1;
-	int EVAL_BY_PARTS = 0;
+	int EVALUATION_METHOD = 2;
     int POOL_SIZE = 5000;
     int NUM_THREADS = 10;
 
 	cout << "Loaded parameters:" << endl;
 	cout << "\tExpansion order in A:\t\t" << EXPANSION_ORDER_IN_A << endl;
 	cout << "\tSplit sums by line:\t\t" << SPLIT_SUMS_BY_LINE << endl;
-    cout << "\tEvaluate by parts:\t\t" << EVAL_BY_PARTS << endl;
+    cout << "\tEvaluation method:\t\t" << EVALUATION_METHOD << endl;
     cout << "\tTerm pool size:\t\t" << POOL_SIZE << endl;
     cout << "\tNumber of threads:\t\t" << NUM_THREADS << endl;
 	cout << endl;
@@ -89,8 +89,8 @@ int main( int argc, char** argv ) {
     Zdn.reduceTree();
     Zdn.simplify();
 
-    if ( not EVAL_BY_PARTS ) {
-
+    if ( EVALUATION_METHOD == 0 ) {
+        cout << "Evaluation method is STANDARD." << endl;
         cout << "Generating product of fermion determinants..." << endl;
         Product fermionDeterminants;
         fermionDeterminants.addTerm( Zup.copy() );
@@ -133,15 +133,32 @@ int main( int argc, char** argv ) {
         cout << "Reducing dummy indices of Fourier transform..." << endl;
         Z.reduceFourierSumIndices();
 
+        splitSumToFiles( Z, 1000, "./" );
+
         cout << "Combining like terms..." << endl;
         Z = combineLikeTerms( Z, 1000 );
 
         cout << Z << endl;
 
-    } else {
-
+    } else if ( EVALUATION_METHOD == 1 ) {
+        cout << "Evaluation method is BY PARTS WITH MULTITHREADING." << endl;
         SumPtr ZPtr = multithreaded_expandAndEvaluateExpressionByParts( static_pointer_cast<Sum>( Zup.copy() ), static_pointer_cast<Sum>( Zdn.copy() ), EXPANSION_ORDER_IN_A, POOL_SIZE, NUM_THREADS );
 
         cout << ZPtr->to_string() << endl;
+
+    } else if ( EVALUATION_METHOD == 2 ) {
+        cout << "Evaluation method is BY PARTS WRITTEN TO FILE WITH MULTITHREADING." << endl;
+
+        SumPtr ZPtr = multithreaded_getDualExpansionByParts( static_pointer_cast<Sum>( Zup.copy() ), static_pointer_cast<Sum>( Zdn.copy() ), NUM_THREADS );
+
+        cout << "Writing split sums to file..." << endl;
+        int numFiles;
+        numFiles = splitSumToFiles( *ZPtr, 20000, "." );
+
+        Z = loadAndEvaluateSumFromFiles( ".", numFiles, EXPANSION_ORDER_IN_A, POOL_SIZE );
+        cout << Z << endl;
+
+    } else {
+        cout << "***ERROR: Invalid evaluation method identifier." << endl;
     }
 }
