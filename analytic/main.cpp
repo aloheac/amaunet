@@ -53,7 +53,7 @@ int main( int argc, char** argv ) {
 	int EXPANSION_ORDER_IN_A = 6;
 	int SPLIT_SUMS_BY_LINE = 1;
 	int EVALUATION_METHOD = 2;
-    int POOL_SIZE = 5000;
+    int POOL_SIZE = 1000;
     int NUM_THREADS = 10;
 
 	cout << "Loaded parameters:" << endl;
@@ -147,15 +147,29 @@ int main( int argc, char** argv ) {
         cout << ZPtr->to_string() << endl;
 
     } else if ( EVALUATION_METHOD == 2 ) {
-        cout << "Evaluation method is BY PARTS WRITTEN TO FILE WITH MULTITHREADING." << endl;
+        // Old method. Save here as comment for now. Here the entire dual expanded expression must be held in memory,
+        // which is not suitable for N5LO.
+        // SumPtr ZPtr = multithreaded_getDualExpansionByParts( static_pointer_cast<Sum>( Zup.copy() ), static_pointer_cast<Sum>( Zdn.copy() ), NUM_THREADS );
+        //
+        // cout << "Writing split sums to file..." << endl;
+        // numFiles = splitSumToFiles( *ZPtr, POOL_SIZE, "." );
 
-        SumPtr ZPtr = multithreaded_getDualExpansionByParts( static_pointer_cast<Sum>( Zup.copy() ), static_pointer_cast<Sum>( Zdn.copy() ), NUM_THREADS );
 
-        cout << "Writing split sums to file..." << endl;
+        cout << "Evaluation method is BY PARTS WRITTEN TO FILE WITH MULTITHREADING SUPPORT." << endl;
         int numFiles;
-        numFiles = splitSumToFiles( *ZPtr, 20000, "." );
+
+        // Check if more than one thread is requested.
+        if ( NUM_THREADS == 1 ) {
+            numFiles = splitDualExpansionByPartsToFiles( static_pointer_cast<Sum>( Zup.copy() ), static_pointer_cast<Sum>( Zdn.copy() ), POOL_SIZE, "." );
+
+        } else {
+            int sqrtPoolSize = (int)floor( sqrt( POOL_SIZE ) );
+            numFiles = multithreaded_splitDualExpansionByPartsToFiles( static_pointer_cast<Sum>( Zup.copy() ),
+                                                                       static_pointer_cast<Sum>( Zdn.copy() ), sqrtPoolSize, ".", NUM_THREADS );
+        }
 
         Z = loadAndEvaluateSumFromFiles( ".", numFiles, EXPANSION_ORDER_IN_A, POOL_SIZE );
+
         cout << Z << endl;
 
     } else {
