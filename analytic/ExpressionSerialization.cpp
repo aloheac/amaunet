@@ -112,6 +112,26 @@ Sum loadAndEvaluateSumFromFiles( string saveDir, int numberOfFiles, int EXPANSIO
     return completeSum;
 }
 
+Sum loadAndCombineSumFromFiles( string saveDir, int numberOfFiles, int POOL_SIZE ) {
+
+    Sum nextPartialSum;
+    Sum completeSum;
+    for ( int fileNo = 0; fileNo < numberOfFiles; fileNo++ ) {
+        stringstream ssfilename;
+        ssfilename << saveDir << "/EX" << fileNo << ".out";
+        cout << ">> Loading expression from file '" << ssfilename.str() << "'..." << endl;
+        nextPartialSum = loadSumFromFile( ssfilename.str() );
+
+        completeSum.addTerm( nextPartialSum.copy() );
+        completeSum.reduceTree();
+
+        cout << ">> Combining like terms..." << endl;
+        completeSum = combineLikeTerms( completeSum, POOL_SIZE );
+    }
+
+    return completeSum;
+}
+
 int splitDualExpansionByPartsToFiles( SumPtr exprA, SumPtr exprB, int blockSize, string saveDir ) {
     exprA->reduceTree();
     exprB->reduceTree();
@@ -218,6 +238,96 @@ int multithreaded_splitDualExpansionByPartsToFiles( SumPtr exprA, SumPtr exprB, 
                 expanded->reduceTree();
 
                 parallelParts[term] = expanded;
+                nextExpansion.clear();
+            }
+        }
+
+        cout << ">> Evaluation of block complete. Dumping expanded expression to file..." << endl;
+
+        // Reduce parallel results.
+        Sum reducedExpression;
+        for ( int term = 0; term < blockSize; term++ ) {
+            // Again, verify that we are not going past the end of the total expression.
+            if ( block * blockSize + term < exprA->getNumberOfTerms() ) {
+                reducedExpression.addTerm( parallelParts[ term ] );
+            }
+        }
+
+        // Concatenate filename for the next expression to serialize and output to file.
+        stringstream ssfilename;
+        ssfilename << saveDir << "/EX" << fileNo << ".out";
+
+        // Save the file.
+        int result = saveSumToFile(reducedExpression, ssfilename.str());
+
+        // Check for an error from the above call.
+        if (result != 0) {
+            cout << "***ERROR: Failed to save a partial sum." << endl;
+            exit(-1);  // Critical failure -- must terminate calculation.
+        }
+
+        // Set subsum to a new instance of Sum.
+        expandedExpression = Sum();
+
+        fileNo++;
+    }
+
+    // Check for case where the fileNo is still zero, indicating that the expression was too small to be split across
+    // multiple files. If so, save the entire expression to one file now.
+    if ( fileNo == 0 ) {
+        stringstream ssfilename;
+        ssfilename << saveDir << "/EX0.out";
+        cout << "***NOTE: Length of expression (" << expandedExpression.getNumberOfTerms() << " terms) less than block size. Saving expression to single file." << endl;
+        saveSumToFile( expandedExpression, ssfilename.str() );
+        return 1;
+    }
+
+    cout << ">> Dual expansion complete. " << fileNo << " files saved." << endl;
+    return fileNo;
+}
+
+int multithreaded_splitExpandAndEvaluateByPartsToFiles( SumPtr exprA, SumPtr exprB, int EXPANSION_ORDER_IN_A, int POOL_SIZE, int blockSize, string saveDir, int NUM_THREADS ) {
+    exprA->reduceTree();
+    exprB->reduceTree();
+
+    Sum expandedExpression;
+    SymbolicTermPtr exprBCopy = exprB->copy();
+    int fileNo = 0;
+    const int numOfBlocks = (int)ceil( (float)exprA -> getNumberOfTerms() / (float)blockSize );
+
+    omp_set_num_threads( NUM_THREADS );
+
+    cout << ">> Note " << numOfBlocks << " files required to save expansion to disk." << endl;
+
+
+
+    for ( int block = 0; block < numOfBlocks; block++ ) {
+        cout << ">> Expanding block " << block + 1 << " of " << numOfBlocks << "..." << endl;
+
+        int numTermsComplete = 0;
+        SumPtr parallelParts[ blockSize ];
+
+#pragma omp parallel for shared( exprA, exprBCopy, parallelParts )
+        for (int term = 0; term < blockSize; term++) {
+#pragma omp critical(printcout)
+            {
+                cout << ">> Performing expression expansion for term " << term << " of "
+                     << blockSize << " (" << numTermsComplete << " terms complete) in block " << block + 1 << " of "
+                     << numOfBlocks << "..." << endl;
+                numTermsComplete++;
+            }
+
+            // Since we are working in the units of blocks, verify that the total term index (block * blockSize + term)
+            // does not exceed the number of terms in the expression.
+            if ( block * blockSize + term < exprA->getNumberOfTerms() ) {
+                Product nextExpansion;
+                nextExpansion.addTerm(exprA->getTerm(block * blockSize + term)->copy());
+                nextExpansion.addTerm(exprBCopy);
+
+                SumPtr expanded = static_pointer_cast<Sum>(nextExpansion.getExpandedExpr().copy());
+                expanded->reduceTree();
+
+                parallelParts[term] = fullyEvaluateExpressionByParts( expanded, EXPANSION_ORDER_IN_A, POOL_SIZE );
                 nextExpansion.clear();
             }
         }

@@ -50,10 +50,11 @@ int main( int argc, char** argv ) {
 	cout << VERSION_STRING << "\t\t" << BUILD_DATE << "\t\t" << COMMIT_ID << endl << endl;
 
 	// Load global system parameters.
-	int EXPANSION_ORDER_IN_A = 6;
+	int EXPANSION_ORDER_IN_A = 8;
 	int SPLIT_SUMS_BY_LINE = 1;
 	int EVALUATION_METHOD = 2;
     int POOL_SIZE = 1000;
+    int BLOCK_SIZE = 20;
     int NUM_THREADS = 10;
 
 	cout << "Loaded parameters:" << endl;
@@ -156,19 +157,9 @@ int main( int argc, char** argv ) {
 
 
         cout << "Evaluation method is BY PARTS WRITTEN TO FILE WITH MULTITHREADING SUPPORT." << endl;
-        int numFiles;
-
-        // Check if more than one thread is requested.
-        if ( NUM_THREADS == 1 ) {
-            numFiles = splitDualExpansionByPartsToFiles( static_pointer_cast<Sum>( Zup.copy() ), static_pointer_cast<Sum>( Zdn.copy() ), POOL_SIZE, "." );
-
-        } else {
-            int sqrtPoolSize = (int)floor( sqrt( POOL_SIZE ) );
-            numFiles = multithreaded_splitDualExpansionByPartsToFiles( static_pointer_cast<Sum>( Zup.copy() ),
-                                                                       static_pointer_cast<Sum>( Zdn.copy() ), sqrtPoolSize, ".", NUM_THREADS );
-        }
-
-        Z = loadAndEvaluateSumFromFiles( ".", numFiles, EXPANSION_ORDER_IN_A, POOL_SIZE );
+        int numFiles = multithreaded_splitExpandAndEvaluateByPartsToFiles( static_pointer_cast<Sum>( Zup.copy() ),
+                                                                           static_pointer_cast<Sum>( Zdn.copy() ), EXPANSION_ORDER_IN_A, POOL_SIZE, BLOCK_SIZE, ".", NUM_THREADS );
+        Z = loadAndCombineSumFromFiles( ".", numFiles, POOL_SIZE );
 
         cout << Z << endl;
 

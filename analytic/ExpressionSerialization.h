@@ -22,8 +22,13 @@ int splitSumToFiles( Sum &expr, int blockSize, std::string saveDir );
 
 Sum loadAndEvaluateSumFromFiles( std::string saveDir, int numberOfFiles, int EXPANSION_ORDER_IN_A, int POOL_SIZE );
 
+Sum loadAndCombineSumFromFiles( std::string saveDir, int numberOfFiles, int POOL_SIZE );
+
 int splitDualExpansionByPartsToFiles( SumPtr exprA, SumPtr exprB, int blockSize, std::string saveDir );
 
 int multithreaded_splitDualExpansionByPartsToFiles( SumPtr exprA, SumPtr exprB, int blockSize, std::string saveDir, int NUM_THREADS );
+
+int multithreaded_splitExpandAndEvaluateByPartsToFiles( SumPtr exprA, SumPtr exprB, int EXPANSION_ORDER_IN_A, int POOL_SIZE, int blockSize, std::string saveDir, int NUM_THREADS );
+
 
 #endif //AMAUNETC_EXPRESSIONSERIALIZATION_H
