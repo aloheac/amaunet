@@ -27,6 +27,8 @@ SymbolicTermPtr fullyEvaluatePartialExpression( SumPtr expr, int EXPANSION_ORDER
 
 SumPtr fullyEvaluateExpressionByParts( SumPtr expr, int EXPANSION_ORDER_IN_A, int POOL_SIZE );
 
+Sum makeMultipleProducts( Product &inputProduct );
+
 SumPtr expandAndEvaluateExpressionByParts( SumPtr exprA, SumPtr exprB, int EXPANSION_ORDER_IN_A, int POOL_SIZE );
 
 SumPtr multithreaded_expandAndEvaluateExpressionByParts( SumPtr exprA, SumPtr exprB, int EXPANSION_ORDER_IN_A, int POOL_SIZE, int NUM_THREADS );

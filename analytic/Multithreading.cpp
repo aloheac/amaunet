@@ -133,6 +133,50 @@ SumPtr fullyEvaluateExpressionByParts( SumPtr expr, int EXPANSION_ORDER_IN_A, in
     }
 }
 
+Sum makeMultipleProducts( Product &inputProduct ) {
+    Sum splitSum;
+    Product leadingFactors;
+    SumPtr sum;
+    int lengthOfLongestSum = 0;
+    bool sumAlreadyFound = false;
+
+    for ( vector<SymbolicTermPtr>::iterator iter = inputProduct.getIteratorBegin(); iter !=  inputProduct.getIteratorEnd(); ++iter ) {
+        if ( (*iter)->getTermID() == TermTypes::SUM ) {
+            SumPtr consideredSum = static_pointer_cast<Sum>( *iter );
+
+            if ( consideredSum->getNumberOfTerms() > lengthOfLongestSum ) {
+                // Switch out sums.
+                lengthOfLongestSum = consideredSum->getNumberOfTerms();
+                if ( sumAlreadyFound ) leadingFactors.addTerm( sum );
+
+                sum = consideredSum;
+            }
+
+            sumAlreadyFound = true;
+        } else {
+            leadingFactors.addTerm( (*iter)->copy() );  // Can copy small leading objects.
+        }
+    }
+
+   if ( not sumAlreadyFound ) {
+       return Sum( inputProduct.copy() );  // No sums are present in this Product, so no expansion necessary.
+   }
+
+
+    for ( vector<SymbolicTermPtr>::iterator iter = sum->getIteratorBegin(); iter != sum->getIteratorEnd(); ++iter ) {
+
+        Product nextProduct;
+        nextProduct.addTerm(leadingFactors.copy());
+        nextProduct.addTerm( (*iter)->copy() );
+        nextProduct.reduceTree();
+        splitSum.addTerm( nextProduct.copy() );
+
+    }
+
+    return splitSum;
+}
+
+
 SumPtr expandAndEvaluateExpressionByParts( SumPtr exprA, SumPtr exprB, int EXPANSION_ORDER_IN_A, int POOL_SIZE ) {
     exprA->reduceTree();
     exprB->reduceTree();

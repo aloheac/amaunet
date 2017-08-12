@@ -26,6 +26,7 @@
 #include "Debugging.h"
 #include "FeynmanDiagram.h"
 #include "ExpressionSerialization.h"
+#include "Multithreading.h"
 
 using namespace std;
 
@@ -3651,6 +3652,63 @@ string AW05() {
 
 }
 
+string AX01() {
+	stringstream ss;
+	GenericTestTerm A( 0 );
+	GenericTestTerm B1( 1 );
+    GenericTestTerm B2( 2 );
+    GenericTestTerm B3( 3 );
+    GenericTestTerm B4( 4 );
+    GenericTestTerm B5( 5 );
+    GenericTestTerm B6( 6 );
+
+	Sum C;
+	C.addTerm( B1.copy() );
+	C.addTerm( B2.copy() );
+	C.addTerm( B3.copy() );
+	C.addTerm( B4.copy() );
+	C.addTerm( B5.copy() );
+	C.addTerm( B6.copy() );
+
+	Product D;
+	D.addTerm( A.copy() );
+	D.addTerm( C.copy() );
+
+	ss << D << "    ";
+	ss << makeMultipleProducts( D );
+	return ss.str();
+}
+
+string AX02() {
+	stringstream ss;
+	GenericTestTerm A( 0 );
+	GenericTestTerm B1( 1 );
+	GenericTestTerm B2( 2 );
+	GenericTestTerm B3( 3 );
+	GenericTestTerm B4( 4 );
+
+	Sum C;
+	C.addTerm( B1.copy() );
+	C.addTerm( B2.copy() );
+	C.addTerm( B3.copy() );
+	C.addTerm( B4.copy() );
+
+	GenericTestTerm E1( 5 );
+	GenericTestTerm E2( 6 );
+	Sum F;
+	F.addTerm( E1.copy() );
+	F.addTerm( E2.copy() );
+
+	Product D;
+	D.addTerm( A.copy() );
+	D.addTerm( F.copy() );
+	D.addTerm( C.copy() );
+
+	ss << D << "    ";
+	ss << makeMultipleProducts( D );
+	return ss.str();
+}
+
 int main( int argc, char** argv ) {
 	cout << "**********************************************************************" << endl;
 	cout << "  Amaunet Primary Unit Testing" << endl;
@@ -4352,6 +4410,15 @@ int main( int argc, char** argv ) {
     UnitTest( "AW04: Serialization, Trace I", &AW04, "Trace[ A ]    Trace[ A ]" );
 
     UnitTest( "AW05: Serialization, Sum I", &AW05, "A + A + A    A + A + A" );
+
+
+	/*
+	 * makeMultipleProducts()
+	 */
+	
+	UnitTest( "AX01: makeMultipleProducts() I", &AX01, " {GT_0} {GT_1 + GT_2 + GT_3 + GT_4 + GT_5 + GT_6}      {GT_0} {GT_1}  +  {GT_0} {GT_2}  +  {GT_0} {GT_3}  +  {GT_0} {GT_4}  +  {GT_0} {GT_5}  +  {GT_0} {GT_6} " );
+
+	UnitTest( "AX02: makeMultipleProducts() II", &AX02, " {GT_0} {GT_5 + GT_6} {GT_1 + GT_2 + GT_3 + GT_4}      {GT_0} {GT_5 + GT_6} {GT_1}  +  {GT_0} {GT_5 + GT_6} {GT_2}  +  {GT_0} {GT_5 + GT_6} {GT_3}  +  {GT_0} {GT_5 + GT_6} {GT_4} " );
 
 	cout << "----------------------------------------------------------------------" << endl;
 	cout << UnitTest::passedTests << " tests PASSED, " << UnitTest::failedTests << " tests FAILED." << endl;
